@@ -6,7 +6,7 @@ Im looking forward to start a blog where i can put all my useless research artic
 
 ### Hold up, whoami?
 
-Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things related to computer science. And I like to do things that require deep understanding of how computers work :). Specifically, kernel/system programmong, reverse engineering and malware analysis.
+Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things related to computer science. And I like to do things that require deep understanding of how computers work :). Specifically, kernel/system programming, reverse engineering and malware analysis.
 
 ### Stuff i know
 
