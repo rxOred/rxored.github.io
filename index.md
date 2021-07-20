@@ -23,6 +23,10 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - Linux (Im A Big Manjaro & Fedora fan)
 - radare2
 - IDA
+- git
+- i3wm
+- picom 
+- alacritty
 
 ### My cool projects :^)
 
