@@ -26,12 +26,12 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 
 ### My cool projects :^)
 
-**Finished - **
+**Finished** - 
 **[zkz](https://github.com/rxOred/zkz.git)** `A 0x86 linux debugger written in C++.`
 **[elfparse](https://github.com/rxOred/elfparse.git)** `Elf parser written in C.`
 **[spidyBOT](https://github.com/rxOred/spidyBOT.git)** `A web spider and information gathering tool written in python.`
 
-**Not yet finished - **
+**Not yet finished** -
 **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.`
 **[InjElf]()** `Elf malware written in C (PoC).`
 **[InjPE]()** `PE malware written in C++(PoC).`
