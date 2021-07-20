@@ -2,7 +2,7 @@
 
 As my web designing and development skills are far too superior for humans to understand (lies liessss), i decided to use this thing as my portfolio type of thing :)
 
-Im looking forward to start a blog where i can put all my useless research articles and projects :^)
+I hope to start a blog where i can put all my useless research articles and projects :^)
 
 ### Hold up, whoami?
 
