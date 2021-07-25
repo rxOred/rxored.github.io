@@ -8,7 +8,7 @@ I'm looking forward to start a blog where i can put all my useless research arti
 
 Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things related to computer science. And I like to do things that require deep understanding of how computers work :). Specifically, kernel/system programming, reverse engineering and malware analysis.
 
-### Stuff i know
+### Stuff I know
 
 - C/C++/C hashtag :^)
 - x86 assembly
@@ -17,7 +17,16 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - .Net framework
 - Javascript
 
-### Stuff i use
+## stuff I do
+
+- kernel programming
+- systems programming
+- reverse engineering
+- malware analysis
+- Tinkering with esp/arduino
+- and sometimes I draw things
+
+### Stuff I use
 
 - vim / emacs
 - Linux (Im A Big Manjaro & Fedora fan)
