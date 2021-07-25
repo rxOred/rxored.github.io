@@ -17,7 +17,7 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - .Net framework
 - Javascript
 
-## Stuff I do
+### Stuff I do
 
 - kernel programming
 - systems programming
