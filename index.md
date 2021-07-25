@@ -23,6 +23,7 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - systems programming
 - reverse engineering
 - malware analysis
+- CTFs :^)
 - Tinkering with esp/arduino
 - and sometimes I draw things
 
