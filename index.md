@@ -44,6 +44,7 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - **[zkz](https://github.com/rxOred/zkz.git)** `x86 linux debugger written in C++.`
 - **[elfparse](https://github.com/rxOred/elfparse.git)** `Elf parser written in C.`
 - **[spidyBOT](https://github.com/rxOred/spidyBOT.git)** `A web spider and information gathering tool written in python.`
+- **[BURUWA](https://github.com/rxOred/BURUWA.git)** `Very minimal Linux shell. (pretty much useless :^)`
 
 **Not yet finished** -
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.`
