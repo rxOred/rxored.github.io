@@ -48,8 +48,8 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 
 **Not yet finished** -
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.`
-- **[InjElf]()** `Elf malware written in C (PoC).`
-- **[InjPE]()** `PE malware written in C++(PoC).`
+- **[InjElf](https://github.com/rxOred/InjElf.git)** `Elf malware written in C (PoC).`
+- **[InjPE](https://github.com/rxOred/InjPE.git)** `PE malware written in C++(PoC).`
 
 ### Support or Contact
 
