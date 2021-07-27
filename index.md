@@ -55,4 +55,4 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 
 So you wanna support me? criticize my code, tell me how bad it is, send me reviews. That helps me to be a better programmer and thats all i want :^)
 
-You can contact me through my email rxored@gmail.com. But why?
+You can contact me through my email, discord - rxored@gmail.com, rxOred#2655. But why?
