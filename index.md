@@ -16,6 +16,7 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - golang
 - .Net framework
 - Javascript
+- Nim (not much tbh)
 
 ### Stuff I do
 
@@ -24,19 +25,16 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - reverse engineering
 - malware analysis
 - CTFs :^)
-- Tinkering with esp/arduino
+- IoT (ESP and arduino)
 - and sometimes I draw things
 
 ### Stuff I use
 
-- vim / emacs
-- Linux (Im A Big Manjaro & Fedora fan)
+- vim / lunarvim / emacs
+- vs / vscode
+- GNU/Linux
 - radare2
-- IDA
-- git
-- i3wm
-- picom 
-- alacritty
+- x64dbg
 
 ### My cool projects :^)
 
@@ -50,9 +48,12 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 **Not yet finished** -
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.`
 - **[InjPE](https://github.com/rxOred/InjPE.git)** `PE malware written in C++(PoC).`
+- **[WormLikeSnake]** `Another self replicating Elf malware written in C`
+- **[Lib]** `Useful tools and header only libraries written in x86`
 
 ### Support or Contact
 
 So you wanna support me? criticize my code, tell me how bad it is, send me reviews. That helps me to be a better programmer and thats all i want :^)
 
-You can contact me through my email, discord - rxored@gmail.com, rxOred#2655. But why?
+my email - rxored@gmail.com
+Discord - rxOred#2655. But why?
