@@ -55,7 +55,8 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 
 - trying to build sri lanka's first known hackerspace - SiliconCemetery
 - building a web application for SiliconCemetery with few other people (status - UI design is done)
-- working on an efficient terminal user interface for zkz debugger and implementing code injection and elf reconstruction  
+- working on an efficient terminal user interface for zkz debugger and implementing code injection and elf reconstruction
+- trying to make this site look better and more interactive
 
 ### Support or Contact
 
