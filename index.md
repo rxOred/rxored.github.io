@@ -51,6 +51,12 @@ Well Im just a 17y/o student from Sri Lanka(sadly). I taught myself many things 
 - **[WormLikeSnake]** `Another self replicating Elf malware written in C`
 - **[Lib]** `Useful tools and header only libraries written in x86`
 
+### Currently working on
+
+- trying to build sri lanka's first known hackerspace - SiliconCemetery
+- building a web application for SiliconCemetery with few other people (status - UI design is done)
+- working on an efficient terminal user interface for zkz debugger and implementing code injection and elf reconstruction  
+
 ### Support or Contact
 
 So you wanna support me? criticize my code, tell me how bad it is, send me reviews. That helps me to be a better programmer and thats all i want :^)
