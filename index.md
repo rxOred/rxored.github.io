@@ -1,11 +1,11 @@
-### 
+```ruby
     int init_module(void)
     {
         pr_info("Welcome to this ugly looking static web    \ 
         site Github generated for Me!\n");
         return 0;
     }
-### 
+```
 
 As my web designing and development skills are far too superior for humans to understand (lies lies), I decided to use this thing as `my portfolio` thing :)
 
@@ -78,9 +78,9 @@ Contact me
 - Twitter - @rxOred
 - Discord - rxOred#2655
 
-###
+```ruby
     void cleanup_module(void)
     {
         pr_info("bye bye\n");    
     }
-###
+```
