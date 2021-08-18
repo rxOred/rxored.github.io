@@ -13,11 +13,9 @@ Soon, I'll start a blog where I can put all my useless research articles and pro
 
 ### Hold up, whoami?
 
-Well, I'm just a 17y/o student from Sri Lanka (sadly). I taught myself many things related to computer science. And I like to do things that require a deep understanding of how computers work :). Specifically, kernel/system programming, reverse engineering, and malware analysis. Interested in BIOS/UEFI security, but don't have much knowledge in that area. 
+Well, I'm just a 17y/o student from Sri Lanka (sadly). I taught myself many things related to computer science when i was a kid. And I like to do things that require a deep understanding of how computers work :). Specifically, kernel/system programming, reverse engineering, and malware analysis. Interested in BIOS/UEFI security but don't have much knowledge in that area. 
 
-Big fan of rock (electronic, emo, grunge), old-school east coast hip-hop, new wave music, and dark horse comics. 
-
-As for now, my formal education is <insert bad word here> up.
+other than that, big fan of rock (electronic, emo, grunge), old-school east coast hip-hop, new wave music, and dark horse comics. Hate animals but i used to draw them as a kid. And my formal education is <insert bad word here> up. 
 
 ### Stuff I know
 
