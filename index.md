@@ -56,6 +56,7 @@ As for now, my formal education is -insert bad word here- up.
 - **[spidyBOT](https://github.com/rxOred/spidyBOT.git)** `A web spider and information gathering tool written in python.` capable of extracting emails from parsed docs.
 - **[BURUWA](https://github.com/rxOred/BURUWA.git)** `Very minimal Linux shell. pretty much useless :^).` might implement pipes, autocompletion and stuff later.
 - **[InjElf](https://github.com/rxOred/InjElf.git)** `Elf malware written in C (PoC).` not necessarilly a malware, its more of an infector (i cant just upload malware on my github)
+    
 **Not yet finished** -
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.` i wanted to make something like spacevim. ill probably rewrite the whole codebase in golang:3
 - **[InjPE](https://github.com/rxOred/InjPE.git)** `PE malware written in C++(PoC).`
