@@ -34,7 +34,7 @@ As for now, my formal education is -insert bad word here- up.
 - kernel programming - linux to be more specific.
 - systems programming
 - reverse engineering
-- malware analysis - rootkits and botnets, aah i love em.
+- malware analysis - rootkits, botnets, and anything related to elf. aah i love em.
 - CTFs :^) - i dont have a team and not a pro. 
 - IoT (ESP and arduino) - WIFI security stuff. not very useful.
 - and sometimes I draw things
