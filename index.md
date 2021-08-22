@@ -78,6 +78,7 @@ Contact me
 - my email - rxored@gmail.com
 - Twitter - @rxOred
 - Discord - rxOred#2655
+- spoitfy - rxOred
 
 ```ruby
     void cleanup_module(void)
