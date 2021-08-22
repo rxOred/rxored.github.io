@@ -65,6 +65,7 @@ As for now, my formal education is -insert bad word here- up.
 
 ### Currently working on
 
+- working on zkinject and Lib.
 - trying to build sri lanka's first known hackerspace - SiliconCemetery
 - building a web application for SiliconCemetery with few other people (status - UI design is done)
 - working on an efficient terminal user interface for zkz debugger and implementing cde injection and elf reconstruction
