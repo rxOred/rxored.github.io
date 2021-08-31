@@ -57,15 +57,16 @@ As for now, my formal education is -insert bad word here- up.
 - **[BURUWA](https://github.com/rxOred/BURUWA.git)** `Very minimal Linux shell. pretty much useless :^).` might implement pipes, autocompletion and stuff later.
 - **[InjElf](https://github.com/rxOred/InjElf.git)** `Elf malware written in C (PoC).` not necessarilly a malware, its more of an infector (i cant just upload malware on my github)
     
-**Not yet finished** -
+**Not yet finished** - 
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.` i wanted to make something like spacevim. ill probably rewrite the whole codebase in golang:3
 - **[InjPE](https://github.com/rxOred/InjPE.git)** `PE malware written in C++(PoC).`
 - **[WormLikeSnake]** `Another self replicating Elf malware written in C`
-- **[Lib]** `cpu information parsing thing ig`
+- **[Lib]** `cpu information parsing thing ig` 
+- **[zkinject]** `Elf library to make malware development ez`
 
 ### Currently working on
 
-- working on zkinject and Lib.
+- working on zkz, zkinject and Lib.
 - trying to build sri lanka's first known hackerspace - SiliconCemetery
 - building a web application for SiliconCemetery with few other people (status - UI design is done)
 - working on an efficient terminal user interface for zkz debugger and implementing cde injection and elf reconstruction
