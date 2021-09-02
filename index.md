@@ -58,11 +58,11 @@ about my education, I follow a Higher national diploma in computing while doing 
 ### Some cool projects I did/still doing :^)
 
 **Finished** - 
-- **[zkz](https://github.com/rxOred/zkz.git)** `x86 linux debugger written in C++. more features incoming!!!`
+- **[zkz](https://github.com/rxOred/zkz.git)** `x64 linux debugger written in C++. more features incoming!!!`
 - **[elfparse](https://github.com/rxOred/elfparse.git)** `linux x64 Elf binary file parser written in C.`
 - **[spidyBOT](https://github.com/rxOred/spidyBOT.git)** `A web spider and information gathering tool written in python.`
 - **[BURUWA](https://github.com/rxOred/BURUWA.git)** `A very minimal Linux shell. pretty much useless :^).`
-- **[InjElf](https://github.com/rxOred/InjElf.git)** `A Elf infector written in C, uses text padding infection`
+- **[InjElf](https://github.com/rxOred/InjElf.git)** `An Elf infector written in C, uses text padding infection`
     
 **Not yet finished** - 
 - **[rurik](https://github.com/rxOred/rurik.git)** `TUI text editor with some other IDE like features.` i wanted to make something like spacevim. i'll probably rewrite the whole codebase in golang:3
