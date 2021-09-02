@@ -76,7 +76,7 @@ about my education, I follow a Higher national diploma in computing while doing 
 - working on zkz, zkinject and Lib.
 - trying to build sri lanka's first known hackerspace - SiliconCemetery
 - building a web application for SiliconCemetery with few other people (status - UI design is done)
-- working on an efficient terminal user interface for zkz debugger and implementing cde injection and elf reconstruction
+- working on an efficient terminal user interface for zkz debugger and implementing runtime code injection and elf reconstruction
 
 ### Support or Contact
 
