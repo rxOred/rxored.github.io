@@ -26,15 +26,6 @@ about my education, I follow a Higher national diploma in computing while doing 
 - Javascript - I know the basics of javascript and how the web works in general :3
 - Nim (not much tbh)
 
-
-- C/C++/C hashtag :^) - C++ is my language of choice and the first i have learned (well technically i wrote hello world in java but eh). i learned C++ for arduino and i used C++ heavily when i was into unreal engine and game programming(suprise suprise!). when i started using linux as my main dev environment, i did spend a considerable amount of time with C. And i love its simplicity. 
-- x86 assembly - Then i learned a little bit assembly just to debug my lame -insert bad word here- programs, eventually i got into reverse engineering. so I learned more about intel assembly by Reading TFM.
-- python - yeah i had to learn python to revise some programming concepts cus i spent an entire year on a pathetic game:3. did some bat<insert bad word here> crazy stuff with python. it was fun.
-- golang - wanted to learn a new lang, so i started with go this year, replaced my python stuff with go (because its fast and beautiful). im planning to use golang for SiliconCemetery's backend since i dont really like nodejs. 
-- .Net framework - thanks for my windows C++ experience, i know a bit about .net.
-- Javascript - i dont like javascript.
-- Nim (not much tbh) - still learning. boring syntax. but fine.
-
 ### Things I do
 
 - kernel programming - linux to be more specific.
