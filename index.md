@@ -91,9 +91,12 @@ Contact me
 ### little bit about SiliconCemetery
     
 I first heard about hackerspaces when i was 14, back when i started out reversing. It was Chaos computer club that first made me amazed about this 'Hackerspace' thing. After two years, i told one of my friends about my idea to start a one, in the country i live in. With the help of some very talented people, of my age and older, I started a little org in github named SiliconCemetery. It's not public yet because we dont have a physical place, but we are slowly working on a web platform. Major gaols of SiliconCemtery includes,
-    - Giving a value to Research and development in sri lankan community
-    - Making a platform for young people to show off their work and skills
-    - Making computer related things more popular among sri lankan people
+- Give a value to Research and development in sri lankan community
+- Make a platform for young people to show off their work and skills
+- Make computer related things more popular among sri lankan people
+- Have fun
+
+
  
 
 ```ruby
