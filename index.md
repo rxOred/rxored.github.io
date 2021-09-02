@@ -13,7 +13,7 @@ First of all, this web site is temporary, I'm looking forward to start a blog wh
 
 Well, name is Jayod, a 17 years old student from Sri lanka. I taugh myself many things related to computer science when I was a kid. I prefer to do things that require deep understanding of how computers work, kernel/system programming, reverse engineering and malware analysis to be more precise. Im also interested in BIOS/UEFI security and APTs(advance persistant threads).
  
-Usually I read technical books but rarely, i choose chinese philosophy(translations of course), thriller mystery type books. 
+Usually I read technical books but rarely, i choose chinese philosophy(translations of course).
 
 about my education, I follow a Higher national diploma in computing while doing GCE/A/Ls in technology + higher mathematics. 
 
