@@ -7,7 +7,6 @@
     }
 ``` 
 
-
 First of all, this web site is temporary, I'm looking forward to start a blog where i can put all my research articles and projects :^)
 
 ### Hold up, whoami?
@@ -77,7 +76,7 @@ about my education, I follow a Higher national diploma in computing while doing 
 - trying to build sri lanka's first known hackerspace - SiliconCemetery
 - building a web application for SiliconCemetery with few other people (status - UI design is done)
 - working on an efficient terminal user interface for zkz debugger and implementing runtime code injection and elf reconstruction
-
+   
 ### Support or Contact
 
 So you wanna support me? criticize my code and tell me how bad it is. That helps me to be a better programmer and thats all I want :^)
@@ -88,7 +87,15 @@ Contact me
 - Linkedin - Jayod Bandara (not active)
 - Discord - rxOred#2655
 - spoitfy - rxOred
+   
+### little bit about SiliconCemetery
     
+I first heard about hackerspaces when i was 14, back when i started out reversing. It was Chaos computer club that first made me amazed about this 'Hackerspace' thing. After two years, i told one of my friends about my idea to start a one, in the country i live in. With the help of some very talented people, of my age and older, I started a little org in github named SiliconCemetery. It's not public yet because we dont have a physical place, but we are slowly working on a web platform. Major gaols of SiliconCemtery includes,
+    - Giving a value to Research and development in sri lankan community
+    - Making a platform for young people to show off their work and skills
+    - Making computer related things more popular among sri lankan people
+ 
+
 ```ruby
     void cleanup_module(void)
     {
