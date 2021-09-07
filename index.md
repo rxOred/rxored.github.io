@@ -11,7 +11,7 @@ First of all, this web site is temporary, I'm looking forward to start a blog wh
 
 ### Hold up, whoami?
 
-Well, name is Jayod, a 17 years old student from Sri lanka. I taugh myself many things related to computer science when I was a kid. I prefer to do things that require deep understanding of how computers work, kernel/system programming, reverse engineering and malware analysis to be more precise. Im also interested in BIOS/UEFI security and APTs(advance persistant threads).
+Well, name is Jayod, a 17(2021) years old student from Sri lanka. I taugh myself many things related to computer science when I was a kid. I prefer to do things that require deep understanding of how computers work, kernel/system programming, reverse engineering and malware analysis to be more precise. Im also interested in BIOS/UEFI security and APTs(advance persistant threads).
  
 Usually I read technical books but rarely, i choose chinese philosophy(translations of course).
 
@@ -19,12 +19,13 @@ about my education, I follow a Higher national diploma in computing while doing 
 
 ### Im familiar with,
 
-- C / C++/ C# - C++ is my language of choice and the first language i have learned (though i wrote my first hello world in Java). I learned C++ for arduino and i freqently used C++ when i was into unreal engine and game programming. When i changed my OS to linux, i spent a considerable amount of time with C doing low level development.
+- C / C++/ C# - C++ is my language of choice and the first language i have learned (though i wrote my first hello world in Java when i was 12 :3). I learned C++ for arduino and i freqently used C++ when i was into unreal engine and game programming. When i changed my OS to linux, i spent a considerable amount of time with C doing low level development.
 - x86/x64 assembly - I have a good understanding of intel x86 and x64 instruction set architectures. I learned asm to debug my programs, eventally i started reverse engineering and now, assembly is natural to me.
 - python - I learned python a year ago, just to save time by automating stuff.
 - golang - Learned few months ago, i love it and replaced python with golang :3
 - Javascript - I know the basics of javascript and how the web works in general :3
 - Nim (not much tbh)
+- currently im busy learning/reversing arm T_T
 
 ### Things I do
 
