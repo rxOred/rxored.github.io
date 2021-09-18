@@ -76,7 +76,6 @@ So you wanna support me? criticize my code and tell me how bad it is. That helps
 Contact me
 - my email - rxored@gmail.com
 - Twitter - @rxOred (not active)
-- Linkedin - Jayod Bandara (not active)
 - Discord - rxOred#2655
 - spoitfy - rxOred
    
