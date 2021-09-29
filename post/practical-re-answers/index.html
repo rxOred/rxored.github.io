@@ -221,8 +221,20 @@ to [edi] byte by byte :3</p>
    <span style="color:#75715e">; this is bit important. lot of malware authors use this method to access win32 APIs
 </span></code></pre></div></li>
 <li>
-<p>same thing that happened to many of above snippets. it will crash with a seg fault. The reason is that, we are returning to
-a totally unknown address.</p>
+<p>same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
+a totally unknown address.
+In this case we havent pushed anything to the stack other than return address and base pointer of the prev stack frame. and when ret pops the value from stack to eip, and what we get is base of the previous
+stack frame. Guess what? stack is non-executable :3</p>
+<pre><code>  --------------------------
+           eax (y)
+  --------------------------
+           ecx (x)
+  --------------------------
+        (return addr)
+  --------------------------
+             ebp             &lt;------- esp
+  --------------------------
+</code></pre>
 </li>
 <li>
 <p>edx:eax will be used.</p>
