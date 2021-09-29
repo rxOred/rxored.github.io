@@ -13,35 +13,36 @@
       <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/compilers01/</guid>
-      <description>Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of the optimizer, and the back-end.</description>
+      <description>Compilers This article is all about compilers.
+For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.
+However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective.</description>
       <content>&lt;h1 id=&#34;compilers&#34;&gt;Compilers&lt;/h1&gt;
-&lt;p&gt;This article is all about compilers.
-For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed.
-However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective.
-Next articles will contain detailed explainations of the optimizer, and the back-end.&lt;/p&gt;
-&lt;h2 id=&#34;what-is-a-compiler-and-how-does-it-affect-reverse-engineering-process&#34;&gt;What is a compiler and how does it affect reverse engineering process.&lt;/h2&gt;
-&lt;p&gt;A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.
-This input representation is usually the text file containing the source code that compiles with the specifications of a specific high level language. And the
-Output is usually a low-level language representaition of the same program.&lt;/p&gt;
-&lt;p&gt;Sounds not that complex right? Well, this is just a high level owerview. During this process of tranlation between different representaitions, input source will have to face many
-algorithms, techniques employed by the compiler to optimize the low-level representaition it generates. These algorithms may add more levels of complexity on top of the original code.
-And may even contain code that the developer is not intended of writing. These things makes it harder for someone to read the compiler generated code.&lt;/p&gt;
+&lt;p&gt;This article is all about compilers.&lt;/p&gt;
+&lt;p&gt;For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.&lt;/p&gt;
+&lt;p&gt;However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective.&lt;/p&gt;
+&lt;p&gt;The next articles will contain detailed explanations of the optimizer and the back-end.&lt;/p&gt;
+&lt;h2 id=&#34;what-is-a-compiler-and-how-does-it-affect-the-reverse-engineering-process&#34;&gt;What is a compiler and how does it affect the reverse engineering process.&lt;/h2&gt;
+&lt;p&gt;A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.&lt;/p&gt;
+&lt;p&gt;This input representation is usually the text file containing the source code that complies with the specifications of a specific high-level language. And the&lt;/p&gt;
+&lt;p&gt;Output is usually a low-level language representation of the same program.&lt;/p&gt;
+&lt;p&gt;Sounds not that complex right? Well, this is just a high-level overview. During this process of translation between different representations, the input source will have to face many algorithms, techniques employed by the compiler to optimize the low-level representation it generates. These algorithms may add more levels of complexity on top of the original code.&lt;/p&gt;
+&lt;p&gt;And may even contain code that the developer is not intended of writing. These things make it harder for someone to read the compiler-generated code.&lt;/p&gt;
 &lt;h2 id=&#34;compiler-architecture&#34;&gt;Compiler architecture.&lt;/h2&gt;
-&lt;p&gt;Compiler architecture mainly consist of 3 things
-- Front end
+&lt;p&gt;Compiler architecture mainly consists of 3 things&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- Front end
 - Optimizer
-- Back end&lt;/p&gt;
-&lt;p&gt;I this first article, lets dive into Front end.&lt;/p&gt;
+- Back end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I this first article, let&amp;rsquo;s dive into the Front end.&lt;/p&gt;
 &lt;h2 id=&#34;the-front-end&#34;&gt;The front end.&lt;/h2&gt;
-&lt;p&gt;tbh, front is the least important out of the above 3 in a reverse engineering perspective. anyway&amp;hellip;&lt;/p&gt;
-&lt;p&gt;So what does this thing do? well, the front end is the place where process of compilation begins.&lt;/p&gt;
+&lt;p&gt;tbh, the front is the least important out of the above 3 in a reverse engineering perspective. anyway&amp;hellip;&lt;/p&gt;
+&lt;p&gt;So what does this thing do? well, the front end is the place where the process of compilation begins.&lt;/p&gt;
 &lt;h2 id=&#34;lexical-analysis&#34;&gt;Lexical analysis&lt;/h2&gt;
-&lt;p&gt;Lexical analyzer is a part of the compiler front end and responsible for tokenizing
-the given source file. What this means is that, when given a stream of characters, lexical analyzer can turn that stream of characters into a set of distinct lexemes. These lexemes can
-be seperated by some delimeter. A token can have many lexemes, which essentially means that a token is a category of lexemes, if that makes sense.&lt;/p&gt;
-&lt;p&gt;for example, following statement
-&lt;code&gt; if ( i == 0 )&lt;/code&gt;
-can be broken down into&lt;/p&gt;
+&lt;p&gt;Lexical analyzer is a part of the compiler front end and is responsible for tokenizing the given source file. What this means is that, when given a stream of characters, a lexical analyzer can turn that stream of characters into a set of distinct lexemes. These lexemes can&lt;/p&gt;
+&lt;p&gt;be separated by some delimiter. A token can have many lexemes, which essentially means that a token is a category of lexemes if that makes sense.&lt;/p&gt;
+&lt;p&gt;for example, following statement&lt;/p&gt;
+&lt;p&gt;&lt;code&gt; if ( i == 0 )&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;can be broken down into&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -76,22 +77,27 @@ can be broken down into&lt;/p&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;Tokenizing is very similar to how we break down complex sentences in natural languages. just like how a sentence is devided into different parts.
-But unlike humans, to achieve this task, lexical analyzers use pattern matching algorithms and regular expressions.&lt;/p&gt;
-&lt;p&gt;Its also worth mentioning that lexical analysis or tokenizing can be done using unix utilities like FLEX and ANTLR.&lt;/p&gt;
+&lt;p&gt;Tokenizing is very similar to how we break down complex sentences in natural languages. just like how a sentence is divided into different parts.&lt;/p&gt;
+&lt;p&gt;But unlike humans, to achieve this task, lexical analyzers use pattern matching algorithms and regular expressions.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s also worth mentioning that lexical analysis or tokenizing can be done using unix utilities like FLEX and ANTLR.&lt;/p&gt;
 &lt;h2 id=&#34;syntax-analysis&#34;&gt;Syntax analysis&lt;/h2&gt;
-&lt;p&gt;Syntax analysis is the second phrase of compiler&amp;rsquo;s front end. Unlike lexical analysis, where pattern matching algorithms and regular expressions are used to identify tokens, Systax analysis use a
-concept known as Context Free Grammar (CFGs). Context Free Grammar is kinda similar to regular grammar but its mainly used to describe syntax of programming languages. basically its a superset of regular grammar.&lt;/p&gt;
-&lt;p&gt;When lexical analyzer outputs the stream of tokens, these tokens are then fed into the syntax analyzer. Then the syntax analyzer analyzes and parses the stream of tokens against different rules and
-detect syntax errors in the code.&lt;/p&gt;
-&lt;p&gt;for example, &lt;code&gt;if ( i == 0 &lt;/code&gt; is passed down, it is syntax analyzers job to report it as an error. However some syntax analyzers are capable of continue the parsing process even if there are syntax errors. To achieve
-this, syntax analyzers use error recovery strategies.&lt;/p&gt;
-&lt;p&gt;After parsing all the syntax, syntax analyzer should generate a parse tree. A parse tree is a representation of the production rules.&lt;/p&gt;
+&lt;p&gt;Syntax analysis is the second phase of the compiler&amp;rsquo;s front end. Unlike lexical analysis, where pattern matching algorithms and regular expressions are used to identify tokens, Syntax analysis use a&lt;/p&gt;
+&lt;p&gt;concept known as Context-Free Grammar (CFGs). Context-Free Grammar is kinda similar to regular grammar but it&amp;rsquo;s mainly used to describe the syntax of programming languages. basically, it&amp;rsquo;s a superset of regular grammar.&lt;/p&gt;
+&lt;p&gt;When the lexical analyzer outputs the stream of tokens, these tokens are then fed into the syntax analyzer. Then the syntax analyzer analyzes and parses the stream of tokens against different rules and&lt;/p&gt;
+&lt;p&gt;detect syntax errors in the code.&lt;/p&gt;
+&lt;p&gt;for example, &lt;code&gt;if ( i == 0 &lt;/code&gt; is passed down, it is the syntax analyzers job to report it as an error. However, some syntax analyzers are capable of continuing the parsing process even if there are syntax errors. To achieve&lt;/p&gt;
+&lt;p&gt;this, syntax analyzers use error recovery strategies.&lt;/p&gt;
+&lt;p&gt;After parsing all the syntax, the syntax analyzer should generate a parse tree. A parse tree is a representation of the production rules.&lt;/p&gt;
 &lt;p&gt;for example, applying left-derivation production rule on &lt;code&gt;x + b - c&lt;/code&gt;, resulting parse tree is&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;E -&amp;gt; E - E
+
 E -&amp;gt; E + E - E
+
 E -&amp;gt; id + E - E
+
 E -&amp;gt; id + id - id
+
+
 
         E
     ---------
@@ -101,16 +107,15 @@ ____|____
 |   |   |
 E   +   E
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Syntax analysis can be done using YACC(Yet Another Compiler Compiler), CUP, Bison and ANTLR.&lt;/p&gt;
+&lt;p&gt;Syntax analysis can be done using YACC(Yet Another Compiler Compiler), CUP, Bison, and ANTLR.&lt;/p&gt;
 &lt;h3 id=&#34;abstract-synstax-trees-asts&#34;&gt;Abstract Synstax Trees (ASTs)&lt;/h3&gt;
-&lt;p&gt;Just like a parse tree, an abstract syntax tree or AST is a graph representation of the source code. How an AST is differ from a parse tree is, an AST is a simplified version of the parse tree. And in ASTs operators
-are internal nodes. ASTs are also considered to be the out of syntax analysis phase of a compiler.&lt;/p&gt;
-&lt;p&gt;Remember CFGs?, in modern programming languages there are lots of things that CFGs cant express. for example type definitions. Almost every modern language allows new types. However CFGs cannot represent new types and
-their usage. ASTs can solve these problems.&lt;/p&gt;
-&lt;p&gt;Another major usage of ASTs is that, a full traversal of the AST data structure represent the correctness of the program. ASTs are heavily used in semantic analysis too.&lt;/p&gt;
+&lt;p&gt;Just like a parse tree, an abstract syntax tree or AST is a graph representation of the source code. How an AST differs from a parse tree is, an AST is a simplified version of the parse tree. And in ASTs operators are internal nodes. ASTs are also considered to be the out of syntax analysis phase of a compiler.&lt;/p&gt;
+&lt;p&gt;Remember CFGs?, in modern programming languages, there are lots of things that CFGs cant express. for example type definitions. Almost every modern language allows new types. However, CFGs cannot represent new types and&lt;/p&gt;
+&lt;p&gt;their usage. ASTs can solve these problems.&lt;/p&gt;
+&lt;p&gt;Another major usage of ASTs is that a full traversal of the AST data structure represents the correctness of the program. ASTs are heavily used in semantic analysis too.&lt;/p&gt;
 &lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
-&lt;p&gt;So yeah thats it for compiler front end. I suggest readers to go through &amp;ldquo;Concepts of programming languages&amp;rdquo; for more detailed explainations.
-I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt;
+&lt;p&gt;So yeah that&amp;rsquo;s it for the compiler front end. I suggest readers go through &amp;ldquo;Concepts of programming languages&amp;rdquo; for more detailed explanations.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt;
 </content>
     </item>
     
@@ -120,14 +125,12 @@ I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt
       <pubDate>Tue, 28 Sep 2021 16:21:05 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/hello/</guid>
-      <description>Tbh, I dont really know what to write here. Few years ago, when I started out programming, I never thought of or wanted to start blogging. Hell, I never wanted to get into security back then. But things change!. Here I am, editing the first blog post :)
-Anyway, about this blog.
-Here I will be posting my projects, research, guides and other useless information on programming, system security and reverse engineering.</description>
-      <content>&lt;p&gt;Tbh, I dont really know what to write here. Few years ago, when I started out programming, I never thought of or wanted to start blogging. Hell, I never wanted to get into security back then. But things change!.
-Here I am, editing the first blog post :)&lt;/p&gt;
-&lt;p&gt;Anyway, about this blog.&lt;/p&gt;
-&lt;p&gt;Here I will be posting my projects, research, guides and other useless information on programming, system security and reverse engineering. I&amp;rsquo;m also looking forward to start posting malware analysis reports and
-CTF writeups.&lt;/p&gt;
+      <description>Tbh, I don&amp;rsquo;t really know what to write here. A few years ago, when I started out programming, I never thought of or wanted to start blogging. Hell, I never wanted to get into security back then. But things change!.
+Here I am, editing the first blog post :)
+Anyway, about this blog. Here I will be posting my projects, research, guides, and other useless information on programming, system security, and reverse engineering.</description>
+      <content>&lt;p&gt;Tbh, I don&amp;rsquo;t really know what to write here. A few years ago, when I started out programming, I never thought of or wanted to start blogging. Hell, I never wanted to get into security back then. But things change!.&lt;/p&gt;
+&lt;p&gt;Here I am, editing the first blog post :)&lt;/p&gt;
+&lt;p&gt;Anyway, about this blog. Here I will be posting my projects, research, guides, and other useless information on programming, system security, and reverse engineering. I&amp;rsquo;m also looking forward to starting posting malware analysis reports and CTF writeups.&lt;/p&gt;
 &lt;p&gt;So, I think that&amp;rsquo;s it :3&lt;/p&gt;
 </content>
     </item>
