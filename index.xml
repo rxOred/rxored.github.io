@@ -13,12 +13,12 @@
       <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/compilers01/</guid>
-      <description>Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of Optimizer, and back-end.</description>
+      <description>Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of the optimizer, and the back-end.</description>
       <content>&lt;h1 id=&#34;compilers&#34;&gt;Compilers&lt;/h1&gt;
 &lt;p&gt;This article is all about compilers.
-For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed.
-However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective.
-Next articles will contain detailed explainations of Optimizer, and back-end.&lt;/p&gt;
+For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed.
+However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective.
+Next articles will contain detailed explainations of the optimizer, and the back-end.&lt;/p&gt;
 &lt;h2 id=&#34;what-is-a-compiler-and-how-does-it-affect-reverse-engineering-process&#34;&gt;What is a compiler and how does it affect reverse engineering process.&lt;/h2&gt;
 &lt;p&gt;A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.
 This input representation is usually the text file containing the source code that compiles with the specifications of a specific high level language. And the
@@ -147,10 +147,16 @@ useful information.&lt;/p&gt;
       
       <guid>https://rxOred.github.io/about/</guid>
       <description>rxOred&amp;rsquo;s real name is Jayod, and I&amp;rsquo;m a 17 year-old, introverted, self-taught programmer from Sri Lanka. Other than building software, I also do reverse engineering and malware analysis.
-I&amp;rsquo;m also interested in firmware security and computer vision. As for my higher education, I follow a higher national diploma while doing A/Ls in technology + higher mathematics stream. I prefer to work alone but, there is no hesitation to work with other developers and security/software engineers because the resulting experience is too much to be valued.</description>
+I&amp;rsquo;m also interested in firmware security and computer vision. As for my higher education, I follow a higher national diploma while doing A/Ls in technology + higher mathematics stream. I prefer to work alone but, I&amp;rsquo;m not hesitant to work with other developers and security/software engineers because the resulting experience is invalueble to me.</description>
       <content>&lt;p&gt;rxOred&amp;rsquo;s real name is Jayod, and I&amp;rsquo;m a 17 year-old, introverted, self-taught programmer from Sri Lanka. Other than building software, I also do reverse engineering and malware analysis.&lt;/p&gt;
 &lt;p&gt;I&amp;rsquo;m also interested in firmware security and computer vision. As for my higher education, I follow a higher national diploma while doing A/Ls in technology + higher mathematics stream.
-I prefer to work alone but, there is no hesitation to work with other developers and security/software engineers because the resulting experience is too much to be valued. :)&lt;/p&gt;
+I prefer to work alone but, I&amp;rsquo;m not hesitant to work with other developers and security/software engineers because the resulting experience is invalueble to me. :)&lt;/p&gt;
+&lt;h3 id=&#34;contact-me&#34;&gt;Contact me&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;mailto:rxored@gmail.com&#34;&gt;rxored@gmail.com&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/rxOred&#34;&gt;github&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://twitter.com/rxOred&#34;&gt;twitter&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </content>
     </item>
     

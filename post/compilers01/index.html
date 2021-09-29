@@ -6,7 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of Optimizer, and back-end." />
+<meta name="description" content="Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of the optimizer, and the back-end." />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/compilers01/" />
@@ -31,17 +31,12 @@
 
 <meta name="twitter:card" content="summary" />
 
-  
-    <meta name="twitter:site" content="" />
-  
-    <meta name="twitter:creator" content="" />
-
 
 
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
 <meta property="og:title" content="Compilers101 - The front end">
-<meta property="og:description" content="Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of Optimizer, and back-end." />
+<meta property="og:description" content="Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of the optimizer, and the back-end." />
 <meta property="og:url" content="https://rxOred.github.io/post/compilers01/" />
 <meta property="og:site_name" content="rxOred&#39;s blog" />
 
@@ -146,9 +141,9 @@
   <div class="post-content"><div>
         <h1 id="compilers">Compilers<a href="#compilers" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>This article is all about compilers.
-For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed.
-However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective.
-Next articles will contain detailed explainations of Optimizer, and back-end.</p>
+For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed.
+However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective.
+Next articles will contain detailed explainations of the optimizer, and the back-end.</p>
 <h2 id="what-is-a-compiler-and-how-does-it-affect-reverse-engineering-process">What is a compiler and how does it affect reverse engineering process.<a href="#what-is-a-compiler-and-how-does-it-affect-reverse-engineering-process" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.
 This input representation is usually the text file containing the source code that compiles with the specifications of a specific high level language. And the

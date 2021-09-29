@@ -13,12 +13,12 @@
       <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/compilers01/</guid>
-      <description>Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of Optimizer, and back-end.</description>
+      <description>Compilers This article is all about compilers. For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed. However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective. Next articles will contain detailed explainations of the optimizer, and the back-end.</description>
       <content>&lt;h1 id=&#34;compilers&#34;&gt;Compilers&lt;/h1&gt;
 &lt;p&gt;This article is all about compilers.
-For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generate a binary file which can be executed.
-However, the truth to be told, compilers are not wizards. In this article we will go from introduction to front-end of a compiler in a reverse engineering perspective.
-Next articles will contain detailed explainations of Optimizer, and back-end.&lt;/p&gt;
+For many people, a compiler is mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file which can be executed.
+However, the truth to be told, compilers are not wizards. In this article we will start from the introduction to front-end of a compiler in a reverse engineering perspective.
+Next articles will contain detailed explainations of the optimizer, and the back-end.&lt;/p&gt;
 &lt;h2 id=&#34;what-is-a-compiler-and-how-does-it-affect-reverse-engineering-process&#34;&gt;What is a compiler and how does it affect reverse engineering process.&lt;/h2&gt;
 &lt;p&gt;A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.
 This input representation is usually the text file containing the source code that compiles with the specifications of a specific high level language. And the
