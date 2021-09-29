@@ -122,20 +122,20 @@ I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt
       <guid>https://rxOred.github.io/projects/</guid>
       <description>zkz zkz is a Linux debugger written in C++. It uses ptrace system call to interact with process memory spaces. It allows user to place breakpoints at memory addresses and line numbers, display symbols, print line numbers, set/get register values and system call tracing.
 zkinject zkinject is a C++ library to work with elf binaries, Linux /proc file system and ptrace system call. It abstracts away complexity involve when parsing elf binaries and ptrace.</description>
-      <content>&lt;h2 id=&#34;zkz&#34;&gt;zkz&lt;/h2&gt;
+      <content>&lt;h2 id=&#34;zkzhttpsgithubcomrxoredzkz&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/zkz&#34;&gt;zkz&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;zkz is a Linux debugger written in C++. It uses ptrace system call to interact with process memory spaces.
 It allows user to place breakpoints at memory addresses and line numbers, display symbols, print line numbers, set/get register values and system call tracing.&lt;/p&gt;
-&lt;h2 id=&#34;zkinject&#34;&gt;zkinject&lt;/h2&gt;
+&lt;h2 id=&#34;zkinjecthttpsgithubcomrxoredzkinject&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/zkinject&#34;&gt;zkinject&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;zkinject is a C++ library to work with elf binaries, Linux /proc file system and ptrace system call. It abstracts away complexity involve when parsing elf binaries and ptrace.
 It is also provides APIs for userland shared library function redirection. under development.&lt;/p&gt;
-&lt;h2 id=&#34;unnatural&#34;&gt;unnatural&lt;/h2&gt;
+&lt;h2 id=&#34;unnaturalhttpsgithubcomrxoredunnatural&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/unnatural&#34;&gt;unnatural&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Unnatural is a elf anomaly detector and disinfector written in Go. Initially wanted to do this with few people I know, but things went badly and now I develop it. Still in the early stages of development.&lt;/p&gt;
-&lt;h2 id=&#34;spidybot&#34;&gt;spidyBOT&lt;/h2&gt;
+&lt;h2 id=&#34;spidybothttpsgithubcomrxoredspidybot&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/spidyBOT&#34;&gt;spidyBOT&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;A spider and a web information gathering tool written in python. Uses a sql3 backend to store gathered information. And tool is capable of extracting javascript snippets, email addresses and other
 useful information.&lt;/p&gt;
-&lt;h2 id=&#34;bshell&#34;&gt;BShell&lt;/h2&gt;
+&lt;h2 id=&#34;bshellhttpsgithubcomrxoredbshell&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/Bshell&#34;&gt;BShell&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Useless Linux shell written in C.&lt;/p&gt;
-&lt;h2 id=&#34;elfparse&#34;&gt;elfparse&lt;/h2&gt;
+&lt;h2 id=&#34;elfparsehttpsgithubcomrxoredelfparse&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/elfparse&#34;&gt;elfparse&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;elfparse is a x64 elf binary parser/parser library written in C. Main purpose of this project is to learn internals of elf executables.&lt;/p&gt;
 </content>
     </item>
