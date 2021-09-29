@@ -62,37 +62,37 @@ to [edi] byte by byte :3&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;So, in this exercise we want to write a program that reads instruction pointer :3. here we go&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; here we are reading address of the instruction after the call instruction.
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;   readeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;     &lt;span style=&#34;color:#66d9ef&#34;&gt;lbl&lt;/span&gt;         &lt;span style=&#34;color:#75715e&#34;&gt;; call lbl, this pushes address of next instruction to the stack
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;mov&lt;/span&gt;      &lt;span style=&#34;color:#66d9ef&#34;&gt;ebx&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-            &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;      &lt;span style=&#34;color:#66d9ef&#34;&gt;eax&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-            &lt;span style=&#34;color:#a6e22e&#34;&gt;int&lt;/span&gt;      &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;; exit
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
-   lbl:     &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;      &lt;span style=&#34;color:#66d9ef&#34;&gt;eax&lt;/span&gt;, [&lt;span style=&#34;color:#66d9ef&#34;&gt;esp&lt;/span&gt;]  &lt;span style=&#34;color:#75715e&#34;&gt;; we read value at esp to eax. which is the return address.
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;ret&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nasm&#34; data-lang=&#34;nasm&#34;&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; here we are reading address of the instruction after the call instruction.&lt;/span&gt;
+   readeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;     lbl         &lt;span style=&#34;color:#75715e&#34;&gt;; call lbl, this pushes address of next instruction to the stack&lt;/span&gt;
+            &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;      ebx, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+            &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;      eax, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+            &lt;span style=&#34;color:#a6e22e&#34;&gt;int&lt;/span&gt;      &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;; exit&lt;/span&gt;
+
+   lbl:     &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;      eax, [esp]  &lt;span style=&#34;color:#75715e&#34;&gt;; we read value at esp to eax. which is the return address.&lt;/span&gt;
+            &lt;span style=&#34;color:#a6e22e&#34;&gt;ret&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Next we have to set eip to 0xAABBCCDD&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; 1. here we when we call, return address is pushed to stack
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;   writeeip:   &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;write&lt;/span&gt;
-               &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;ebx&lt;/span&gt;,  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
-               &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;eax&lt;/span&gt;,  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nasm&#34; data-lang=&#34;nasm&#34;&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; 1. here we when we call, return address is pushed to stack&lt;/span&gt;
+   writeeip:   &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;  write
+               &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   ebx,  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+               &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   eax,  &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
                &lt;span style=&#34;color:#a6e22e&#34;&gt;int&lt;/span&gt;   &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;
 
-   &lt;span style=&#34;color:#75715e&#34;&gt;; 2. we then modify the value at stack to 0xAABBCCDD
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;   write:      &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   [&lt;span style=&#34;color:#66d9ef&#34;&gt;esp&lt;/span&gt;], &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
-               &lt;span style=&#34;color:#a6e22e&#34;&gt;ret&lt;/span&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; cause a segfault
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;   writeeip:   &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;write&lt;/span&gt;
+   &lt;span style=&#34;color:#75715e&#34;&gt;; 2. we then modify the value at stack to 0xAABBCCDD&lt;/span&gt;
+   write:      &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;   [esp], &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
+               &lt;span style=&#34;color:#a6e22e&#34;&gt;ret&lt;/span&gt;   &lt;span style=&#34;color:#75715e&#34;&gt;; cause a segfault&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nasm&#34; data-lang=&#34;nasm&#34;&gt;   writeeip:   &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;  write
 
-   &lt;span style=&#34;color:#75715e&#34;&gt;; remember, ret just pops whatever at esp to eip
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;   write:      &lt;span style=&#34;color:#a6e22e&#34;&gt;push&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
+   &lt;span style=&#34;color:#75715e&#34;&gt;; remember, ret just pops whatever at esp to eip&lt;/span&gt;
+   write:      &lt;span style=&#34;color:#a6e22e&#34;&gt;push&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
                &lt;span style=&#34;color:#a6e22e&#34;&gt;ret&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;   writeeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;jmp&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
-   &lt;span style=&#34;color:#75715e&#34;&gt;;yeaup simple as that
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;   writeeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;     &lt;span style=&#34;color:#66d9ef&#34;&gt;eax&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
-             &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;eax&lt;/span&gt;
-   &lt;span style=&#34;color:#75715e&#34;&gt;; this is bit important. lot of malware authors use this method to access win32 APIs
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nasm&#34; data-lang=&#34;nasm&#34;&gt;   writeeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;jmp&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
+   &lt;span style=&#34;color:#75715e&#34;&gt;;yeaup simple as that&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-nasm&#34; data-lang=&#34;nasm&#34;&gt;   writeeip: &lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;     eax, &lt;span style=&#34;color:#ae81ff&#34;&gt;0xAABBCCDD&lt;/span&gt;
+             &lt;span style=&#34;color:#a6e22e&#34;&gt;call&lt;/span&gt;    eax
+   &lt;span style=&#34;color:#75715e&#34;&gt;; this is bit important. lot of malware authors use this method to access win32 APIs&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
 a totally unknown address.
