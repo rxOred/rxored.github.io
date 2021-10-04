@@ -6,13 +6,172 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 29 Sep 2021 09:46:25 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 02 Oct 2021 00:40:06 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Practical Reverse Engineering Answers 2 - sample_J DllMain</title>
+      <link>https://rxOred.github.io/post/practical-re/practical-re-answers2/</link>
+      <pubDate>Sat, 02 Oct 2021 00:40:06 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/post/practical-re/practical-re-answers2/</guid>
+      <description>So last time we finished some exercises from the book pratical reverse engineering. Now, we have page 35 exercises. I wont cover exercise here because some are really straight forward.
+without useless intros lets get started.
+Chaper 1, page 35 We are starting with the second one, because first one is pretty easy. 2nd question asks us to decompile DllMain.
+as we can see, IDA has generated us some information of the stack as well as a nice graph view.</description>
+      <content>&lt;p&gt;So last time we finished some exercises from the book pratical reverse engineering. Now, we have page 35 exercises. I wont cover exercise here because some are really straight forward.&lt;/p&gt;
+&lt;p&gt;without useless intros lets get started.&lt;/p&gt;
+&lt;h1 id=&#34;chaper-1-page-35&#34;&gt;Chaper 1, page 35&lt;/h1&gt;
+&lt;p&gt;We are starting with the second one, because first one is pretty easy. 2nd question asks us to decompile DllMain.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/dllmain.png&#34; alt=&#34;dllmain, DllMain&#34;&gt;&lt;/p&gt;
+&lt;p&gt;as we can see, IDA has generated us some information of the stack as well as a nice graph view. From that, we can decompile it down to,&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   BOOL &lt;span style=&#34;color:#66d9ef&#34;&gt;__stdcall&lt;/span&gt; APIENTRY &lt;span style=&#34;color:#a6e22e&#34;&gt;DllMain&lt;/span&gt;(HMODULE &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;hModule, 
+                           DWORD ul_reason_for_call, 
+                           LPVOID lpReserved)
+   {
+      IDTR idtr;
+      PROCESSENTRY32 pe;
+      HANDLE handle;
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/sidt.png&#34; alt=&#34;prologue&#34;&gt;&lt;/p&gt;
+&lt;p&gt;next we can the function prologue, where stack frame is initialized. using &lt;code&gt;sub esp, 130h&lt;/code&gt; instruction, we can confirm that stack will be 0x130 bytes large. next we can see a &lt;code&gt;sidt fword[ebp+idtr]&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;if you have some low level debugging/development experience, you might know what &lt;code&gt;sidt&lt;/code&gt; does. in case you dont, it reads idtr register to the operand location. in this case, &lt;code&gt;fword[ebp+idr]&lt;/code&gt;will be filled with idtr register. So whats this idtr register? well, idtr register is a 6byte sized register. it stores length of the interrupt desciptor table in the last 2 bytes and base of interrupt desciptor table in the top 4 bytes. Now, how can we call &lt;code&gt;sidt&lt;/code&gt; from C/C++?&lt;/p&gt;
+&lt;p&gt;before that, here we build the idtr structure&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; idtr {
+      DWORD idt_base;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;short&lt;/span&gt; idt_size;
+   } IDTR, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;PIDTR;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;inside DllMain we do this.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   IDTR idtr;
+   __sidt(&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;idtr);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then DllMain compares &lt;code&gt;idtr+2&lt;/code&gt; with some 2 random hex values that looks like memory addresses. Using the above explaination, it is pretty clear that whoever wrote this malware compares base address of interrupt desciptor table with 2 hardcoded memory addresses, first as we can see in the above image, 0x8003f400 and 0x80047400 in the below image. Tbh, this is bad. Reason is that, in multi core processors each core gets a different base address for interrupt desciptor table. And when using hardcoded addresses&amp;hellip; Anyway. lets decompile that part too.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/checkidt.png&#34; alt=&#34;idt address range&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (idtr.idt_base &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x8003f400&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; idtr.idt_base &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80047400&lt;/span&gt;){
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;From above snippet it is clear that it does check for some range. looks like it validates IDT base&amp;hellip;&lt;/p&gt;
+&lt;p&gt;After the comparision if the range requirements are satisfied, we can see that DllMain creates a snapshot of all the running processes.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/snapshot.png&#34; alt=&#34;CreateToolhelp32Snapshot&#34;&gt;&lt;/p&gt;
+&lt;p&gt;we can decompile that stub into&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   handle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;);
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (handle &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; INVALID_HANDLE_VALUE) {
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;it also zero out &lt;code&gt;pe&lt;/code&gt; using &lt;code&gt;stosd&lt;/code&gt; instruction.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   memset(&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe.cntUsage, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49&lt;/span&gt;);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next, DllMain calls &lt;code&gt;Process32First&lt;/code&gt; with arguements &lt;code&gt;&amp;amp;pe&lt;/code&gt;(eax) and &lt;code&gt;handle&lt;/code&gt;(edi), a string comparison with &lt;code&gt;explorer.exe&lt;/code&gt; and then if comparison fails, we can see a call to &lt;code&gt;Process32Next&lt;/code&gt;.
+Basically this stub go through each process of the snapshot until it finds &lt;code&gt;explorer.exe&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/getexplorer.png&#34; alt=&#34;Process32First&#34;&gt;&lt;/p&gt;
+&lt;p&gt;decompiled version of that stub may look like&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   pe.dwSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(PROCESSENTRY32);
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (Process32First(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+      &lt;span style=&#34;color:#75715e&#34;&gt;// code here
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;   }
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (Process32Next(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (wcscmp(pe.szExeFile, &lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;explorer.exe&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+            &lt;span style=&#34;color:#75715e&#34;&gt;// code here
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;         }
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;;
+      }
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once it found the explorer.exe, it compares the process&amp;rsquo;s pid to it&amp;rsquo;s parents pid.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/checkpid.png&#34; alt=&#34;check process ids&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here if they are equal, we simply exit out.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/exit.png&#34; alt=&#34;exit&#34;&gt;&lt;/p&gt;
+&lt;p&gt;else, we create a thread in the current virtual memory space with start address set to &lt;code&gt;0x100032d0&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/evil.png&#34; alt=&#34;evil stuff&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   do_evil_stuff:
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (pe.th32ParentProcessID &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; pe.th32ProcessID) {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+      }
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (ul_reason_for_call &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; DLL_PROCESS_ACCESS) {
+            CreateThread(
+               NULL, NULL, (LPTHREAD_START_ROUTINE)&lt;span style=&#34;color:#ae81ff&#34;&gt;0x100032d0&lt;/span&gt;, NULL, NULL, NULL
+            );
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; TRUE;
+         }
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; TRUE:
+      }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;with that info, we can fill out the stub that searches for explorer.exe like this&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   pe.dwSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(PROCESSENTRY32);
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (Process32First(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (wcscmp(pe.szExeFile, &lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;explorer.exe&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;goto&lt;/span&gt; do_evil_stuff;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (Process32Next(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (wcscmp(pe.szExeFile, &lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;explorer.exe&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;goto&lt;/span&gt; do_evil_stuff;
+            }
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;;
+         }
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+      }
+   }
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;combining all into a single stub, we will get something like this as the DllMain&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; idtr {
+      DWORD idt_base;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;short&lt;/span&gt; idt_size;
+   } IDTR, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;PIDTR;
+
+   BOOL &lt;span style=&#34;color:#66d9ef&#34;&gt;__stdcall&lt;/span&gt; APIENTRY &lt;span style=&#34;color:#a6e22e&#34;&gt;DllMain&lt;/span&gt;(HMODULE &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;hModule, 
+                           DWORD ul_reason_for_call, 
+                           LPVOID lpReserved)
+   {
+      IDTR idtr;
+      PROCESSENTRY32 pe;
+      HANDLE handle;
+
+      __sidt(&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;idtr);
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (idtr.idt_base &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80047400&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; idtr.idt_base &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x8003f400&lt;/span&gt;){
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+      }
+
+      handle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;);
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (handle &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; INVALID_HANDLE_VALUE) {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+      }
+      memset(&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe.cntUsage, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49&lt;/span&gt;);
+      pe.dwSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(PROCESSENTRY32);
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (Process32First(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (wcscmp(pe.szExeFile, &lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;explorer.exe&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;goto&lt;/span&gt; do_evil_stuff;
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (Process32Next(handle, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;pe) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (wcscmp(pe.szExeFile, &lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;explorer.exe&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+                  &lt;span style=&#34;color:#66d9ef&#34;&gt;goto&lt;/span&gt; do_evil_stuff;
+               }
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;;
+            }
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+         }
+      }
+
+   do_evil_stuff:
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (pe.th32ParentProcessID &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; pe.th32ProcessID) {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+      }
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (ul_reason_for_call &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; DLL_PROCESS_ACCESS) {
+            CreateThread(
+               NULL, NULL, (LPTHREAD_START_ROUTINE)&lt;span style=&#34;color:#ae81ff&#34;&gt;0x100032d0&lt;/span&gt;, NULL, NULL, NULL
+            );
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; TRUE;
+         }
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; TRUE:
+      }
+   }
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content>
+    </item>
+    
     <item>
       <title>Practical Reverse Engineering Answers</title>
-      <link>https://rxOred.github.io/post/practical-re-answers/</link>
+      <link>https://rxOred.github.io/post/practical-re/practical-re-answers/</link>
       <pubDate>Wed, 29 Sep 2021 09:46:25 +0000</pubDate>
       
-      <guid>https://rxOred.github.io/post/practical-re-answers/</guid>
+      <guid>https://rxOred.github.io/post/practical-re/practical-re-answers/</guid>
       <description>Introduction Hello, rxOred here, with another badly written write-up.
 A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts, that book&amp;rsquo;s exercises were pretty challenging. Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share solutions with others using their blogs, r/reverse-egnineering etc.
 At that time, i never really wanted to create a blog.</description>
@@ -120,10 +279,10 @@ stack frame. Guess what? stack is non-executable :3&lt;/p&gt;
     
     <item>
       <title>Compilers 101 - The front end</title>
-      <link>https://rxOred.github.io/post/compilers01/</link>
+      <link>https://rxOred.github.io/post/compilers/compilers01/</link>
       <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
       
-      <guid>https://rxOred.github.io/post/compilers01/</guid>
+      <guid>https://rxOred.github.io/post/compilers/compilers01/</guid>
       <description>Compilers This article is all about compilers.
 For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.
 However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective.</description>

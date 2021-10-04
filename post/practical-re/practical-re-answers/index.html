@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Practical Reverse Engineering Answers :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Introduction Hello, rxOred here, with another badly written write-up.
+A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts, that book&amp;rsquo;s exercises were pretty challenging. Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share solutions with others using their blogs, r/reverse-egnineering etc.
+At that time, i never really wanted to create a blog." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/post/practical-re/practical-re-answers/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Practical Reverse Engineering Answers">
+<meta property="og:description" content="Introduction Hello, rxOred here, with another badly written write-up.
+A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts, that book&amp;rsquo;s exercises were pretty challenging. Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share solutions with others using their blogs, r/reverse-egnineering etc.
+At that time, i never really wanted to create a blog." />
+<meta property="og:url" content="https://rxOred.github.io/post/practical-re/practical-re-answers/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  
+    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-09-29 09:46:25 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://rxOred.github.io/post/practical-re/practical-re-answers/">Practical Reverse Engineering Answers</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-09-29 
+      </span>
+    
+    
+  </div>
+
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Hello, rxOred here, with another badly written write-up.</p>
+<p>A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts,
+that book&rsquo;s exercises were pretty challenging.
+Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share
+solutions with others using their blogs, r/reverse-egnineering etc.</p>
+<p>At that time, i never really wanted to create a blog. however while doing those challenges, i have wrote
+some, not-very-detailed explainations. So, i will be sharing those stuff with yall.
+This 2 part series post will provide some solutions for Exercises in chapter 1, which is about x86.</p>
+<h1 id="chapter-1-page-11">Chapter 1, page 11<a href="#chapter-1-page-11" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ol>
+<li>
+<p>4 bytes (32 bits). makes sense right? if you have read the whole snippet, line 5 is a,
+repne scasb
+intel indentifies these instructions as string operation instructions. which is perfectly fine.About scasb,
+scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix.
+it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&rsquo;b')
+with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the
+buffer or ecx == 0. so as for our answer, it is 4 bytes because since edi is an memory address, memory addresses in
+x86 takes upto 4bytes :)</p>
+</li>
+<li>
+<p>1 byte
+rep stosb
+this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of
+buffer, and since its a stos&rsquo;b', which is the indication of byte, al contain the value that the buffer should be
+assigned with. So from that, it is clear that ebp+c, second argument to the function is sizeof byte:)</p>
+</li>
+<li>
+<p>What the snippet does is pretty simple, in line 1, edi is assigned with ebp+8 (first arg), which we concluded as a
+memory address. next line, we can see that its saving that address in edx followed by a xor eax, eax, which clears
+out eax register. In line 4, ecx is ored(did i spell that correct?) with 0xffffffff. result of this operation is,
+well, 0xffffffff because anything | 1 results in a 1.</p>
+<p>then we have what we discussed in 1), repe scasb. I won&rsquo;t explain it again ew.</p>
+<p>So next we have some add ecx, 2, which, as anyone can guess, adds 2 to ecx. Followed by a negation. then we have a
+mov  al, ebp+c, which moves our byte into al register. then edi is assigned with edx, where we saved our edi before.
+Then we have what we discussed in 2).</p>
+<p>So what this basically does is, it compares 0 with whatever at memory address edi until 0 is found in the
+buffer while decrementing ecx. then we set ecx + 2, then we negate it to get the string len, then we write [ebp-c]
+to [edi] byte by byte :3</p>
+</li>
+</ol>
+<h1 id="chapter-1-page-17">Chapter 1, page 17<a href="#chapter-1-page-17" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ol>
+<li>
+<p>So, in this exercise we want to write a program that reads instruction pointer :3. here we go</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   <span style="color:#75715e">; here we are reading address of the instruction after the call instruction.</span>
+   readeip: <span style="color:#a6e22e">call</span>     lbl         <span style="color:#75715e">; call lbl, this pushes address of next instruction to the stack</span>
+            <span style="color:#a6e22e">mov</span>      ebx, <span style="color:#ae81ff">0</span>
+            <span style="color:#a6e22e">mov</span>      eax, <span style="color:#ae81ff">0</span>
+            <span style="color:#a6e22e">int</span>      <span style="color:#ae81ff">0x80</span>        <span style="color:#75715e">; exit</span>
+
+   lbl:     <span style="color:#a6e22e">mov</span>      eax, [esp]  <span style="color:#75715e">; we read value at esp to eax. which is the return address.</span>
+            <span style="color:#a6e22e">ret</span>
+</code></pre></div></li>
+<li>
+<p>Next we have to set eip to 0xAABBCCDD</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   <span style="color:#75715e">; 1. here we when we call, return address is pushed to stack</span>
+   writeeip:   <span style="color:#a6e22e">call</span>  write
+               <span style="color:#a6e22e">mov</span>   ebx,  <span style="color:#ae81ff">0</span>
+               <span style="color:#a6e22e">mov</span>   eax,  <span style="color:#ae81ff">0</span>
+               <span style="color:#a6e22e">int</span>   <span style="color:#ae81ff">0x80</span>
+
+   <span style="color:#75715e">; 2. we then modify the value at stack to 0xAABBCCDD</span>
+   write:      <span style="color:#a6e22e">mov</span>   [esp], <span style="color:#ae81ff">0xAABBCCDD</span>
+               <span style="color:#a6e22e">ret</span>   <span style="color:#75715e">; cause a segfault</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip:   <span style="color:#a6e22e">call</span>  write
+
+   <span style="color:#75715e">; remember, ret just pops whatever at esp to eip</span>
+   write:      <span style="color:#a6e22e">push</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
+               <span style="color:#a6e22e">ret</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip: <span style="color:#a6e22e">jmp</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
+   <span style="color:#75715e">;yeaup simple as that</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip: <span style="color:#a6e22e">mov</span>     eax, <span style="color:#ae81ff">0xAABBCCDD</span>
+             <span style="color:#a6e22e">call</span>    eax
+   <span style="color:#75715e">; this is bit important. lot of malware authors use this method to access win32 APIs</span>
+</code></pre></div></li>
+<li>
+<p>same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
+a totally unknown address.
+In this case we havent pushed anything to the stack other than return address and base pointer of the prev stack frame. and when ret pops the value from stack to eip, and what we get is base of the previous
+stack frame. Guess what? stack is non-executable :3</p>
+<pre><code>  --------------------------
+           eax (y)
+  --------------------------
+           ecx (x)
+  --------------------------
+        (return addr)
+  --------------------------
+             ebp             &lt;------- esp
+  --------------------------
+</code></pre>
+</li>
+<li>
+<p>edx:eax will be used.</p>
+</li>
+</ol>
+<p>#THE-END</p>
+<p>In the next article, we will go through the last exercise :) Until then!</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        <span class="button previous">
+            <a href="https://rxOred.github.io/post/practical-re/practical-re-answers2/">
+                <span class="button__icon">←</span>
+                <span class="button__text">Practical Reverse Engineering Answers 2 - sample_J DllMain</span>
+            </a>
+        </span>
+        
+        
+        <span class="button next">
+            <a href="https://rxOred.github.io/post/compilers/compilers01/">
+                <span class="button__text">Compilers 101 - The front end</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

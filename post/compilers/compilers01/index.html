@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Compilers 101 - The front end :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Compilers This article is all about compilers.
+For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.
+However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/post/compilers/compilers01/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Compilers 101 - The front end">
+<meta property="og:description" content="Compilers This article is all about compilers.
+For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.
+However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective." />
+<meta property="og:url" content="https://rxOred.github.io/post/compilers/compilers01/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  
+    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2021-09-28 22:58:02 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://rxOred.github.io/post/compilers/compilers01/">Compilers 101 - The front end</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-09-28 
+      </span>
+    
+    
+  </div>
+
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="compilers">Compilers<a href="#compilers" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>This article is all about compilers.</p>
+<p>For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.</p>
+<p>However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective.</p>
+<p>The next articles will contain detailed explanations of the optimizer and the back-end.</p>
+<h2 id="what-is-a-compiler-and-how-does-it-affect-the-reverse-engineering-process">What is a compiler and how does it affect the reverse engineering process.<a href="#what-is-a-compiler-and-how-does-it-affect-the-reverse-engineering-process" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>A compiler is a very complex piece of software, and what it essentially does is, taking one representation of a program as an input and generating a representation of the same program.</p>
+<p>This input representation is usually the text file containing the source code that complies with the specifications of a specific high-level language. And the</p>
+<p>Output is usually a low-level language representation of the same program.</p>
+<p>Sounds not that complex right? Well, this is just a high-level overview. During this process of translation between different representations, the input source will have to face many algorithms, techniques employed by the compiler to optimize the low-level representation it generates. These algorithms may add more levels of complexity on top of the original code.</p>
+<p>And may even contain code that the developer is not intended of writing. These things make it harder for someone to read the compiler-generated code.</p>
+<h2 id="compiler-architecture">Compiler architecture.<a href="#compiler-architecture" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Compiler architecture mainly consists of 3 things</p>
+<pre><code>- Front end
+- Optimizer
+- Back end
+</code></pre>
+<p>I this first article, let&rsquo;s dive into the Front end.</p>
+<h2 id="the-front-end">The front end.<a href="#the-front-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>tbh, the front is the least important out of the above 3 in a reverse engineering perspective. anyway&hellip;</p>
+<p>So what does this thing do? well, the front end is the place where the process of compilation begins.</p>
+<h2 id="lexical-analysis">Lexical analysis<a href="#lexical-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Lexical analyzer is a part of the compiler front end and is responsible for tokenizing the given source file. What this means is that, when given a stream of characters, a lexical analyzer can turn that stream of characters into a set of distinct lexemes. These lexemes can</p>
+<p>be separated by some delimiter. A token can have many lexemes, which essentially means that a token is a category of lexemes if that makes sense.</p>
+<p>for example, following statement</p>
+<p><code> if ( i == 0 )</code></p>
+<p>can be broken down into</p>
+<table>
+<thead>
+<tr>
+<th>lexemes</th>
+<th>token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>if</td>
+<td>condition</td>
+</tr>
+<tr>
+<td>(</td>
+<td>bracket_open</td>
+</tr>
+<tr>
+<td>i</td>
+<td>indetifier</td>
+</tr>
+<tr>
+<td>==</td>
+<td>equal_sign</td>
+</tr>
+<tr>
+<td>0</td>
+<td>integer</td>
+</tr>
+<tr>
+<td>)</td>
+<td>bracket_end</td>
+</tr>
+</tbody>
+</table>
+<p>Tokenizing is very similar to how we break down complex sentences in natural languages. just like how a sentence is divided into different parts.</p>
+<p>But unlike humans, to achieve this task, lexical analyzers use pattern matching algorithms and regular expressions.</p>
+<p>It&rsquo;s also worth mentioning that lexical analysis or tokenizing can be done using unix utilities like FLEX and ANTLR.</p>
+<h2 id="syntax-analysis">Syntax analysis<a href="#syntax-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Syntax analysis is the second phase of the compiler&rsquo;s front end. Unlike lexical analysis, where pattern matching algorithms and regular expressions are used to identify tokens, Syntax analysis use a</p>
+<p>concept known as Context-Free Grammar (CFGs). Context-Free Grammar is kinda similar to regular grammar but it&rsquo;s mainly used to describe the syntax of programming languages. basically, it&rsquo;s a superset of regular grammar.</p>
+<p>When the lexical analyzer outputs the stream of tokens, these tokens are then fed into the syntax analyzer. Then the syntax analyzer analyzes and parses the stream of tokens against different rules and</p>
+<p>detect syntax errors in the code.</p>
+<p>for example, <code>if ( i == 0 </code> is passed down, it is the syntax analyzers job to report it as an error. However, some syntax analyzers are capable of continuing the parsing process even if there are syntax errors. To achieve</p>
+<p>this, syntax analyzers use error recovery strategies.</p>
+<p>After parsing all the syntax, the syntax analyzer should generate a parse tree. A parse tree is a representation of the production rules.</p>
+<p>for example, applying left-derivation production rule on <code>x + b - c</code>, resulting parse tree is</p>
+<pre><code>E -&gt; E - E
+
+E -&gt; E + E - E
+
+E -&gt; id + E - E
+
+E -&gt; id + id - id
+
+
+
+        E
+    ---------
+    |   |   |
+    E   -   E
+____|____
+|   |   |
+E   +   E
+</code></pre>
+<p>Syntax analysis can be done using YACC(Yet Another Compiler Compiler), CUP, Bison, and ANTLR.</p>
+<h3 id="abstract-synstax-trees-asts">Abstract Synstax Trees (ASTs)<a href="#abstract-synstax-trees-asts" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Just like a parse tree, an abstract syntax tree or AST is a graph representation of the source code. How an AST differs from a parse tree is, an AST is a simplified version of the parse tree. And in ASTs operators are internal nodes. ASTs are also considered to be the out of syntax analysis phase of a compiler.</p>
+<p>Remember CFGs?, in modern programming languages, there are lots of things that CFGs cant express. for example type definitions. Almost every modern language allows new types. However, CFGs cannot represent new types and</p>
+<p>their usage. ASTs can solve these problems.</p>
+<p>Another major usage of ASTs is that a full traversal of the AST data structure represents the correctness of the program. ASTs are heavily used in semantic analysis too.</p>
+<h2 id="the-end">THE END<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>So yeah that&rsquo;s it for the compiler front end. I suggest readers go through &ldquo;Concepts of programming languages&rdquo; for more detailed explanations.</p>
+<p>I&rsquo;ll do the optimization article soon. until then&hellip;</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        <span class="button previous">
+            <a href="https://rxOred.github.io/post/practical-re/practical-re-answers/">
+                <span class="button__icon">←</span>
+                <span class="button__text">Practical Reverse Engineering Answers</span>
+            </a>
+        </span>
+        
+        
+        <span class="button next">
+            <a href="https://rxOred.github.io/post/hello/">
+                <span class="button__text">Hello, welcome to rxOred&#39;s corner of this inter-networked maze!</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
