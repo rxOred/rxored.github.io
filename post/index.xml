@@ -6,7 +6,339 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 02 Oct 2021 00:40:06 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 03 Oct 2021 00:49:28 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Reverse engineering Linked Lists</title>
+      <link>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</link>
+      <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</guid>
+      <description>Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I did spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.</description>
+      <content>&lt;p&gt;Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I did spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named &lt;code&gt;Reorder List&lt;/code&gt;. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.&lt;/p&gt;
+&lt;p&gt;And in this article, I&amp;rsquo;m hoping to cover everything from what is a linked list, how they are implemented in assembly to solving and reversing the solution of the above problem.&lt;/p&gt;
+&lt;h2 id=&#34;what-is-it-and-implementation&#34;&gt;What is it? and implementation&lt;/h2&gt;
+&lt;p&gt;A linked list is a data structure. unlike an array where memory is organized linearly, nodes of linked list is scrattered around memory. Each of these nodes contains a pointer to the next node and thats how those scrattered nodes are located.&lt;/p&gt;
+&lt;p&gt;Lets take a linked list which stores integers as an example&lt;/p&gt;
+&lt;p&gt;Each node must contain space to store the integer and the pointer to next node. So, a connection between nodes in memory may look like this&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  0x1000                     0xabcd
+  -----------------          -----------------
+  |      |        |          |      |        |
+  |  1   | 0xabcd | -------&amp;gt; |  3   | 0xdead | -------&amp;gt; somewhere who knows
+  |      |        |          |      |        |
+  -----------------          -----------------
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lets see what this looks like in code.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ListNode&lt;/span&gt; {
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+         &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value;
+         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next;
+   };
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There&amp;rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class LinkedList {
+      ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head;
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; count;
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;with that, lets implement a stack data structure using linked lists.&lt;/p&gt;
+&lt;p&gt;node&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class ListNode {
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; ln_value;
+           ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;ln_next;
+       public:
+           ListNode(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value)&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt; ln_value(value), ln_next(nullptr) {}
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; GetValue(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_value; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;GetNext(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_next; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; SetValue(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value) { ln_value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; value; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; SetNext(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next) { ln_next &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next; }
+   };
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;linked list&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class LinkedList {
+           ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;l_head;
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; l_item_count;
+       public:
+           LinkedList()&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;l_head(nullptr), l_item_count(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {}
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;GetHead() &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; l_head; }
+
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; Push(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value)
+           {
+               &lt;span style=&#34;color:#75715e&#34;&gt;// however i prefer the make_shared way of doing this
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;               ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; new ListNode(value);
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt;(l_head &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; nullptr) { l_head &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node; }
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+                   node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(l_head);
+                   l_head &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node;
+               }
+               l_item_count&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;;
+           }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; Pop(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) 
+           {
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt;(l_head &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; nullptr) &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;;
+               ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l_head;
+               l_head &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l_head&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetValue();
+               delete node;
+               l_item_count&lt;span style=&#34;color:#f92672&#34;&gt;--&lt;/span&gt;;
+               &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; value;
+           }
+   };
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above implementation, we can see that the Push takes and int as an input. Then creates a node and add that node to our linked list. The head will be pointing to the lastly added node.&lt;/p&gt;
+&lt;p&gt;Then the Pop method returns an int by removing the node at the head.&lt;/p&gt;
+&lt;p&gt;So, now we know what a linked list is. Let&amp;rsquo;s look at the disassembly of this before approaching the above problem.&lt;/p&gt;
+&lt;p&gt;here&amp;rsquo;s a main function.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;)
+   {
+       LinkedList li;
+       &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; i &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;; i&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;){
+           li.Push(i);
+       }
+       &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; c &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; li.Pop();
+       &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(c &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) {
+           printf(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;%d&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;, c);
+           c &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; li.Pop();
+       }
+   }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;implementation-in-disassembly&#34;&gt;Implementation in disassembly&lt;/h1&gt;
+&lt;p&gt;So, to disassemble this snippet, Im gonna use radare since im on my linux machine rn. I ran the initial analysis, seeked to main function, and switched to the graph view.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/newmain.png&#34; alt=&#34;main&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here, we can see that main function creates the stack frame and allocates space for local variables including space for our class LinkedList. Then we can see that it loads some stack address to rax register, moves it into rdi, and then call contructor for LinkedList. From that, we can assume that address loaded into rax and then into rdi as &lt;code&gt;this&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;then we can see that it sets &lt;code&gt;var_28&lt;/code&gt; to 0. this must be the snippet where we set &lt;code&gt;i&lt;/code&gt; to zero in our first for loop.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/push.png&#34; alt=&#34;pushing&#34;&gt;&lt;/p&gt;
+&lt;p&gt;then we can see var_28 is compared to 4, and if it is less or equal to 4, we are going to take the jump. this looks like the look termination part. then, next blob basically put &lt;code&gt;i&lt;/code&gt; into edx and &lt;code&gt;this&lt;/code&gt; into, rax, then we can see both of them are passed as arguements to the method &lt;code&gt;Push()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Looks familiar right? of course we wrote the damn thing. However, if you are not really into C++, this &lt;code&gt;this&lt;/code&gt; thing and methods might be not be familiar to you. In C++, a method is basically a function that belongs to an object/object. In this case, &lt;code&gt;Push&lt;/code&gt; methods belongs to &lt;code&gt;LinkedList&lt;/code&gt; class. And when calling a method, In OOP, we have to pass the pointer to an object of that class as the first arguement. this pointer is called &lt;code&gt;this&lt;/code&gt;, but you cant see this in source files because that&amp;rsquo;s some sorcery done by the compiler. Aaand in &lt;code&gt;_cdecl&lt;/code&gt; calling convention uses &lt;code&gt;rdi&lt;/code&gt; register as the first arguement. Now back to the disassembly.&lt;/p&gt;
+&lt;p&gt;main function then increments &lt;code&gt;i&lt;/code&gt; by 1, and then continue to loop until i &amp;gt; 4. And when that happens main function breaks out of the loop and get into the next snippet at address &lt;code&gt;0x11b0&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/pop.png&#34; alt=&#34;poping&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Here we can see the same thing but now it calls &lt;code&gt;Pop()&lt;/code&gt; method. Anyway, that 0xffffffff? thats -1. this time we are iterating until &lt;code&gt;c&lt;/code&gt; becomes -1. Aaa yes, it also calls printf with &lt;code&gt;c&lt;/code&gt; as arguement.&lt;/p&gt;
+&lt;p&gt;The rest of this main function is not useful to us. So lets analyze the push method :)&lt;/p&gt;
+&lt;h2 id=&#34;pushing-and-poping&#34;&gt;Pushing and Poping&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/pushmethod.png&#34; alt=&#34;push method&#34;&gt;&lt;/p&gt;
+&lt;p&gt;there&amp;rsquo;s nothing magic here, it creates a stack frame and copy the arguements into its stack. then it passes 0x10 (16) to edi register and calls &lt;code&gt;new&lt;/code&gt;. new is an operator in C++ for allocating memory. it accepts 1 arguement, which is the amount of memory we want to allocate. So, here we allcate 16 bytes :).&lt;/p&gt;
+&lt;p&gt;then we see it copies rax to rbx and esi (which holds second arguement, the value we passed to Push) to eax. They are then passed to ListNode constructor. Next few lines are kinda confusing.
+First &lt;code&gt;var_28&lt;/code&gt; is the this pointer and we load it to rax. In the next line, we get the value at rax (this) to, well, rax. And that value is the first member of the LinkedList object, which is, as we know from the source, &lt;code&gt;l_head&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;then it check whether it is zero or not. And if &lt;code&gt;l_head&lt;/code&gt; is not 0, we jump to &lt;code&gt;0x12d5&lt;/code&gt;. Before we get into that stub, lets analyze the other one.&lt;/p&gt;
+&lt;p&gt;If head equals to 0, that means the linked list is empty. therefore, since this is the first insertion, we have to set &lt;code&gt;l_head&lt;/code&gt; to point to newly allocated &lt;code&gt;ListNode&lt;/code&gt;. In the blob, we can see the same thing. we can see that in the next two lines that rax is set to var_28(this) and rdx is set to var_18 (ListNode we just allocated). In the next line, value at rax register, &lt;code&gt;l_head&lt;/code&gt; is set to the rdx, which is the new node we allocated. :)&lt;/p&gt;
+&lt;p&gt;So if head is not equal to 0, which means that head is empty and this is not the first value that has been inserted to the list. Therefore what we have to do is, set new node&amp;rsquo;s next node to &lt;code&gt;l_head&lt;/code&gt; and set &lt;code&gt;l_head&lt;/code&gt; point to newly allocated &lt;code&gt;ListNode&lt;/code&gt; :). In the stub, we can see the same thing.&lt;/p&gt;
+&lt;p&gt;rax and rdx registers are loaded with var_18 and [var_28]. In the next few lines, rdi and rsi are set to the same values and passed as args to method &lt;code&gt;node-&amp;gt;SetNext()&lt;/code&gt;. Now SeNext method belongs to ListNode class and its &lt;code&gt;this&lt;/code&gt; pointer is a &lt;code&gt;ListNode&lt;/code&gt; pointer. here, in this case, rdi is set to &lt;code&gt;var_18&lt;/code&gt; and rsi, second arguement is set to &lt;code&gt;l_head&lt;/code&gt;. In the next few lines we can the same code sequence that we saw ealier. It sets &lt;code&gt;l_head&lt;/code&gt; to this new node :).&lt;/p&gt;
+&lt;p&gt;then it increases &lt;code&gt;l_item_count&lt;/code&gt; and returns in the next few lines.&lt;/p&gt;
+&lt;p&gt;So, that is it for Pushing :) Now lets see how Pop method looks like in assembly.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/popmethod.png&#34; alt=&#34;pop method&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Well a stack frame&amp;hellip; and then Pop method sets &lt;code&gt;rdi&lt;/code&gt; to &lt;code&gt;this&lt;/code&gt;, and check if &lt;code&gt;this-&amp;gt;l_head&lt;/code&gt; is equal to null. if it is null, it moves -1 to eax (0x1316), and then jump to function epigolue and simply returns.&lt;/p&gt;
+&lt;p&gt;On the other hand if head is not null, we save &lt;code&gt;l_head&lt;/code&gt; in &lt;code&gt;var_8&lt;/code&gt; (0x13d1 - 0x1324), then we load &lt;code&gt;l_head&lt;/code&gt; to rdi and call &lt;code&gt;l_head-&amp;gt;GetNext()&lt;/code&gt; method to get the next node (0x1328 - 0x1332).
+In the next few lines, return value (rax) of the GetNext method is set to &lt;code&gt;l_head&lt;/code&gt;. it can be decompiled like &lt;code&gt;l_head = l_head-&amp;gt;GetNext()&lt;/code&gt;. Then it gets the node it previsouly saved in &lt;code&gt;var_8&lt;/code&gt; and calls &lt;code&gt;GetValue()&lt;/code&gt;. It also saves the return value in the stack (in var_c). then it check if the saved node is null (0x134d - 0x1354), if it it is we jump to below snippet.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/decrease.png&#34; alt=&#34;decrease count&#34;&gt;&lt;/p&gt;
+&lt;p&gt;What this stub does is, loads &lt;code&gt;[var_18] + 8&lt;/code&gt; to rax register, substract 1 from rax, tore it in edx, set edx to something like &lt;code&gt;[var_18] + 8&lt;/code&gt; and returns the value it stored at &lt;code&gt;var_c&lt;/code&gt; from &lt;code&gt;GetValue()&lt;/code&gt; call. here, &lt;code&gt;[var_18]&lt;/code&gt; is the this pointer and [var_18] + 8 means the second member of the ListNode class. which is &lt;code&gt;l_item_count&lt;/code&gt;. so as a summery we are decresing that value.&lt;/p&gt;
+&lt;p&gt;if the saved node is not null, then it jumps to below stub&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/deleteop.png&#34; alt=&#34;delete&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here it deletes (frees) &lt;code&gt;var_8&lt;/code&gt;, the copy of the head node.&lt;/p&gt;
+&lt;p&gt;Now, from the above explaination, i assume that low level constructs of linked lists are clear to the reader.&lt;/p&gt;
+&lt;h2 id=&#34;traversal&#34;&gt;Traversal&lt;/h2&gt;
+&lt;p&gt;Linked list traversal is pretty simple and there is no particular method to do this. one can use recursion. But here, im gonna write a traversal method using a for loop.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;LinkedList&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;GetNodeByValue(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt;
+    {
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l_head;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node){
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetValue() &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; value){
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; node;
+            }
+            node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+        }
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; nullptr;
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;here, I have created another method, to call this i have modified the main function like shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;)
+    {
+        LinkedList li;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; i &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;; i&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;){
+            li.Push(i);
+        }
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; li.GetNodeByValue(&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;);
+        printf(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;%d&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;, node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetValue());
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now let&amp;rsquo;s take a look at the disassembly and try to understanding whats going on in the new method :3&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/traversemain.png&#34; alt=&#34;prologue&#34;&gt;&lt;/p&gt;
+&lt;p&gt;like any other function, this one sets up a stack frame and alloacate enough space for locals. And like any other method we have encountered so far, this one too saves rdi, which is this, in a local variable (0x1162). It also stores the arg we passed in the local &lt;code&gt;var_1c&lt;/code&gt;. &lt;code&gt;var_8&lt;/code&gt; is loaded with &lt;code&gt;l_head&lt;/code&gt; (0x1169 - 0x1170).&lt;/p&gt;
+&lt;p&gt;then that stub jumps into &lt;code&gt;0x11a2&lt;/code&gt;. there, it compares &lt;code&gt;var_8&lt;/code&gt; with 0. if it is 0, the jump is taken to &lt;code&gt;0x11a9&lt;/code&gt;, else it continues execution on &lt;code&gt;0x1176&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/jumps.png&#34; alt=&#34;jumps&#34;&gt;&lt;/p&gt;
+&lt;p&gt;in the stub starts at address &lt;code&gt;0x11a9&lt;/code&gt;, we can see that &lt;code&gt;var_8&lt;/code&gt; is loaded into rdi and then passed into &lt;code&gt;var_8-&amp;gt;GetValue()&lt;/code&gt; method and compares return valeue in &lt;code&gt;var_1c&lt;/code&gt;. next we can see a &lt;code&gt;sete&lt;/code&gt; instruction, which sets al to 1 if zero flag is set (if &lt;code&gt;var_1c == var_8-&amp;gt;GetValue()&lt;/code&gt;). then it compares al register with 0 (0x1188). if &lt;code&gt;test&lt;/code&gt; instruction sets 0 flag, which means, &lt;code&gt;al == 0&lt;/code&gt; and therefore &lt;code&gt;var_1c != var_8-&amp;gt;GetValue()&lt;/code&gt; and program takes the jump to &lt;code&gt;0x1192&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;otherwise, if result of the test instruction does not set zero flag, which means, &lt;code&gt;var_1c == var_8-&amp;gt;GetValue()&lt;/code&gt;, program continues execution from &lt;code&gt;0x118c&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/loopjmp.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;in &lt;code&gt;0x118c&lt;/code&gt;, rax is loaded with a pointer to the current node, and then it jumps to &lt;code&gt;0x11ae&lt;/code&gt; and leaves. in &lt;code&gt;0x1192&lt;/code&gt;, we call &lt;code&gt;var_8-&amp;gt;GetNext()&lt;/code&gt; and jump back to &lt;code&gt;0x11a2&lt;/code&gt; to continue the loop.&lt;/p&gt;
+&lt;p&gt;And that is it for the traversal part.&lt;/p&gt;
+&lt;p&gt;Now let&amp;rsquo;s solve the above leetcode problem.&lt;/p&gt;
+&lt;h2 id=&#34;solution-to-the-problem&#34;&gt;Solution to the problem&lt;/h2&gt;
+&lt;p&gt;As previsouly mentioned, the problem is about mixing up nodes in the given linked list. for example,&lt;/p&gt;
+&lt;p&gt;if given a linked list like this,&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;you have to generate this&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [5] -&amp;gt; [2] -&amp;gt; [4] -&amp;gt; [3]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Well it is bit hard at first if you think enough, its easy. Think about it like, this,&lt;/p&gt;
+&lt;p&gt;First node should be the 1st node, second node shoud be the n-1 th node, third node should be the 2nd node and fourth node should be n-2 th node and so on. And from that it is clear that we should use 2 pointers, one pointing to the first node and another one pointing to the last node. Then by interating each one of them from both first start and end, we can get the disired output.&lt;/p&gt;
+&lt;p&gt;consider the below example&lt;/p&gt;
+&lt;p&gt;1st iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+     ^                           ^
+     |                           |
+     |                           |
+    1st pointer             2nd pointer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;2nd iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+            ^             ^
+            |             |
+            |             |
+
+           1st           2nd 
+         pointer        pointer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;3rd iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+                   ^
+                   |
+                   |
+                1st &amp;amp; 2nd
+                 pointers
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, the thing is, what will happen after 3rd iteration?&lt;/p&gt;
+&lt;p&gt;well, if you continue the iteration, it will go through the nodes that we already used. So to solve this problem, we can device the linekd list into two parts. like shown below.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; NULL  [4] -&amp;gt; [5]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So how can we do that? how can we seperate the linked list?. The easiest way I can think of is to use pointers, starting with the 1st node, increase 1st pointer by 1 node while iterating the second node by 2 nodes. consider the below example.&lt;/p&gt;
+&lt;p&gt;1st iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+     ^
+     |
+     |
+  1st / 2nd
+  pointer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;2nd iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+            ^      ^
+            |      |
+            |      |
+          1st     2nd
+         pointer  pointer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;3rd iteration&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    [1] -&amp;gt; [2] -&amp;gt; [3] -&amp;gt; [4] -&amp;gt; [5]
+
+                   ^            ^
+                   |            |
+                   |            |
+                 1st           2nd 
+                 pointer      pointer
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;See?, now we can set the next node of the node pointed by 1st node to null.&lt;/p&gt;
+&lt;p&gt;Eventhough we seperated the list, there is another problem we have to face. Some of you may have already noticed that. There is no way we can reach previous nodes from the second list since each node is pointing to the next node. So we have to reverse the second linekd list too.&lt;/p&gt;
+&lt;p&gt;Here is what we should do to re-order the linked list.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Seperate the list into two lists.&lt;/li&gt;
+&lt;li&gt;Reverse the second list&lt;/li&gt;
+&lt;li&gt;Start iteration from the first node of the fist list and first node of the second list(reversed list)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Here is the implementation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReorderList&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head)
+    {
+        &lt;span style=&#34;color:#75715e&#34;&gt;/* seperating the list */&lt;/span&gt;
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(l &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext() &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr){
+            f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+            l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext()&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+        }
+
+        &lt;span style=&#34;color:#75715e&#34;&gt;/* saving the first node of second list */&lt;/span&gt;
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+        f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(nullptr);
+
+        &lt;span style=&#34;color:#75715e&#34;&gt;/* reversing the second list */&lt;/span&gt;
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nullptr;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+            node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(prev);
+            prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node;
+            node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nnode;
+        }
+
+        &lt;span style=&#34;color:#75715e&#34;&gt;/* re ordering lists */&lt;/span&gt;
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;start &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;end &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; prev;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (start &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; end &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+            start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(end);
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; ennode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; end&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
+            end&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(nnode);
+            start &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nnode;
+            end &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ennode;
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;main function&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;)
+    {
+        LinkedList li;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;; i &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; i&lt;span style=&#34;color:#f92672&#34;&gt;--&lt;/span&gt;){
+            li.Push(i);
+            printf(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;%d &amp;#34;&lt;/span&gt;, i);
+        }
+
+        ReorderList(li.GetHead());
+
+        putchar(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;);
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; c &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; li.Pop();
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (c &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) {
+            printf(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;%d &amp;#34;&lt;/span&gt;, c);
+            c &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; li.Pop();
+        }
+        putchar(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;);
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;reverse-engineering-the-solution&#34;&gt;Reverse engineering the solution&lt;/h2&gt;
+&lt;p&gt;Now its time to see how the solution code looks like in assembly :).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/reorder.png&#34; alt=&#34;re order list&#34;&gt;&lt;/p&gt;
+&lt;p&gt;oh look at those cute little variable name that radare has analyzed for us. Same as the ones that we used in our code right?. Well i compiled it with -g flag this time hehe :3&lt;/p&gt;
+&lt;p&gt;Anyway, in above stub, we set &lt;code&gt;f&lt;/code&gt; and &lt;code&gt;l&lt;/code&gt; with &lt;code&gt;head&lt;/code&gt; (rdi) and jump to &lt;code&gt;0x1216&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/reorder-jmp.png&#34; alt=&#34;0x1216&#34;&gt;&lt;/p&gt;
+&lt;p&gt;this is just a simple comparison, the stub compares &lt;code&gt;l&lt;/code&gt; with 0 and jumps to &lt;code&gt;0x1235&lt;/code&gt; if comparison yeilds zero.&lt;/p&gt;
+&lt;p&gt;else we jump to below stub&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/comparefalse.png&#34; alt=&#34;0x121d&#34;&gt;&lt;/p&gt;
+&lt;p&gt;there we call &lt;code&gt;l-&amp;gt;GetNext()&lt;/code&gt; and check if the return value is null. if it is null, it jumps to &lt;code&gt;0x1235&lt;/code&gt;. else, to &lt;code&gt;0x122e&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/1235.png&#34; alt=&#34;0x1235&#34;&gt;&lt;/p&gt;
+&lt;p&gt;both of above snippets does nothing but jump to &lt;code&gt;0x123a&lt;/code&gt;. Oh, &lt;code&gt;0x122e&lt;/code&gt; set eax to 1.&lt;/p&gt;
+&lt;p&gt;In &lt;code&gt;0x123a&lt;/code&gt;, there is a &lt;code&gt;test al, al&lt;/code&gt; instruction which checks if any of the above comparisons leads to a null, which means if &lt;code&gt;l == null&lt;/code&gt; or &lt;code&gt;l-&amp;gt;GetNext() == null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;if not, a jump will not be taken and execution will continue to &lt;code&gt;0x11ee&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/11ee.png&#34; alt=&#34;0x11ee&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;0x11ee&lt;/code&gt; calls &lt;code&gt;f-&amp;gt;GetNext()&lt;/code&gt; (0x11ee - 0x11f5) and stores resulting value at &lt;code&gt;f&lt;/code&gt;. So it basically does &lt;code&gt;f = f-&amp;gt;GetNext()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;then at address &lt;code&gt;0x11fe&lt;/code&gt;, we can see &lt;code&gt;l&lt;/code&gt; is copied to rax, which is then passed to &lt;code&gt;GetNext()&lt;/code&gt; method as this parameter. return value &lt;code&gt;GetNext()&lt;/code&gt; is then passed as this parameter to the &lt;code&gt;GetNext&lt;/code&gt; method and &lt;code&gt;l&lt;/code&gt; is assigned with the return value. So the whole thing can be represented as &lt;code&gt;l = l-&amp;gt;GetNext()-&amp;gt;GetNext()&lt;/code&gt;. then it continues to loop until &lt;code&gt;l&lt;/code&gt; or &lt;code&gt;l-&amp;gt;GetNext()&lt;/code&gt; is nullptr.&lt;/p&gt;
+&lt;p&gt;if any of above comparisons become null, loop ends and jump at &lt;code&gt;0x123c&lt;/code&gt; wont be taken. &lt;code&gt;node&lt;/code&gt; is assigned with &lt;code&gt;f-&amp;gt;GetNext()&lt;/code&gt; (0x123e - 0x124a). then rsi is loaded with 0 (or null). Then rdi is assigned with rax, which is &lt;code&gt;f&lt;/code&gt;. then there is a call to &lt;code&gt;SetNext()&lt;/code&gt;. So the function may look like this in C. &lt;code&gt;f-&amp;gt;SetNext(NULL)&lt;/code&gt;. Then we can see &lt;code&gt;prev&lt;/code&gt; is assigned with 0 following a jump to &lt;code&gt;0x129c&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/0x1239.png&#34; alt=&#34;0x129c&#34;&gt;&lt;/p&gt;
+&lt;p&gt;instruction at address &lt;code&gt;0x129c&lt;/code&gt; check whether &lt;code&gt;node&lt;/code&gt; is null. if it is not, jump is taken to &lt;code&gt;0x1269&lt;/code&gt;. first 4 lines call &lt;code&gt;node-&amp;gt;GetNext()&lt;/code&gt; and save return value in &lt;code&gt;var_8&lt;/code&gt;. then node&amp;rsquo;s next is set to &lt;code&gt;prev&lt;/code&gt;. remember? which is intially null (0x1279 - 0x1287). And from 0x128c to 0x1298, it simply sets &lt;code&gt;prev&lt;/code&gt; to &lt;code&gt;node&lt;/code&gt; and &lt;code&gt;var_8&lt;/code&gt; (node-&amp;gt;GetNext()) to &lt;code&gt;node&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;the loop continues until &lt;code&gt;node == null&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;When the termination condition is met, rip will get to &lt;code&gt;0x12a3&lt;/code&gt;, where it assignes &lt;code&gt;start&lt;/code&gt; with head and &lt;code&gt;prev&lt;/code&gt; with &lt;code&gt;end&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/1111.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;then there is this series of comparisons. first one compares &lt;code&gt;start&lt;/code&gt; with 0 and the next one compares &lt;code&gt;end&lt;/code&gt; with 0. And if any of them is 0 (or null), it jumps to &lt;code&gt;0x1319&lt;/code&gt; and exits.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/reverse-linkedlist/1223.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;from address &lt;code&gt;0x12b5&lt;/code&gt; to &lt;code&gt;0x12c1&lt;/code&gt;, what the code does is it simply gets next node of the &lt;code&gt;start&lt;/code&gt; and move it to &lt;code&gt;nnode&lt;/code&gt;. from &lt;code&gt;0x12c5&lt;/code&gt; to &lt;code&gt;0x12d3&lt;/code&gt;, code sets &lt;code&gt;start&lt;/code&gt;&amp;rsquo;s next node to &lt;code&gt;end&lt;/code&gt; using &lt;code&gt;start-&amp;gt;SetNext(end)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;next, rdi is loaded with end and passed to &lt;code&gt;GetNext()&lt;/code&gt; method and the return value is stored in &lt;code&gt;ennode&lt;/code&gt;. In the next few lines, &lt;code&gt;nnode&lt;/code&gt; and &lt;code&gt;end&lt;/code&gt; are loaded into rsi and rdi. then they are passed down to SetNext() method, which may look like this &lt;code&gt;end-&amp;gt;SetNext(nnode)&lt;/code&gt;. then we can see &lt;code&gt;start&lt;/code&gt; is assigned with &lt;code&gt;nnode&lt;/code&gt; and &lt;code&gt;end&lt;/code&gt; is assigned with &lt;code&gt;ennode&lt;/code&gt; and continue to loop until termination condition is met, &lt;code&gt;start == nullptr || end == nullptr&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;and yeap that&amp;rsquo;s it. First it saves next nodes of the &lt;code&gt;start&lt;/code&gt; and the &lt;code&gt;end&lt;/code&gt; in two locals named &lt;code&gt;nnode&lt;/code&gt; and &lt;code&gt;ennode&lt;/code&gt;. then &lt;code&gt;Start&lt;/code&gt; node&amp;rsquo;s next is set to &lt;code&gt;end&lt;/code&gt; and its next is set to &lt;code&gt;nnode&lt;/code&gt; (prev next node of the &lt;code&gt;start&lt;/code&gt;). Then &lt;code&gt;start&lt;/code&gt; and &lt;code&gt;end&lt;/code&gt; are set to &lt;code&gt;nnode&lt;/code&gt; and &lt;code&gt;ennode&lt;/code&gt; to continue the loop :).&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;loop:
+    if start == null or end == null:
+        return
+    nnode   &amp;lt;--- save start-&amp;gt;GetNext()
+    ennode  &amp;lt;--- save end-&amp;gt;GetNext()
+    set start-&amp;gt;next = end
+    set end-&amp;gt;next   = nnode
+    set start = nnode
+    set end   = ennode
+    jump loop
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
+&lt;p&gt;Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damn article. I guess that is it. I hope yall understood what i did here :3&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>Practical Reverse Engineering Answers 2 - sample_J DllMain</title>
       <link>https://rxOred.github.io/post/practical-re/practical-re-answers2/</link>
@@ -272,7 +604,7 @@ stack frame. Guess what? stack is non-executable :3&lt;/p&gt;
 &lt;p&gt;edx:eax will be used.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;#THE-END&lt;/p&gt;
+&lt;h1 id=&#34;the-end&#34;&gt;THE-END&lt;/h1&gt;
 &lt;p&gt;In the next article, we will go through the last exercise :) Until then!&lt;/p&gt;
 </content>
     </item>
