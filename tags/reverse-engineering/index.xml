@@ -105,21 +105,21 @@ Even without looking at the dll, we can think of a technique to bypass AMSI, usi
     )
     {
         &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; var;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
         {
-            SomeFunc(handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;], buffer, lengthm amsiSession, result);
+            SomeFunc(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;), buffer, lengthm amsiSession, result);
         }
 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
-            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
-            amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
+            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
         {
             var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80070057&lt;/span&gt;;    
         } 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
         {
             &lt;span style=&#34;color:#75715e&#34;&gt;/* ################################ */&lt;/span&gt;
-            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x10&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
+            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
         }
     }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;. According to MSDN, others include a buffer, which will be
