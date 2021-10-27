@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00 :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, was.
+Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.
+Out of the tools that they use to fulfill this task, Windows PowerShell is important. Windows PowerShell is a powerful administrative tool mostly used by sysadmins." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00">
+<meta property="og:description" content="Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, was.
+Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.
+Out of the tools that they use to fulfill this task, Windows PowerShell is important. Windows PowerShell is a powerful administrative tool mostly used by sysadmins." />
+<meta property="og:url" content="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  
+    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+  <meta property="article:section" content="guide" />
+
+
+  <meta property="article:published_time" content="2021-10-23 14:20:04 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/">Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2021-10-23 
+      </span>
+    
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://rxOred.github.io/tags/offensive-sekurity/">offensive-sekurity</a>&nbsp;
+    
+    #<a href="https://rxOred.github.io/tags/windoz/">windoz</a>&nbsp;
+    
+    #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+    
+  </span>
+  
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <p>Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, <code>was</code>.</p>
+<p>Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.</p>
+<p>Out of the tools that they use to fulfill this task, Windows PowerShell is important. Windows PowerShell is a powerful administrative tool mostly used by sysadmins. And mainly because of that reason, hackers often utilize this tool. Another most important software when it comes to windows malware is Microsoft office software. It is a proven fact that the most notable malware outbreaks in the past few years have something to do with VBA macros. in 2007 Microsoft shipped office packages with macro disabled by default. Yet those type of malware is still alive and well.</p>
+<p>And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats. For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.</p>
+<p>And because of that, malware authors use various techniques to bypass those defense mechanisms. One of the major techniques is code obfuscation.</p>
+<p>consider the following example, that I took from MSDN.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">    <span style="color:#66d9ef">function</span> displayEvilString
+    <span style="color:#f92672">{</span>
+        Write-Host <span style="color:#e6db74">&#39;pwnd!&#39;</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>Assuming the above PowerShell snippet is malicious, we can write a signature to detect the malware. this signature can be <code>Write-Host 'pwnd!'</code> or simply <code>'pwnd!'</code>.</p>
+<p>So to avoid signature-based detection, the above snippet can be obfuscated like shown below.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">    <span style="color:#66d9ef">function</span> obfuscatedDisplayEvilString
+    <span style="color:#f92672">{</span>
+        $xorKey <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>
+        $code <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;LHsJexJ7D3see1Z7M3sUewh7D3tbe1x7C3sMexV7H3tae1x7&#34;</span>
+        $byte <span style="color:#f92672">=</span> <span style="color:#f92672">[</span>Convert<span style="color:#f92672">]</span>::FromBase64String<span style="color:#f92672">(</span>$code<span style="color:#f92672">)</span>
+        $newBytes <span style="color:#f92672">=</span> foreach<span style="color:#f92672">(</span>$byte in $bytes<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            $byte -bxor $xorKey
+        <span style="color:#f92672">}</span>
+        $newCode <span style="color:#f92672">=</span> <span style="color:#f92672">[</span>System.Text.Encoding<span style="color:#f92672">]</span>::Unicode.GetString<span style="color:#f92672">(</span>$newBytes<span style="color:#f92672">)</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>And this is a win for malware authors since this is beyond what anti-malware solutions can emulate or detect until AMSI joins the conversation.</p>
+<h2 id="antimalware-scan-interface-amsi">Antimalware Scan Interface (AMSI)<a href="#antimalware-scan-interface-amsi" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>AMSI is a standard interface that allows applications to interact with anti-malware products installed on the system. This means is that it provides
+an API for Application developers. Application developers can use the API to implement security features to make sure that the end-user is safe. According
+to Microsoft, that&rsquo;s why they consider Application developers as a target audience of this standard interface.</p>
+<p>The other one is Anti-malware vendors. Any anti-malware vendor can provide an interface for AMSI to work with. By doing that, they can detect a large number of malicious activities that they could not.  By default, AMSI uses Windows defender as the backing detection engine.</p>
+<p>According to Microsoft, AMSI provides the following features by default.</p>
+<ul>
+<li>User Account Control</li>
+<li>PowerShell</li>
+<li>Windows Script Host</li>
+<li>JScript &amp;&amp; VBScript</li>
+<li>Office VBA macros</li>
+</ul>
+<p>As it is clear from those default features, AMSI specifically provides anti-malware security mechanisms to defend against dynamic script-based malware.</p>
+<p>when running a script, even though the code is initially obfuscated, it has to be deobfuscated to go through the scripting engine. At this point, AMSI APIs can be used to scan the script and determine whether it is malicious or not.</p>
+<p>AMSI can also be useful in scenarios like invoking malicious PowerShell commands.</p>
+<p>In this article I&rsquo;m going to focus on the internals of AMSI. in the next one, I&rsquo;ll provide y&rsquo;all with some bypass techniques.</p>
+<h2 id="demo">Demo<a href="#demo" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>So let&rsquo;s take SafeSploit as our example.</p>
+<p>When we run the binary, the result we get is.
+<img src="/img/CSharpLoader/AMSI.png" alt="AMSI"></p>
+<p>See, as we expected, PowerShell stops the execution of the program once it has detected the program is suspicious using AMSI.
+So, how can we bypass this?, well before that, we have to dive deep into AMSI internals to understand how things work.</p>
+<h2 id="amsi-internals">AMSI internals<a href="#amsi-internals" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>As I previously mentioned, any anti-malware vendor can become an AMSI provider and inspect data sent by applications via the AMSI interface. If the content submitted for the scan is detected as malicious, the consuming application will be alerted. In our case, Windows PowerShell uses Windows defender as the AMSI provider.
+When we input a malicious command or execute a malicious program, PowerShell will pass everything to windows defender before doing any execution.
+Anti-malware vendors must do all the scans and detect whether the received input is malicious or not.</p>
+<p>For application programmers to interact with the AMSI, it provides a dll called, amsi.dll. Let&rsquo;s examine PowerShell from a process hacker to check whether this dll is loaded.</p>
+<p><img src="/img/CSharpLoader/powershellProperties.png" alt="PoweshellProperties"></p>
+<p>as we can see, amsi.dll has been loaded into powershell.exe. Now, let&rsquo;s take a look at this dll in-depth and see if we can find anything interesting.
+Even without looking at the dll, we can think of a technique to bypass AMSI, using dll injection and impersonating several functions exported by the dll. Anyway, let&rsquo;s choose the hard way, and before diving deep into disassembly, let&rsquo;s examine the export table of amsi.dll.</p>
+<p><img src="/img/CSharpLoader/Exports.png" alt="Exports"></p>
+<p>Out of the above exported functions, only two are important to us.</p>
+<ul>
+<li>AmsiScanBuffer</li>
+<li>AmsiScanString</li>
+</ul>
+<h2 id="amsiscanbuffer">AmsiScanBuffer<a href="#amsiscanbuffer" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p><a href="https://docs.microsoft.com/en-us/windows/win32/api/amsi/nf-amsi-amsiscanbuffer">here</a>, check out the documentation first. According to the MSDN and as well as the name suggests, the <code>AmsiScanBuffer</code> function scans a buffer that is filled for malware.</p>
+<p>As MSDN says, this function returns <code>S_OK</code> if the call is successful. However, the return value does not indicate whether the buffer is malicious. instead, the function uses an output parameter of type <code>AMSI_RESULT</code> to send the scan results.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">enum</span> AMSI_RESULT {
+        AMSI_RESULT_CLEAN,
+        AMSI_RESULT_NOT_DETECTED,
+        AMSI_RESULT_BLOCKED_BY_ADMIN_START,
+        AMSI_RESULT_BLOCKED_BY_ADMIN_END,
+        AMSI_RESULT_DETECTED
+    } ;
+</code></pre></div><p>And here&rsquo;s how this function looks like in disassembly.</p>
+<p><img src="/img/CSharpLoader/AmsiScanBufferPrologue.png" alt=""></p>
+<p>here we can see stack pointer is stored in <code>r11</code> register and since this is x64 _stdcall, the first four parameters are stored in rcx, rdx, r8 and r9 registers. Rest are stored in the stack. With that information, we can assume a pointer to the <code>AMSI_RESULT</code> enum is stored in the stack.</p>
+<p>then we can see a series of comparisons around global data.</p>
+<p><img src="/img/CSharpLoader/AmsiScanBuffer2.png" alt=""></p>
+<p>followed by,</p>
+<p><img src="/img/CSharpLoader/AmsiScanBuffer4.png" alt=""></p>
+<p>which can be decompiled down into,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">    HRESULT <span style="color:#66d9ef">__stdcall</span> <span style="color:#a6e22e">AmsiScanBuffer</span>
+    (
+            HAMSICONTEXT amsiContext, 
+            PVOID buffer, 
+            ULONG length, 
+            LPCWSTR contentName, 
+            HAMSISESSION amsiSession, 
+            AMSI_RESULT <span style="color:#f92672">*</span>result
+    )
+    {
+        <span style="color:#66d9ef">auto</span> var;
+        <span style="color:#66d9ef">if</span> ((handle <span style="color:#f92672">!=</span> <span style="color:#f92672">&amp;</span>handle) <span style="color:#f92672">&amp;&amp;</span> (handle[<span style="color:#ae81ff">0x1c</span>] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>))
+        {
+            SomeFunc(handle[<span style="color:#ae81ff">16</span>], buffer, lengthm amsiSession, result);
+        }
+
+        <span style="color:#66d9ef">if</span> (buffer <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> result <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> amsiContext <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> 
+            (<span style="color:#f92672">*</span>amsiContext) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x49534D41</span> <span style="color:#f92672">||</span> amsiContext[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span> <span style="color:#f92672">||</span>
+            amsiContext[<span style="color:#ae81ff">16</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) 
+        {
+            var <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80070057</span>;    
+        } 
+        <span style="color:#66d9ef">else</span> 
+        {
+            <span style="color:#75715e">/* ################################ */</span>
+            var <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x10</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x18</span>)();
+        }
+    }
+</code></pre></div><p>So the function takes 6 parameters. One of which is the pointer to the <code>AMSI_RESULT</code> structure as I explained above - <code>*result</code>. According to MSDN, others include a buffer, which will be
+scanned by the anti-malware vendor - <code>buffer</code>, length of the buffer - <code>length</code>, filename, URL, unique script ID - <code>contentName</code> and a handler to the session - <code>HAMSISESSION</code> structure.</p>
+<p>then the function does some checks against the handle, if the checks turn out to be false, it calls a random function which I haven&rsquo;t analyzed, and continues the execution from the next if condition. else, it continues execution without ever calling that random function. (i named that &lsquo;random function&rsquo; <code>SomeFunc</code> :3 ).</p>
+<p>then there is a pretty huge if condition, which I&rsquo;m not gonna go through (read the decompiled version and understand it :3 ). And if the condition fails, we call another random function but this time, it&rsquo;s not a random function. it is a function pointer that is extracted from the <code>amsiContext</code> parameter. And I&rsquo;m pretty much sure that this function pointer is some kind of a handler to the anti-malware vendor&rsquo;s scanning interface.</p>
+<p>This makes sense because to call <code>AmsiScanBuffer</code>, one has to initialize amsi with <code>AmsiInitialize</code> and open a session if required with <code>AmsiOpenSession</code>. And <code>AmsiInitialize</code> returns a handler and that handler is then passed down to this function as the first parameter (amsiContext).</p>
+<p>So the conclusion is, when <code>AmsiInitialize</code> function gets called, it initializes the anti-malware vendor, registers it, and returns a handler that contains a pointer to a registered function.<code>AmsiScanBuffer</code> function is responsible for doing some basic checks on the handler, extracting registered function from the handler and calling it with necessary parameters.</p>
+<h2 id="amsiscanstring">AmsiScanString<a href="#amsiscanstring" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>this is pretty much the same as the previous function except this one scan for strings. let&rsquo;s just do a small analysis on this one too for the sake of completeness.</p>
+<p><img src="/img/CSharpLoader/AmsiScanString.png" alt=""></p>
+<p>Function check if the string is empty or not.</p>
+<p><img src="/img/CSharpLoader/AmsiScanString1.png" alt=""></p>
+<p>here is how the rest of the function looks like.</p>
+<p>Without much analysis, we can clearly say that this one calls <code>AmsiScanString</code> internally. before that, it checks whether the enum pointed by <code>target</code> is empty.</p>
+<p>Then there is a loop that increases <code>rax</code> register until it finds a null byte. This is a strlen. After that, <code>rax</code> is added to <code>rax</code> and gets compared to <code>r11</code>, which holds value <code>0xFFFFFFFF</code>, if the value in <code>rax</code> is above <code>0xFFFFFFFF</code>, it moves <code>0x80070057</code> to <code>rax</code> register and returns. else, it calls <code>AmsiScanBuffer</code>.</p>
+<p>And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after some random value loaded into rax, and else, it simply calls <code>AmsiScanBuffer</code>.</p>
+<h2 id="thats-it-kids">that&rsquo;s it, kids!<a href="#thats-it-kids" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>So yeah that&rsquo;s it for now&hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass techniques.</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">
+                <span class="button__text">Identifying and Reverse engineering Linked Lists constructs</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
