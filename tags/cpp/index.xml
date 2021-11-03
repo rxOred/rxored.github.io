@@ -242,22 +242,22 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
 &lt;li&gt;Start iteration from the first node of the fist list and first node of the second list(reversed list)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Here is the implementation.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReorderList&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReorderList&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head)
     {
         &lt;span style=&#34;color:#75715e&#34;&gt;/* seperating the list */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(l &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext() &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr){
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(l &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext() &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;){
             f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext()&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
         }
 
         &lt;span style=&#34;color:#75715e&#34;&gt;/* saving the first node of second list */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
-        f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(nullptr);
+        f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(&lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;);
 
         &lt;span style=&#34;color:#75715e&#34;&gt;/* reversing the second list */&lt;/span&gt;
-        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nullptr;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;) {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(prev);
             prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node;
@@ -267,7 +267,7 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
         &lt;span style=&#34;color:#75715e&#34;&gt;/* re ordering lists */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;start &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;end &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; prev;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (start &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; end &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (start &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; end &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;) {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(end);
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; ennode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; end&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();

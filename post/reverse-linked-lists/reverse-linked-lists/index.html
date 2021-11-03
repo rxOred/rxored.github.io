@@ -381,22 +381,22 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
 <li>Start iteration from the first node of the fist list and first node of the second list(reversed list)</li>
 </ol>
 <p>Here is the implementation.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
     {
         <span style="color:#75715e">/* seperating the list */</span>
         ListNode <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> head, <span style="color:#f92672">*</span>l <span style="color:#f92672">=</span> head;
-        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> nullptr <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> nullptr){
+        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>){
             f <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
             l <span style="color:#f92672">=</span> l<span style="color:#f92672">-&gt;</span>GetNext()<span style="color:#f92672">-&gt;</span>GetNext();
         }
 
         <span style="color:#75715e">/* saving the first node of second list */</span>
         ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
-        f<span style="color:#f92672">-&gt;</span>SetNext(nullptr);
+        f<span style="color:#f92672">-&gt;</span>SetNext(<span style="color:#66d9ef">nullptr</span>);
 
         <span style="color:#75715e">/* reversing the second list */</span>
-        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> nullptr;
-        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> nullptr) {
+        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
             <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetNext();
             node<span style="color:#f92672">-&gt;</span>SetNext(prev);
             prev <span style="color:#f92672">=</span> node;
@@ -406,7 +406,7 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
         <span style="color:#75715e">/* re ordering lists */</span>
         ListNode <span style="color:#f92672">*</span>start <span style="color:#f92672">=</span> head;
         ListNode <span style="color:#f92672">*</span>end <span style="color:#f92672">=</span> prev;
-        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> nullptr <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> nullptr) {
+        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
             <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> start<span style="color:#f92672">-&gt;</span>GetNext();
             start<span style="color:#f92672">-&gt;</span>SetNext(end);
             <span style="color:#66d9ef">auto</span> ennode <span style="color:#f92672">=</span> end<span style="color:#f92672">-&gt;</span>GetNext();
