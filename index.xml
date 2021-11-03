@@ -105,24 +105,24 @@ Even without looking at the dll, we can think of a technique to bypass AMSI, usi
     )
     {
         &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; var;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
         {
-            SomeFunc(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;), buffer, lengthm amsiSession, result);
+            SomeFunc(handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;], buffer, lengthm amsiSession, result);
         }
 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
-            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
+            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
+            amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
         {
             var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80070057&lt;/span&gt;;    
         } 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
         {
             &lt;span style=&#34;color:#75715e&#34;&gt;/* ################################ */&lt;/span&gt;
-            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
+            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x10&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
         }
     }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;. According to MSDN, others include a buffer, which will be
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;. According to MSDN, others include a buffer, which will be 
 scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of the buffer - &lt;code&gt;length&lt;/code&gt;, filename, URL, unique script ID - &lt;code&gt;contentName&lt;/code&gt; and a handler to the session - &lt;code&gt;HAMSISESSION&lt;/code&gt; structure.&lt;/p&gt;
 &lt;p&gt;then the function does some checks against the handle, if the checks turn out to be false, it calls a random function which I haven&amp;rsquo;t analyzed, and continues the execution from the next if condition. else, it continues execution without ever calling that random function. (i named that &amp;lsquo;random function&amp;rsquo; &lt;code&gt;SomeFunc&lt;/code&gt; :3 ).&lt;/p&gt;
 &lt;p&gt;then there is a pretty huge if condition, which I&amp;rsquo;m not gonna go through (read the decompiled version and understand it :3 ). And if the condition fails, we call another random function but this time, it&amp;rsquo;s not a random function. it is a function pointer that is extracted from the &lt;code&gt;amsiContext&lt;/code&gt; parameter. And I&amp;rsquo;m pretty much sure that this function pointer is some kind of a handler to the anti-malware vendor&amp;rsquo;s scanning interface.&lt;/p&gt;
@@ -143,7 +143,7 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
     </item>
     
     <item>
-      <title>Identifying and Reverse engineering Linked Lists constructs</title>
+      <title>Identifying and Reverse engineering Linked List constructs</title>
       <link>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</link>
       <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
       
@@ -577,7 +577,7 @@ Basically this stub go through each process of the snapshot until it finds &lt;c
    }
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;combining all into a single stub, we will get something like this as the DllMain&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; idtr {
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;idtr&lt;/span&gt; {
       DWORD idt_base;
       &lt;span style=&#34;color:#66d9ef&#34;&gt;short&lt;/span&gt; idt_size;
    } IDTR, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;PIDTR;
@@ -646,9 +646,9 @@ At that time, i never really wanted to create a blog.</description>
 &lt;p&gt;Hello, rxOred here, with another badly written write-up.&lt;/p&gt;
 &lt;p&gt;A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts,
 that book&amp;rsquo;s exercises were pretty challenging.
-Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share
+Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share 
 solutions with others using their blogs, r/reverse-egnineering etc.&lt;/p&gt;
-&lt;p&gt;At that time, i never really wanted to create a blog. however while doing those challenges, i have wrote
+&lt;p&gt;At that time, i never really wanted to create a blog. however while doing those challenges, i have wrote 
 some, not-very-detailed explainations. So, i will be sharing those stuff with yall.
 This 2 part series post will provide some solutions for Exercises in chapter 1, which is about x86.&lt;/p&gt;
 &lt;h1 id=&#34;chapter-1-page-11&#34;&gt;Chapter 1, page 11&lt;/h1&gt;
@@ -657,30 +657,30 @@ This 2 part series post will provide some solutions for Exercises in chapter 1, 
 &lt;p&gt;4 bytes (32 bits). makes sense right? if you have read the whole snippet, line 5 is a,
 repne scasb
 intel indentifies these instructions as string operation instructions. which is perfectly fine.About scasb,
-scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix.
-it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&amp;rsquo;b&#39;)
-with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the
+scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix. 
+it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&amp;rsquo;b&#39;) 
+with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the 
 buffer or ecx == 0. so as for our answer, it is 4 bytes because since edi is an memory address, memory addresses in
 x86 takes upto 4bytes :)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;1 byte
 rep stosb
-this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of
+this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of 
 buffer, and since its a stos&amp;rsquo;b&#39;, which is the indication of byte, al contain the value that the buffer should be
 assigned with. So from that, it is clear that ebp+c, second argument to the function is sizeof byte:)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;What the snippet does is pretty simple, in line 1, edi is assigned with ebp+8 (first arg), which we concluded as a
-memory address. next line, we can see that its saving that address in edx followed by a xor eax, eax, which clears
-out eax register. In line 4, ecx is ored(did i spell that correct?) with 0xffffffff. result of this operation is,
+memory address. next line, we can see that its saving that address in edx followed by a xor eax, eax, which clears 
+out eax register. In line 4, ecx is ored(did i spell that correct?) with 0xffffffff. result of this operation is, 
 well, 0xffffffff because anything | 1 results in a 1.&lt;/p&gt;
 &lt;p&gt;then we have what we discussed in 1), repe scasb. I won&amp;rsquo;t explain it again ew.&lt;/p&gt;
 &lt;p&gt;So next we have some add ecx, 2, which, as anyone can guess, adds 2 to ecx. Followed by a negation. then we have a
 mov  al, ebp+c, which moves our byte into al register. then edi is assigned with edx, where we saved our edi before.
 Then we have what we discussed in 2).&lt;/p&gt;
-&lt;p&gt;So what this basically does is, it compares 0 with whatever at memory address edi until 0 is found in the
-buffer while decrementing ecx. then we set ecx + 2, then we negate it to get the string len, then we write [ebp-c]
+&lt;p&gt;So what this basically does is, it compares 0 with whatever at memory address edi until 0 is found in the 
+buffer while decrementing ecx. then we set ecx + 2, then we negate it to get the string len, then we write [ebp-c] 
 to [edi] byte by byte :3&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -720,7 +720,7 @@ to [edi] byte by byte :3&lt;/p&gt;
    &lt;span style=&#34;color:#75715e&#34;&gt;; this is bit important. lot of malware authors use this method to access win32 APIs&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
+&lt;p&gt;same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to 
 a totally unknown address.
 In this case we havent pushed anything to the stack other than return address and base pointer of the prev stack frame. and when ret pops the value from stack to eip, and what we get is base of the previous
 stack frame. Guess what? stack is non-executable :3&lt;/p&gt;
@@ -873,7 +873,7 @@ It is also provides APIs for userland shared library function redirection. under
 &lt;h2 id=&#34;unnaturalhttpsgithubcomrxoredunnatural&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/unnatural&#34;&gt;unnatural&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Unnatural is a elf anomaly detector and disinfector written in Go. Initially wanted to do this with few people I know, but things went badly and now I develop it. Still in the early stages of development.&lt;/p&gt;
 &lt;h2 id=&#34;spidybothttpsgithubcomrxoredspidybot&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/spidyBOT&#34;&gt;spidyBOT&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;A spider and a web information gathering tool written in python. Uses a sql3 backend to store gathered information. And tool is capable of extracting javascript snippets, email addresses and other
+&lt;p&gt;A spider and a web information gathering tool written in python. Uses a sql3 backend to store gathered information. And tool is capable of extracting javascript snippets, email addresses and other 
 useful information.&lt;/p&gt;
 &lt;h2 id=&#34;bshellhttpsgithubcomrxoredbshell&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/Bshell&#34;&gt;BShell&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Useless Linux shell written in C.&lt;/p&gt;
@@ -894,12 +894,13 @@ About my education, I started programming when I was 12 with Java. Then I taught
 &lt;p&gt;About my education, I started programming when I was 12 with Java. Then I taught myself many things related computer science and computer security.
 And I&amp;rsquo;m familiar with C/C++ (language of choice :), assembly, python and golang. Currently I follow a higher national diploma while doing A/Ls in technology + higher mathematics stream.&lt;/p&gt;
 &lt;p&gt;I prefer to work alone but, I&amp;rsquo;m not hesitant to work with other developers and security/software engineers because the resulting experience is invaluable to me. :)&lt;/p&gt;
+&lt;p&gt;Spread Anarchy!&lt;/p&gt;
 &lt;h3 id=&#34;contact-me&#34;&gt;Contact me&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;mailto:rxored@gmail.com&#34;&gt;rxored@gmail.com&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/rxOred&#34;&gt;github&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://twitter.com/rxOred&#34;&gt;twitter&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Spotify rxOred&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://open.spotify.com/playlist/6vtSGBschhTu2mhACkKjn1?si=7719126bf96c459c&#34;&gt;Spotify&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Discord rxOred#2655&lt;/li&gt;
 &lt;/ul&gt;
 </content>

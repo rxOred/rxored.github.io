@@ -132,8 +132,10 @@ Out of the tools that they use to fulfill this task, script-based malware and pa
   <div class="post-meta">
     
       <span class="post-date">
-        2021-10-23 
+        2021-10-23
+        
       </span>
+    
     
     
   </div>
@@ -244,24 +246,24 @@ Even without looking at the dll, we can think of a technique to bypass AMSI, usi
     )
     {
         <span style="color:#66d9ef">auto</span> var;
-        <span style="color:#66d9ef">if</span> ((handle <span style="color:#f92672">!=</span> <span style="color:#f92672">&amp;</span>handle) <span style="color:#f92672">&amp;&amp;</span> (<span style="color:#f92672">*</span>(handle <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x1c</span>)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>))
+        <span style="color:#66d9ef">if</span> ((handle <span style="color:#f92672">!=</span> <span style="color:#f92672">&amp;</span>handle) <span style="color:#f92672">&amp;&amp;</span> (handle[<span style="color:#ae81ff">0x1c</span>] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>))
         {
-            SomeFunc(<span style="color:#f92672">*</span>(handle <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>), buffer, lengthm amsiSession, result);
+            SomeFunc(handle[<span style="color:#ae81ff">16</span>], buffer, lengthm amsiSession, result);
         }
 
         <span style="color:#66d9ef">if</span> (buffer <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> result <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> amsiContext <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> 
-            (<span style="color:#f92672">*</span>amsiContext) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x49534D41</span> <span style="color:#f92672">||</span> <span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span> <span style="color:#f92672">||</span>
-            <span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) 
+            (<span style="color:#f92672">*</span>amsiContext) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x49534D41</span> <span style="color:#f92672">||</span> amsiContext[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span> <span style="color:#f92672">||</span>
+            amsiContext[<span style="color:#ae81ff">16</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) 
         {
             var <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80070057</span>;    
         } 
         <span style="color:#66d9ef">else</span> 
         {
             <span style="color:#75715e">/* ################################ */</span>
-            var <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x4</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x18</span>)();
+            var <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x10</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x18</span>)();
         }
     }
-</code></pre></div><p>So the function takes 6 parameters. One of which is the pointer to the <code>AMSI_RESULT</code> structure as I explained above - <code>*result</code>. According to MSDN, others include a buffer, which will be
+</code></pre></div><p>So the function takes 6 parameters. One of which is the pointer to the <code>AMSI_RESULT</code> structure as I explained above - <code>*result</code>. According to MSDN, others include a buffer, which will be 
 scanned by the anti-malware vendor - <code>buffer</code>, length of the buffer - <code>length</code>, filename, URL, unique script ID - <code>contentName</code> and a handler to the session - <code>HAMSISESSION</code> structure.</p>
 <p>then the function does some checks against the handle, if the checks turn out to be false, it calls a random function which I haven&rsquo;t analyzed, and continues the execution from the next if condition. else, it continues execution without ever calling that random function. (i named that &lsquo;random function&rsquo; <code>SomeFunc</code> :3 ).</p>
 <p>then there is a pretty huge if condition, which I&rsquo;m not gonna go through (read the decompiled version and understand it :3 ). And if the condition fails, we call another random function but this time, it&rsquo;s not a random function. it is a function pointer that is extracted from the <code>amsiContext</code> parameter. And I&rsquo;m pretty much sure that this function pointer is some kind of a handler to the anti-malware vendor&rsquo;s scanning interface.</p>
@@ -293,7 +295,7 @@ scanned by the anti-malware vendor - <code>buffer</code>, length of the buffer -
         
         <span class="button next">
             <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">
-                <span class="button__text">Identifying and Reverse engineering Linked Lists constructs</span>
+                <span class="button__text">Identifying and Reverse engineering Linked List constructs</span>
                 <span class="button__icon">→</span>
             </a>
         </span>

@@ -105,24 +105,24 @@ Even without looking at the dll, we can think of a technique to bypass AMSI, usi
     )
     {
         &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; var;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
         {
-            SomeFunc(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;), buffer, lengthm amsiSession, result);
+            SomeFunc(handle[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;], buffer, lengthm amsiSession, result);
         }
 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
-            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
+            (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
+            amsiContext[&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
         {
             var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80070057&lt;/span&gt;;    
         } 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
         {
             &lt;span style=&#34;color:#75715e&#34;&gt;/* ################################ */&lt;/span&gt;
-            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
+            var &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x10&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)();
         }
     }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;. According to MSDN, others include a buffer, which will be
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;. According to MSDN, others include a buffer, which will be 
 scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of the buffer - &lt;code&gt;length&lt;/code&gt;, filename, URL, unique script ID - &lt;code&gt;contentName&lt;/code&gt; and a handler to the session - &lt;code&gt;HAMSISESSION&lt;/code&gt; structure.&lt;/p&gt;
 &lt;p&gt;then the function does some checks against the handle, if the checks turn out to be false, it calls a random function which I haven&amp;rsquo;t analyzed, and continues the execution from the next if condition. else, it continues execution without ever calling that random function. (i named that &amp;lsquo;random function&amp;rsquo; &lt;code&gt;SomeFunc&lt;/code&gt; :3 ).&lt;/p&gt;
 &lt;p&gt;then there is a pretty huge if condition, which I&amp;rsquo;m not gonna go through (read the decompiled version and understand it :3 ). And if the condition fails, we call another random function but this time, it&amp;rsquo;s not a random function. it is a function pointer that is extracted from the &lt;code&gt;amsiContext&lt;/code&gt; parameter. And I&amp;rsquo;m pretty much sure that this function pointer is some kind of a handler to the anti-malware vendor&amp;rsquo;s scanning interface.&lt;/p&gt;
@@ -143,7 +143,7 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
     </item>
     
     <item>
-      <title>Identifying and Reverse engineering Linked Lists constructs</title>
+      <title>Identifying and Reverse engineering Linked List constructs</title>
       <link>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</link>
       <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
       
