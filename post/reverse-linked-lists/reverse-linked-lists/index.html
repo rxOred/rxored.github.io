@@ -173,21 +173,21 @@
          ListNode <span style="color:#f92672">*</span>next;
    };
 </code></pre></div><p>There&rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class LinkedList {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinkedList</span> {
       ListNode <span style="color:#f92672">*</span>head;
       <span style="color:#66d9ef">int</span> count;
    }
 </code></pre></div><p>with that, lets implement a stack data structure using linked lists.</p>
 <p>node</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class ListNode {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
            <span style="color:#66d9ef">int</span> ln_value;
            ListNode <span style="color:#f92672">*</span>ln_next;
-       public:
-           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(nullptr) {}
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> GetValue(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
-           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span>GetNext(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> SetValue(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> SetNext(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
+       <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(<span style="color:#66d9ef">nullptr</span>) {}
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">GetValue</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
+           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span><span style="color:#a6e22e">GetNext</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetValue</span>(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetNext</span>(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
    };
 </code></pre></div><p>linked list</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class LinkedList {
