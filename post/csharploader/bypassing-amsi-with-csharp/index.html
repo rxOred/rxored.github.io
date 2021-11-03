@@ -246,21 +246,21 @@ Even without looking at the dll, we can think of a technique to bypass AMSI, usi
     )
     {
         <span style="color:#66d9ef">auto</span> var;
-        <span style="color:#66d9ef">if</span> ((handle <span style="color:#f92672">!=</span> <span style="color:#f92672">&amp;</span>handle) <span style="color:#f92672">&amp;&amp;</span> (handle[<span style="color:#ae81ff">0x1c</span>] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>))
+        <span style="color:#66d9ef">if</span> ((handle <span style="color:#f92672">!=</span> <span style="color:#f92672">&amp;</span>handle) <span style="color:#f92672">&amp;&amp;</span> (<span style="color:#f92672">*</span>(handle <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x1c</span>)) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">4</span>))
         {
-            SomeFunc(handle[<span style="color:#ae81ff">16</span>], buffer, lengthm amsiSession, result);
+            SomeFunc(<span style="color:#f92672">*</span>(handle <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>), buffer, lengthm amsiSession, result);
         }
 
         <span style="color:#66d9ef">if</span> (buffer <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> result <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> amsiContext <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> 
-            (<span style="color:#f92672">*</span>amsiContext) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x49534D41</span> <span style="color:#f92672">||</span> amsiContext[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span> <span style="color:#f92672">||</span>
-            amsiContext[<span style="color:#ae81ff">16</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) 
+            (<span style="color:#f92672">*</span>amsiContext) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x49534D41</span> <span style="color:#f92672">||</span> <span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span> <span style="color:#f92672">||</span>
+            <span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) 
         {
             var <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80070057</span>;    
         } 
         <span style="color:#66d9ef">else</span> 
         {
             <span style="color:#75715e">/* ################################ */</span>
-            var <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x10</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x18</span>)();
+            var <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#f92672">*</span>(amsiContext <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x4</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x18</span>)();
         }
     }
 </code></pre></div><p>So the function takes 6 parameters. One of which is the pointer to the <code>AMSI_RESULT</code> structure as I explained above - <code>*result</code>. According to MSDN, others include a buffer, which will be 
