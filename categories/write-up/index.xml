@@ -179,9 +179,9 @@ At that time, i never really wanted to create a blog.</description>
 &lt;p&gt;Hello, rxOred here, with another badly written write-up.&lt;/p&gt;
 &lt;p&gt;A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts,
 that book&amp;rsquo;s exercises were pretty challenging.
-Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share
+Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share 
 solutions with others using their blogs, r/reverse-egnineering etc.&lt;/p&gt;
-&lt;p&gt;At that time, i never really wanted to create a blog. however while doing those challenges, i have wrote
+&lt;p&gt;At that time, i never really wanted to create a blog. however while doing those challenges, i have wrote 
 some, not-very-detailed explainations. So, i will be sharing those stuff with yall.
 This 2 part series post will provide some solutions for Exercises in chapter 1, which is about x86.&lt;/p&gt;
 &lt;h1 id=&#34;chapter-1-page-11&#34;&gt;Chapter 1, page 11&lt;/h1&gt;
@@ -190,30 +190,30 @@ This 2 part series post will provide some solutions for Exercises in chapter 1, 
 &lt;p&gt;4 bytes (32 bits). makes sense right? if you have read the whole snippet, line 5 is a,
 repne scasb
 intel indentifies these instructions as string operation instructions. which is perfectly fine.About scasb,
-scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix.
-it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&amp;rsquo;b&#39;)
-with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the
+scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix. 
+it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&amp;rsquo;b&#39;) 
+with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the 
 buffer or ecx == 0. so as for our answer, it is 4 bytes because since edi is an memory address, memory addresses in
 x86 takes upto 4bytes :)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;1 byte
 rep stosb
-this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of
+this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of 
 buffer, and since its a stos&amp;rsquo;b&#39;, which is the indication of byte, al contain the value that the buffer should be
 assigned with. So from that, it is clear that ebp+c, second argument to the function is sizeof byte:)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;What the snippet does is pretty simple, in line 1, edi is assigned with ebp+8 (first arg), which we concluded as a
-memory address. next line, we can see that its saving that address in edx followed by a xor eax, eax, which clears
-out eax register. In line 4, ecx is ored(did i spell that correct?) with 0xffffffff. result of this operation is,
+memory address. next line, we can see that its saving that address in edx followed by a xor eax, eax, which clears 
+out eax register. In line 4, ecx is ored(did i spell that correct?) with 0xffffffff. result of this operation is, 
 well, 0xffffffff because anything | 1 results in a 1.&lt;/p&gt;
 &lt;p&gt;then we have what we discussed in 1), repe scasb. I won&amp;rsquo;t explain it again ew.&lt;/p&gt;
 &lt;p&gt;So next we have some add ecx, 2, which, as anyone can guess, adds 2 to ecx. Followed by a negation. then we have a
 mov  al, ebp+c, which moves our byte into al register. then edi is assigned with edx, where we saved our edi before.
 Then we have what we discussed in 2).&lt;/p&gt;
-&lt;p&gt;So what this basically does is, it compares 0 with whatever at memory address edi until 0 is found in the
-buffer while decrementing ecx. then we set ecx + 2, then we negate it to get the string len, then we write [ebp-c]
+&lt;p&gt;So what this basically does is, it compares 0 with whatever at memory address edi until 0 is found in the 
+buffer while decrementing ecx. then we set ecx + 2, then we negate it to get the string len, then we write [ebp-c] 
 to [edi] byte by byte :3&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -253,7 +253,7 @@ to [edi] byte by byte :3&lt;/p&gt;
    &lt;span style=&#34;color:#75715e&#34;&gt;; this is bit important. lot of malware authors use this method to access win32 APIs&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
+&lt;p&gt;same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to 
 a totally unknown address.
 In this case we havent pushed anything to the stack other than return address and base pointer of the prev stack frame. and when ret pops the value from stack to eip, and what we get is base of the previous
 stack frame. Guess what? stack is non-executable :3&lt;/p&gt;
