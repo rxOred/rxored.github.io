@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   
-    <title>Identifying and Reverse engineering Linked Lists constructs :: rxOred&#39;s blog</title>
+    <title>Identifying and Reverse engineering Linked List constructs :: rxOred&#39;s blog</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +35,7 @@
 
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Identifying and Reverse engineering Linked Lists constructs">
+<meta property="og:title" content="Identifying and Reverse engineering Linked List constructs">
 <meta property="og:description" content="Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around." />
 <meta property="og:url" content="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/" />
 <meta property="og:site_name" content="rxOred&#39;s blog" />
@@ -124,7 +124,7 @@
     
 <div class="post">
   <h1 class="post-title">
-    <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">Identifying and Reverse engineering Linked Lists constructs</a></h1>
+    <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">Identifying and Reverse engineering Linked List constructs</a></h1>
   <div class="post-meta">
     
       <span class="post-date">
@@ -171,21 +171,21 @@
          ListNode <span style="color:#f92672">*</span>next;
    };
 </code></pre></div><p>There&rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class LinkedList {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinkedList</span> {
       ListNode <span style="color:#f92672">*</span>head;
       <span style="color:#66d9ef">int</span> count;
    }
 </code></pre></div><p>with that, lets implement a stack data structure using linked lists.</p>
 <p>node</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class ListNode {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
            <span style="color:#66d9ef">int</span> ln_value;
            ListNode <span style="color:#f92672">*</span>ln_next;
-       public:
-           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(nullptr) {}
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> GetValue(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
-           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span>GetNext(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> SetValue(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> SetNext(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
+       <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(<span style="color:#66d9ef">nullptr</span>) {}
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">GetValue</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
+           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span><span style="color:#a6e22e">GetNext</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetValue</span>(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
+           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetNext</span>(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
    };
 </code></pre></div><p>linked list</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class LinkedList {
@@ -379,22 +379,22 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
 <li>Start iteration from the first node of the fist list and first node of the second list(reversed list)</li>
 </ol>
 <p>Here is the implementation.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
     {
         <span style="color:#75715e">/* seperating the list */</span>
         ListNode <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> head, <span style="color:#f92672">*</span>l <span style="color:#f92672">=</span> head;
-        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> nullptr <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> nullptr){
+        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>){
             f <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
             l <span style="color:#f92672">=</span> l<span style="color:#f92672">-&gt;</span>GetNext()<span style="color:#f92672">-&gt;</span>GetNext();
         }
 
         <span style="color:#75715e">/* saving the first node of second list */</span>
         ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
-        f<span style="color:#f92672">-&gt;</span>SetNext(nullptr);
+        f<span style="color:#f92672">-&gt;</span>SetNext(<span style="color:#66d9ef">nullptr</span>);
 
         <span style="color:#75715e">/* reversing the second list */</span>
-        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> nullptr;
-        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> nullptr) {
+        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
             <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetNext();
             node<span style="color:#f92672">-&gt;</span>SetNext(prev);
             prev <span style="color:#f92672">=</span> node;
@@ -404,7 +404,7 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
         <span style="color:#75715e">/* re ordering lists */</span>
         ListNode <span style="color:#f92672">*</span>start <span style="color:#f92672">=</span> head;
         ListNode <span style="color:#f92672">*</span>end <span style="color:#f92672">=</span> prev;
-        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> nullptr <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> nullptr) {
+        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
             <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> start<span style="color:#f92672">-&gt;</span>GetNext();
             start<span style="color:#f92672">-&gt;</span>SetNext(end);
             <span style="color:#66d9ef">auto</span> ennode <span style="color:#f92672">=</span> end<span style="color:#f92672">-&gt;</span>GetNext();
@@ -472,7 +472,7 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
     jump loop
 </code></pre>
 <h2 id="the-end">THE END<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<p>Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damn article. I guess that is it. I hope yall understood what i did here :3</p>
+<p>Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damned article. I guess that is it. I hope yall understood what i did here :3</p>
 
       </div></div>
 

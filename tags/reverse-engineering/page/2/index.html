@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>reverse-engineering :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/tags/reverse-engineering/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="reverse-engineering">
+<meta property="og:description" content="" />
+<meta property="og:url" content="https://rxOred.github.io/tags/reverse-engineering/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  
+    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+
+
+
+  <link href="/tags/reverse-engineering/index.xml" rel="alternate" type="application/rss+xml" title="rxOred&#39;s blog" />
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+  
+  <div class="posts">
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/">Simplelocker, an android ransomware</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-11-18
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/ransomware/">ransomware</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/android/">android</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
+Environment - linux host with analysis tools - android vm (API version 16)  tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/analysis/simplelocker/simplelocker/">Read more →</a>
+        </div>
+        
+      </div>
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/">Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-10-23
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/offensive-sekuruty/">offensive-sekuruty</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/windoz/">windoz</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, was.
+Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.
+Out of the tools that they use to fulfill this task, script-based malware and payloads play a major role.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/csharploader/bypassing-amsi-with-csharp/">Read more →</a>
+        </div>
+        
+      </div>
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">Identifying and Reverse engineering Linked List constructs</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-10-03
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/data-structures/">data-structures</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/cpp/">cpp</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          Oh hi. Personally, I&rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/reverse-linked-lists/reverse-linked-lists/">Read more →</a>
+        </div>
+        
+      </div>
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/practical-re/practical-re-answers2/">Practical Reverse Engineering Answers 2 - sample_J DllMain</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-10-02
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          So last time we finished some exercises from the book pratical reverse engineering. Now, we have page 35 exercises. I wont cover exercise here because some are really straight forward.
+without useless intros lets get started.
+Chaper 1, page 35 We are starting with the second one, because first one is pretty easy. 2nd question asks us to decompile DllMain.
+as we can see, IDA has generated us some information of the stack as well as a nice graph view.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/practical-re/practical-re-answers2/">Read more →</a>
+        </div>
+        
+      </div>
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/practical-re/practical-re-answers/">Practical Reverse Engineering Answers</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-09-29
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          Introduction Hello, rxOred here, with another badly written write-up.
+A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts, that book&rsquo;s exercises were pretty challenging. Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share solutions with others using their blogs, r/reverse-egnineering etc.
+At that time, i never really wanted to create a blog.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/practical-re/practical-re-answers/">Read more →</a>
+        </div>
+        
+      </div>
+    
+      <div class="post on-list">
+        <h1 class="post-title">
+          <a href="https://rxOred.github.io/post/compilers/compilers01/">Compilers 101 - The front end</a>
+        </h1>
+        <div class="post-meta">
+          <span class="post-date">
+            2021-09-28
+          </span>
+          
+        </div>
+
+        
+          <span class="post-tags">
+            
+            #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+            
+            #<a href="https://rxOred.github.io/tags/compilers/">compilers</a>&nbsp;
+            
+          </span>
+        
+
+        
+
+        <div class="post-content">
+          
+          
+          Compilers This article is all about compilers.
+For many people, a compiler is a mystery. for them, it is like a magical black box that takes the source file as an input and generates a binary file that can be executed.
+However, the truth to be told, compilers are not wizards. In this article, we will start from the introduction to the front-end of a compiler from a reverse-engineering perspective.
+          
+          
+        </div>
+
+        
+        <div>
+          <a class="read-more button"
+            href="/post/compilers/compilers01/">Read more →</a>
+        </div>
+        
+      </div>
+    
+    <div class="pagination">
+  <div class="pagination__buttons">
+    
+      <span class="button previous">
+        <a href="/tags/reverse-engineering/">
+          <span class="button__icon">←</span>
+          <span class="button__text">Newer posts</span>
+        </a>
+      </span>
+    
+    
+  </div>
+</div>
+
+  </div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2021 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

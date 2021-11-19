@@ -246,7 +246,7 @@ Basically this stub go through each process of the snapshot until it finds <code
    }
 
 </code></pre></div><p>combining all into a single stub, we will get something like this as the DllMain</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> idtr {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">idtr</span> {
       DWORD idt_base;
       <span style="color:#66d9ef">short</span> idt_size;
    } IDTR, <span style="color:#f92672">*</span>PIDTR;
@@ -314,7 +314,7 @@ Basically this stub go through each process of the snapshot until it finds <code
         <span class="button previous">
             <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">
                 <span class="button__icon">←</span>
-                <span class="button__text">Identifying and Reverse engineering Linked Lists constructs</span>
+                <span class="button__text">Identifying and Reverse engineering Linked List constructs</span>
             </a>
         </span>
         

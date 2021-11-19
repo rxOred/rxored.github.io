@@ -6,7 +6,353 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 23 Oct 2021 14:20:04 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Nov 2021 13:07:00 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Simplelocker, an android ransomware</title>
+      <link>https://rxOred.github.io/post/analysis/simplelocker/simplelocker/</link>
+      <pubDate>Thu, 18 Nov 2021 13:07:00 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/post/analysis/simplelocker/simplelocker/</guid>
+      <description>Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
+Environment - linux host with analysis tools - android vm (API version 16)  tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files.</description>
+      <content>&lt;h1 id=&#34;samples&#34;&gt;Samples&lt;/h1&gt;
+&lt;p&gt;samples can be obtained from various android malware repositories. I had the dex one but
+had to get an apk version from the koodous website.&lt;/p&gt;
+&lt;h2 id=&#34;environment&#34;&gt;Environment&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;- linux host with analysis tools
+- android vm (API version 16)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;tools&#34;&gt;tools&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;- bytecodeviewer
+- apktool
+- androgaurd
+- adb
+- jd-gui 
+- enjarify
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;dynamic-analysis&#34;&gt;Dynamic analysis&lt;/h1&gt;
+&lt;p&gt;Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/creating-external-storage.png&#34; alt=&#34;creating external storage&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now, we can install the malware on the VM.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/installing-malware.png&#34; alt=&#34;installing malware&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/installed-malware.png&#34; alt=&#34;installed malware&#34;&gt;&lt;/p&gt;
+&lt;p&gt;after clicking on the installed malware, we get a prompt which contains some text from a
+language which i beleive to be alien. :) (nah its probably russian&amp;hellip;)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/alien-text.png&#34; alt=&#34;alien text&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Lets try removing the malware using adb.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/uninstalling-malware.png&#34; alt=&#34;uninstalling malware&#34;&gt;&lt;/p&gt;
+&lt;p&gt;whoaa whoaa? did we just uninstalled the ransomeware? wow man. we are sooo cool.
+no. not really. remember kid. this is a ransomware. it has probably encrypted every damn
+file on the device. To make sure, lets check the external storages we created earlier.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/encrypted-files.png&#34; alt=&#34;encrypted files&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;static-analysis&#34;&gt;Static analysis&lt;/h1&gt;
+&lt;h2 id=&#34;decompiling&#34;&gt;decompiling&lt;/h2&gt;
+&lt;p&gt;first, let&amp;rsquo;s run apktool on the apk and get the smali code.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/apk-tool-fails.png&#34; alt=&#34;apk tool fails&#34;&gt;&lt;/p&gt;
+&lt;p&gt;I think the issue is with the charset, cause the app uses some weird alien language which i beleived to be russian. I dont know a specific way to solve this problem so im gonna try updating the tool.&lt;/p&gt;
+&lt;p&gt;Well it didnt work.&lt;/p&gt;
+&lt;p&gt;Dont lose your hopes comrad i got a way around this. we can use jd-gui!!! However to do
+so, we need to convert .apk file to a .jar file.&lt;/p&gt;
+&lt;p&gt;enjarify is a nice tool to do this. here&amp;rsquo;s a link to the github repo :
+&lt;a href=&#34;https://github.com/google/enjarify.git&#34;&gt;https://github.com/google/enjarify.git&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;λ rxOred-aspiree simplelocker → enjarify simplelocker.apk 
+Using python3 as Python interpreter
+&lt;span style=&#34;color:#ae81ff&#34;&gt;1000&lt;/span&gt; classes processed
+&lt;span style=&#34;color:#ae81ff&#34;&gt;2000&lt;/span&gt; classes processed
+Output written to simplelocker-enjarify.jar
+&lt;span style=&#34;color:#ae81ff&#34;&gt;2693&lt;/span&gt; classes translated successfully, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; classes had errors
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;here is the result :)&lt;/p&gt;
+&lt;p&gt;Now, lets see what jd-gui got for us.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/decompiled.png&#34; alt=&#34;decompiled source code&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;main&#34;&gt;Main&lt;/h2&gt;
+&lt;p&gt;here we can see &lt;code&gt;Main&lt;/code&gt;, which i think is the main activity. if you dont know what it is, man go learn some basic android development&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/onCreate.png&#34; alt=&#34;onCreate function&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here we can see a call to &lt;code&gt;requestWindowFeature()&lt;/code&gt; function, which is used to exclude or include various window features such as toolbar, actionbar and so on. In this case, i honestly dont know what the parameter means (well yes ik its a constant).&lt;/p&gt;
+&lt;p&gt;then &lt;code&gt;onCreate&lt;/code&gt; invokes &lt;code&gt;setFlags()&lt;/code&gt; with &lt;code&gt;E&lt;/code&gt; as an argument. then it sets content view to some random looking value.&lt;/p&gt;
+&lt;p&gt;Then there is a juicy part. it calls &lt;code&gt;startService&lt;/code&gt; function, which is used to start a long running service as the name implies.&lt;/p&gt;
+&lt;p&gt;we can see the definition of that function right above the &lt;code&gt;onCreate()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/startService.png&#34; alt=&#34;start service&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Here it checks if &lt;code&gt;MainService.isRunning&lt;/code&gt; is true, and then it does some calls to constructors and stuff like that. we&amp;rsquo;ll come back to this later&lt;/p&gt;
+&lt;p&gt;Now let&amp;rsquo;s examine whats in the &lt;code&gt;MainService()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/MainService.png&#34; alt=&#34;MainService&#34;&gt;&lt;/p&gt;
+&lt;p&gt;whoa whoa whoaaa. this is scary ryt? we got some tor shit going on
+here.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s examine, onCreate function.&lt;/p&gt;
+&lt;p&gt;as we can see, this one creates a &lt;code&gt;ScheduleExecutorService&lt;/code&gt; class and calls &lt;code&gt;newSingleThreadScheduledExecutor&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;ScheduledExecutorService scheduledExecutorService &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Executors&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;newSingleThreadScheduledExecutor&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;ScheduleExecutorService&lt;/code&gt; is an ExecutorService which can schedule different tasks to run
+periodically. This makes sense cause when we first run the malware, we get that ugly windo
+w and it was continuasly displayed on the screen periodically until we uninstall the malwa
+re.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;MainService$3 mainService$3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; MainService$3&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+TimeUnit timeUnit &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; TimeUnit&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;SECONDS&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+scheduledExecutorService&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;scheduleAtFixedRate&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;mainService$3&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; 0L&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; 180L&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; timeUnit&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;here, onCreate function creates &lt;code&gt;mainService$3&lt;/code&gt; and schedule it to execute repeatedly for
+a fixed rate.&lt;/p&gt;
+&lt;p&gt;Just like the one above, onCreate creates &lt;code&gt;mainService4&lt;/code&gt; and do the same with it.&lt;/p&gt;
+&lt;p&gt;then..&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;Thread thread &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; Thread&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+MainService$5 mainService$5 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; MainService$5&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;mainService$5&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+thread&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;start&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;here, onCreate function creates a thread, another service called &lt;code&gt;mainService$5&lt;/code&gt; and start
+new service within the newly created thread.&lt;/p&gt;
+&lt;h2 id=&#34;what-we-know-so-far&#34;&gt;What we know so far&lt;/h2&gt;
+&lt;p&gt;Summurizing what we know so far, first we finds out that this apk cant be decompiled into smali code using
+apktool. Then we tried with jd-gui and we were successful.&lt;/p&gt;
+&lt;p&gt;About the code, we found out that &lt;code&gt;Main&lt;/code&gt; function calls &lt;code&gt;startService&lt;/code&gt; which in turn initialize &lt;code&gt;MainService&lt;/code&gt;.
+There, &lt;code&gt;MainService&lt;/code&gt; initialize &lt;code&gt;MainService$3&lt;/code&gt; &amp;amp;&amp;amp; &lt;code&gt;mainService$4&lt;/code&gt; to run periodically. Then it starts another
+thread and run &lt;code&gt;MainService$5&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;encryption&#34;&gt;Encryption&lt;/h2&gt;
+&lt;p&gt;Now let&amp;rsquo;s look at MainService$5.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/encryption.png&#34; alt=&#34;encryption&#34;&gt;&lt;/p&gt;
+&lt;p&gt;See? we got what we wanted. This is the class that encrypts our files.&lt;/p&gt;
+&lt;p&gt;First it creates a &lt;code&gt;FilesEncryptor&lt;/code&gt; object. Then it calls &lt;code&gt;filesEncryptor.encrypt()&lt;/code&gt;.
+There&amp;rsquo;s some exception handling too. if the encryption fails, it sets up some debugging
+messages and call &lt;code&gt;Log.d&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;lets take a look at &lt;code&gt;FilesEncryptor&lt;/code&gt; class.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/FileEncrypter.png&#34; alt=&#34;FilesEncryptor&#34;&gt;&lt;/p&gt;
+&lt;p&gt;ah yes! the files my friend, the files. here we can see the class has
+two array members, first one for files-to-be-decrypted and second one
+for the files-to-be-ecrypted.&lt;/p&gt;
+&lt;p&gt;then there is another member for shared preferences.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/FileEncrypterContructor.png&#34; alt=&#34;FilesEncryptorContructor&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here the function creates an &lt;code&gt;ArrayList&lt;/code&gt; and asign it to &lt;code&gt;filesToEncrypt&lt;/code&gt; &amp;amp;&amp;amp;
+&lt;code&gt;filesToDecrypt&lt;/code&gt; we previously saw. next few lines&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; arrayOfString &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; String&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;1&lt;span style=&#34;color:#f92672&#34;&gt;];&lt;/span&gt;
+arrayOfString&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;0&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;enc&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+List&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; list &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Arrays&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;asList&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;arrayOfString&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;extensionsToDecrypt&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; list&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+SharedPreferences sharedPreferences &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; paramContext&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getSharedPreferences&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;AppPrefs&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; 0&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;settings&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; sharedPreferences&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+String str &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getExternalStorageDirectory&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;toString&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;what the above snippet does is, fist it creates a string array and then set 1st element (0) to &amp;ldquo;enc&amp;rdquo;. Then the string array is assigned to &lt;code&gt;List&amp;lt;String&amp;gt; list&lt;/code&gt;, which then assigned to &lt;code&gt;extensionsToDecrypt&lt;/code&gt;. So all above snippet does is, creating assigning a List of extensions so that malware can decrypt only those that it previously encrypted.&lt;/p&gt;
+&lt;p&gt;then we can see &lt;code&gt;FilesEncryptor&lt;/code&gt; calls &lt;code&gt;getFileNames()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Well..Im not gonna take a look at that one cause, man, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
+that appends &lt;code&gt;filesToEncrypt&lt;/code&gt; ArrayList.&lt;/p&gt;
+&lt;p&gt;Now lets go back to &lt;code&gt;mainService$5&lt;/code&gt;. As we saw earlier, this is the function which calls
+&lt;code&gt;FilesEncryptor.encrypt()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/encrypt.png&#34; alt=&#34;encrypt function&#34;&gt;&lt;/p&gt;
+&lt;p&gt;I mean dude, i you got two holes in your face filled with two testical like balls, you
+can clear see the key and the algorithm. And that&amp;rsquo;s all you want to decrypt your files.&lt;/p&gt;
+&lt;p&gt;Anyway, lets analyze this one&amp;hellip; first there is an if statement which check if
+&lt;code&gt;sharedPreferences&lt;/code&gt; contains &lt;code&gt;str1&lt;/code&gt;, which is &amp;ldquo;FILES_WAS_ENCRYPTED&amp;rdquo;. then the next if
+statement checks whether is it possible to write to external storages using
+&lt;code&gt;isExternalStorageWritable()&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;AesCrypt aesCrypt &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; AesCrypt&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jndlasf074hr&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then we can see above snippet, which initialize an &lt;code&gt;AesCrypt&lt;/code&gt; object and pass the key
+&lt;code&gt;jndlasf074hr&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;then it creates an iterator to &lt;code&gt;filesToEncrypt&lt;/code&gt; and iterates through each file.&lt;/p&gt;
+&lt;p&gt;in the loop, if current one does not have a next, function sets &lt;code&gt;sharedPreferences&lt;/code&gt; to
+&amp;ldquo;FILES_WAS_ENCRYPTED&amp;rdquo;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;str2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.enc&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+String str3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; stringBuilder&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;append&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str2&lt;span style=&#34;color:#f92672&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;toString&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+aesCrypt&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;encrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str4&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; str3&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str4&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;delete&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Again, a string is assigned with &amp;ldquo;.enc&amp;rdquo;. Now this looks like an extension too. So my guess
+previous one is for folders/directories and this one is for files.&lt;/p&gt;
+&lt;p&gt;then &lt;code&gt;str3&lt;/code&gt; is assigned with a string with &lt;code&gt;str2&lt;/code&gt; appended and is passed to &lt;code&gt;aesCrypt.encrypt()&lt;/code&gt; function alongside with &lt;code&gt;str4&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;String str4 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; sharedPreferences1&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;next&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;which is shown in the above snippet.&lt;/p&gt;
+&lt;p&gt;then a new file is created passing &lt;code&gt;str4&lt;/code&gt; as the argument and then deleted.
+So this one is basically a loop that encrypts every file that is specified in the
+&lt;code&gt;filesToEncrypt&lt;/code&gt; ArrayList and deletes the original one.&lt;/p&gt;
+&lt;p&gt;Cool. Now we have dissected the encryption part. Now lets take a look at decryption part.&lt;/p&gt;
+&lt;h2 id=&#34;decryption&#34;&gt;Decryption&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/decryption.png&#34; alt=&#34;decryption&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Since we have already analyzed main parts of the code, this is going
+to be easy.&lt;/p&gt;
+&lt;p&gt;Just like the &lt;code&gt;encrypt&lt;/code&gt;, this one too, check whether external storagesis writable. if true, an &lt;code&gt;AesCrypt&lt;/code&gt; object is constructed and passed
+the key as an argument.&lt;/p&gt;
+&lt;p&gt;oh yeah an iterator is also created.&lt;/p&gt;
+&lt;p&gt;then there is a while loop, which again checks whether if &lt;code&gt;iterator.hasNext()&lt;/code&gt; is true. if true, &lt;code&gt;str1&lt;/code&gt; is assigned with &lt;code&gt;iterator.next()&lt;/code&gt; and &lt;code&gt;str2&lt;/code&gt; is with &amp;ldquo;.&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;then we have &lt;code&gt;int i&lt;/code&gt;, which is initialized with &lt;code&gt;str1.substring(0, i)&lt;/code&gt;
+both are then passed to &lt;code&gt;aesCrypt.decrypt()&lt;/code&gt; function to decrypt the
+file.&lt;/p&gt;
+&lt;p&gt;then the file named with &lt;code&gt;str1&lt;/code&gt; is deleted and loop continued.&lt;/p&gt;
+&lt;p&gt;Now, that&amp;rsquo;s all we need to decrypt the files!!!. However feel free to take a look at
+AesCrypt if you want.&lt;/p&gt;
+&lt;h2 id=&#34;other-stuff&#34;&gt;Other stuff&lt;/h2&gt;
+&lt;p&gt;Since we are done with the encryption part, let&amp;rsquo;s see what does this thing do with tor.
+First of all, goal here is not to dissect everything but to find anything useful for
+host-based / network signatures.&lt;/p&gt;
+&lt;p&gt;So what looks juicy for me is &lt;code&gt;Constants.class&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/constants.png&#34; alt=&#34;constants&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Holy shit. i should have analyzed this one before the other functions. this one gives us the key in plain.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/constants1.png&#34; alt=&#34;constants&#34;&gt;&lt;/p&gt;
+&lt;p&gt;see? we got the file extensions that this ransomware encrypts (if you
+have analyzed &lt;code&gt;getFileNames&lt;/code&gt;, this must be familiar to you&amp;hellip;&lt;/p&gt;
+&lt;p&gt;Now pay your attention to the first constant defined in the class &lt;code&gt;ADMIN_URL&lt;/code&gt;. This sounds
+like a CnC server address. this is a good network based indicator.
+&lt;code&gt;http://xeyocsu7fu2vjhxs.onion/&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;writing-a-decrypter&#34;&gt;writing a decrypter&lt;/h2&gt;
+&lt;p&gt;Since we know how the ecnryption and decryption works, we can write an app that can decrypt all the files. I&amp;rsquo;ll leave a snippet down below
+and you can copy it to android studio.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;package&lt;/span&gt; com.example.decrypter&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; androidx.appcompat.app.AppCompatActivity&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; android.content.SharedPreferences&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; android.os.Bundle&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; android.os.Environment&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; android.view.View&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.io.File&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.io.IOException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.io.UnsupportedEncodingException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.security.InvalidAlgorithmParameterException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.security.InvalidKeyException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.security.NoSuchAlgorithmException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.util.ArrayList&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.util.Arrays&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.util.Iterator&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; java.util.List&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+
+&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; javax.crypto.NoSuchPaddingException&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;MainActivity&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;extends&lt;/span&gt; AppCompatActivity &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; ArrayList filesToDecrypt&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; List&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; extensionsToDecrypt&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;@Override&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;protected&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;onCreate&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;Bundle savedInstanceState&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;super&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;onCreate&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;savedInstanceState&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+        setContentView&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;R&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;layout&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;activity_main&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;onClick&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;View view&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;filesToDecrypt&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; ArrayList&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        String&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; arrayOfString &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; String&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;1&lt;span style=&#34;color:#f92672&#34;&gt;];&lt;/span&gt;
+        arrayOfString&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;0&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;enc&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;extensionsToDecrypt&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Arrays&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;asList&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;arrayOfString&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+        File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;Environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getExternalStorageDirectory&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;toString&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;());&lt;/span&gt;
+        getFileNames&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;file&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            decrypt&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;NoSuchPaddingException e&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;NoSuchAlgorithmException e&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;InvalidAlgorithmParameterException e&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;InvalidKeyException e&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;getFileNames&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;File paramFile&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        File&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; arrayOfFile &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; paramFile&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;listFiles&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 0&lt;span style=&#34;color:#f92672&#34;&gt;;;&lt;/span&gt; i&lt;span style=&#34;color:#f92672&#34;&gt;++)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; k &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; arrayOfFile&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;length&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;i &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;=&lt;/span&gt; k&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+            String absolutePath &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; paramFile&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getAbsolutePath&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+            String fileName &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; arrayOfFile&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;i&lt;span style=&#34;color:#f92672&#34;&gt;].&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getName&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+            File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;absolutePath&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; fileName&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; isDirectory &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;isDirectory&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;isDirectory&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+                File&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; arrayOfFile1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;listFiles&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;arrayOfFile1 &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+                    &lt;span style=&#34;color:#75715e&#34;&gt;// if a directory, get names of files inside it recursively
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;                    getFileNames&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;file&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+                &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#75715e&#34;&gt;// if not a directory
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;            String str3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getAbsolutePath&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+            String subStr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; str3&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;substring&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str3&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;lastIndexOf&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 1&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+            List&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; list &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;extensionsToDecrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#75715e&#34;&gt;// if pathname contains .enc
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; bool1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; list&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;contains&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;subStr&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;bool1&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+                list &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;filesToDecrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+                fileName &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getAbsolutePath&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+                list&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;add&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;fileName&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;isExternalStorageWritable&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        String ext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Environment&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;getExternalStorageState&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        String mounted &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;mounted&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; isMounted &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; mounted&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;equals&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;ext&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;isMounted&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        isMounted &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        mounted &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; isMounted&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;decrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;throws&lt;/span&gt; NoSuchPaddingException&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; NoSuchAlgorithmException&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; IOException&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; InvalidAlgorithmParameterException&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; InvalidKeyException &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; isWritable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; isExternalStorageWritable&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;isWritable&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            AesCrypt aesCrypt &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; AesCrypt&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jndlasf074hr&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+            Iterator&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; iterator &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;filesToDecrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;iterator&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;boolean&lt;/span&gt; hasNext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; iterator&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;hasNext&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;hasNext&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+                    String inputFileName &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; iterator&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;next&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+                    hasNext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+                    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; inputFileName&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;lastIndexOf&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+                    String outputFileName &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; inputFileName&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;substring&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;0&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; i&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+                    aesCrypt&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;decrypt&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;inputFileName&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; outputFileName&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+                   File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;inputFileName&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+                    file&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;delete&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+                    &lt;span style=&#34;color:#66d9ef&#34;&gt;continue&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+                &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;oh and just copy the contents of the &lt;code&gt;AesCrypt.class&lt;/code&gt; from jd-gui. then build it and install the app on the android VM.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/decrypter.png&#34; alt=&#34;decrypter app&#34;&gt;&lt;/p&gt;
+&lt;p&gt;yae yae ik. Im not a UI designer or an android developer.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/decryted.png&#34; alt=&#34;files decrypted!!&#34;&gt;&lt;/p&gt;
+&lt;p&gt;So yeah i think that&amp;rsquo;s it.&lt;/p&gt;
+&lt;p&gt;#Speard Anarchy!&lt;/p&gt;
+</content>
+    </item>
+    
+    <item>
+      <title>Setting Up Kdnet</title>
+      <link>https://rxOred.github.io/post/windowsinternals/setting-up-kdnet/</link>
+      <pubDate>Mon, 08 Nov 2021 21:55:11 +0530</pubDate>
+      
+      <guid>https://rxOred.github.io/post/windowsinternals/setting-up-kdnet/</guid>
+      <description>Aight kids. this is going to be a short article on how to setup kdnet for windows kernel debugging.
+So, kernel debugging is very different from debugging a userland program. You cant just fire up gdb or windbg and start debugging your own kernel. What you gotta do is, setup a virtual machine.
+Im going over my setup here for windows kernel debugging, which contains following stuff.
+ 2 windows 10 virtual machines Wdk installed on both (not necessary) windows debugging tools installed on both (which includes, windbg)  Assuming yall have all that up and running, lets get into some action.</description>
+      <content>&lt;p&gt;Aight kids. this is going to be a short article on how to setup kdnet for windows kernel debugging.&lt;/p&gt;
+&lt;p&gt;So, kernel debugging is very different from debugging a userland program. You cant just fire up gdb or windbg and start debugging your own kernel. What you gotta do is, setup a virtual machine.&lt;/p&gt;
+&lt;p&gt;Im going over my setup here for windows kernel debugging, which contains following stuff.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;2 windows 10 virtual machines&lt;/li&gt;
+&lt;li&gt;Wdk installed on both (not necessary)&lt;/li&gt;
+&lt;li&gt;windows debugging tools installed on both (which includes, windbg)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Assuming yall have all that up and running, lets get into some action. no not really&amp;hellip;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/WindowsInternals/my-lab.png&#34; alt=&#34;my lab&#34;&gt;&lt;/p&gt;
+&lt;p&gt;yae yae ik, that&amp;rsquo;s alot of shit i got here. Dont focus on any other bullshit but only on those that are highlighted (or whatever i have done with red color).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/WindowsInternals/flareVM.png&#34; alt=&#34;Flare Vm&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Aaand yes, those are &amp;lsquo;flare-vm&amp;rsquo;, &amp;lsquo;VMs&amp;rsquo; cause i just cloned those two from my malware lab. Again, yes I run a windows on my host machine and I havent activated it. AND PLEASE DONT CAUSE FUCK MICROSOFT AND FUCK WINDOWS. And those are my employer&amp;rsquo;s opinions (which i dont have, and you are welcome if you are interested in becoming my employer :3 )&lt;/p&gt;
+&lt;p&gt;SO enough with bullshit. Now we gotta setup windbg on host machine&amp;hellip;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://rxOred.github.io/img/WindowsInternals/windbg.png&#34;&gt;windbg&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;See? windbg looks worse that shit when you open it up for the first time (windbg for windows 10 looks kinda cute though :3 ). lets make this thing bit more useful.&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</title>
       <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
@@ -143,7 +489,7 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
     </item>
     
     <item>
-      <title>Identifying and Reverse engineering Linked Lists constructs</title>
+      <title>Identifying and Reverse engineering Linked List constructs</title>
       <link>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</link>
       <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
       
@@ -169,21 +515,21 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
          ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next;
    };
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There&amp;rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class LinkedList {
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;LinkedList&lt;/span&gt; {
       ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head;
       &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; count;
    }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;with that, lets implement a stack data structure using linked lists.&lt;/p&gt;
 &lt;p&gt;node&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class ListNode {
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ListNode&lt;/span&gt; {
            &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; ln_value;
            ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;ln_next;
-       public:
-           ListNode(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value)&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt; ln_value(value), ln_next(nullptr) {}
-           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; GetValue(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_value; }
-           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;GetNext(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_next; }
-           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; SetValue(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value) { ln_value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; value; }
-           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; SetNext(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next) { ln_next &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next; }
+       &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+           ListNode(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value)&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt; ln_value(value), ln_next(&lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;) {}
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;GetValue&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_value; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;GetNext&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ln_next; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;SetValue&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; value) { ln_value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; value; }
+           &lt;span style=&#34;color:#66d9ef&#34;&gt;inline&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;SetNext&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next) { ln_next &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; next; }
    };
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;linked list&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   class LinkedList {
@@ -377,22 +723,22 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
 &lt;li&gt;Start iteration from the first node of the fist list and first node of the second list(reversed list)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Here is the implementation.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReorderList&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReorderList&lt;/span&gt;(ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;head)
     {
         &lt;span style=&#34;color:#75715e&#34;&gt;/* seperating the list */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(l &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext() &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr){
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(l &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext() &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;){
             f &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             l &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; l&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext()&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
         }
 
         &lt;span style=&#34;color:#75715e&#34;&gt;/* saving the first node of second list */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
-        f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(nullptr);
+        f&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(&lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;);
 
         &lt;span style=&#34;color:#75715e&#34;&gt;/* reversing the second list */&lt;/span&gt;
-        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; nullptr;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+        ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(node &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;) {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(prev);
             prev &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node;
@@ -402,7 +748,7 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
         &lt;span style=&#34;color:#75715e&#34;&gt;/* re ordering lists */&lt;/span&gt;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;start &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; head;
         ListNode &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;end &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; prev;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (start &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; end &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; nullptr) {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; (start &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; end &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;nullptr&lt;/span&gt;) {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; nnode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
             start&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;SetNext(end);
             &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; ennode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; end&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;GetNext();
@@ -470,7 +816,7 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
     jump loop
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
-&lt;p&gt;Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damn article. I guess that is it. I hope yall understood what i did here :3&lt;/p&gt;
+&lt;p&gt;Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damned article. I guess that is it. I hope yall understood what i did here :3&lt;/p&gt;
 </content>
     </item>
     
@@ -577,7 +923,7 @@ Basically this stub go through each process of the snapshot until it finds &lt;c
    }
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;combining all into a single stub, we will get something like this as the DllMain&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; idtr {
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;   &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;idtr&lt;/span&gt; {
       DWORD idt_base;
       &lt;span style=&#34;color:#66d9ef&#34;&gt;short&lt;/span&gt; idt_size;
    } IDTR, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;PIDTR;
