@@ -179,7 +179,7 @@ language which i beleive to be alien. :) (nah its probably russian&hellip;)</p>
 <p><img src="/img/simple-locker/alien-text.png" alt="alien text"></p>
 <p>Lets try removing the malware using adb.</p>
 <p><img src="/img/simple-locker/uninstalling-malware.png" alt="uninstalling malware"></p>
-<p>whoaa whoaa? did we just uninstalled the ransomeware? wow man. we are sooo cool.
+<p>whoaa whoaa? did we just uninstalled the ransomeware? wow. we are sooo cool.
 no. not really. remember kid. this is a ransomware. it has probably encrypted every damn
 file on the device. To make sure, lets check the external storages we created earlier.</p>
 <p><img src="/img/simple-locker/encrypted-files.png" alt="encrypted files"></p>
@@ -203,7 +203,7 @@ Output written to simplelocker-enjarify.jar
 <p>Now, lets see what jd-gui got for us.</p>
 <p><img src="/img/simple-locker/decompiled.png" alt="decompiled source code"></p>
 <h2 id="main">Main<a href="#main" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<p>here we can see <code>Main</code>, which i think is the main activity. if you dont know what it is, man go learn some basic android development</p>
+<p>here we can see <code>Main</code>, which i think is the main activity. if you dont know what it is, refer an android development guide.</p>
 <p><img src="/img/simple-locker/onCreate.png" alt="onCreate function"></p>
 <p>here we can see a call to <code>requestWindowFeature()</code> function, which is used to exclude or include various window features such as toolbar, actionbar and so on. In this case, i honestly dont know what the parameter means (well yes ik its a constant).</p>
 <p>then <code>onCreate</code> invokes <code>setFlags()</code> with <code>E</code> as an argument. then it sets content view to some random looking value.</p>
@@ -270,7 +270,7 @@ File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</
 <span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
 </code></pre></div><p>what the above snippet does is, fist it creates a string array and then set 1st element (0) to &ldquo;enc&rdquo;. Then the string array is assigned to <code>List&lt;String&gt; list</code>, which then assigned to <code>extensionsToDecrypt</code>. So all above snippet does is, creating assigning a List of extensions so that malware can decrypt only those that it previously encrypted.</p>
 <p>then we can see <code>FilesEncryptor</code> calls <code>getFileNames()</code>.</p>
-<p>Well..Im not gonna take a look at that one cause, man, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
+<p>Well..Im not gonna take a look at that one cause, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
 that appends <code>filesToEncrypt</code> ArrayList.</p>
 <p>Now lets go back to <code>mainService$5</code>. As we saw earlier, this is the function which calls
 <code>FilesEncryptor.encrypt()</code>.</p>

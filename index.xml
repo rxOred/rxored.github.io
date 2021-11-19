@@ -41,7 +41,7 @@ language which i beleive to be alien. :) (nah its probably russian&amp;hellip;)&
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/alien-text.png&#34; alt=&#34;alien text&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Lets try removing the malware using adb.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/uninstalling-malware.png&#34; alt=&#34;uninstalling malware&#34;&gt;&lt;/p&gt;
-&lt;p&gt;whoaa whoaa? did we just uninstalled the ransomeware? wow man. we are sooo cool.
+&lt;p&gt;whoaa whoaa? did we just uninstalled the ransomeware? wow. we are sooo cool.
 no. not really. remember kid. this is a ransomware. it has probably encrypted every damn
 file on the device. To make sure, lets check the external storages we created earlier.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/encrypted-files.png&#34; alt=&#34;encrypted files&#34;&gt;&lt;/p&gt;
@@ -65,7 +65,7 @@ Output written to simplelocker-enjarify.jar
 &lt;p&gt;Now, lets see what jd-gui got for us.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/decompiled.png&#34; alt=&#34;decompiled source code&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;main&#34;&gt;Main&lt;/h2&gt;
-&lt;p&gt;here we can see &lt;code&gt;Main&lt;/code&gt;, which i think is the main activity. if you dont know what it is, man go learn some basic android development&lt;/p&gt;
+&lt;p&gt;here we can see &lt;code&gt;Main&lt;/code&gt;, which i think is the main activity. if you dont know what it is, refer an android development guide.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/onCreate.png&#34; alt=&#34;onCreate function&#34;&gt;&lt;/p&gt;
 &lt;p&gt;here we can see a call to &lt;code&gt;requestWindowFeature()&lt;/code&gt; function, which is used to exclude or include various window features such as toolbar, actionbar and so on. In this case, i honestly dont know what the parameter means (well yes ik its a constant).&lt;/p&gt;
 &lt;p&gt;then &lt;code&gt;onCreate&lt;/code&gt; invokes &lt;code&gt;setFlags()&lt;/code&gt; with &lt;code&gt;E&lt;/code&gt; as an argument. then it sets content view to some random looking value.&lt;/p&gt;
@@ -132,7 +132,7 @@ File file &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span styl
 &lt;span style=&#34;color:#66d9ef&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;str&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;what the above snippet does is, fist it creates a string array and then set 1st element (0) to &amp;ldquo;enc&amp;rdquo;. Then the string array is assigned to &lt;code&gt;List&amp;lt;String&amp;gt; list&lt;/code&gt;, which then assigned to &lt;code&gt;extensionsToDecrypt&lt;/code&gt;. So all above snippet does is, creating assigning a List of extensions so that malware can decrypt only those that it previously encrypted.&lt;/p&gt;
 &lt;p&gt;then we can see &lt;code&gt;FilesEncryptor&lt;/code&gt; calls &lt;code&gt;getFileNames()&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Well..Im not gonna take a look at that one cause, man, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
+&lt;p&gt;Well..Im not gonna take a look at that one cause, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
 that appends &lt;code&gt;filesToEncrypt&lt;/code&gt; ArrayList.&lt;/p&gt;
 &lt;p&gt;Now lets go back to &lt;code&gt;mainService$5&lt;/code&gt;. As we saw earlier, this is the function which calls
 &lt;code&gt;FilesEncryptor.encrypt()&lt;/code&gt;.&lt;/p&gt;
