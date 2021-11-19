@@ -118,7 +118,7 @@ messages and call &lt;code&gt;Log.d&lt;/code&gt;&lt;/p&gt;
 two array members, first one for files-to-be-decrypted and second one
 for the files-to-be-ecrypted.&lt;/p&gt;
 &lt;p&gt;then there is another member for shared preferences.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/FileEncrypterContructor.png&#34; alt=&#34;FilesEncryptorContructor&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/simple-locker/FileEncrypterConstructor.png&#34; alt=&#34;FilesEncryptorContructor&#34;&gt;&lt;/p&gt;
 &lt;p&gt;here the function creates an &lt;code&gt;ArrayList&lt;/code&gt; and asign it to &lt;code&gt;filesToEncrypt&lt;/code&gt; &amp;amp;&amp;amp;
 &lt;code&gt;filesToDecrypt&lt;/code&gt; we previously saw. next few lines&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;String&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; arrayOfString &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; String&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;1&lt;span style=&#34;color:#f92672&#34;&gt;];&lt;/span&gt;
