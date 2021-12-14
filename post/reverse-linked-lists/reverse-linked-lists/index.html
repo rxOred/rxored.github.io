@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   
-    <title>Identifying and Reverse engineering Linked List constructs :: rxOred&#39;s blog</title>
+    <title>Reverse engineering Linkeds lists :: rxOred&#39;s blog</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around." />
+<meta name="description" content="Identifying and Reverse engineering Linked List constructs" />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/" />
@@ -25,7 +25,7 @@
 
 <link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
 
-  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+  <link rel="shortcut icon" href="https://rxOred.github.io/favicon.ico">
 
 
 
@@ -35,14 +35,12 @@
 
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Identifying and Reverse engineering Linked List constructs">
-<meta property="og:description" content="Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around." />
+<meta property="og:title" content="Reverse engineering Linkeds lists">
+<meta property="og:description" content="Identifying and Reverse engineering Linked List constructs" />
 <meta property="og:url" content="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/" />
 <meta property="og:site_name" content="rxOred&#39;s blog" />
 
-  
-    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
-  
+  <meta property="og:image" content="https://rxOred.github.io/img/reverse-linkedlist/linkedlist.png">
 
 <meta property="og:image:width" content="2048">
 <meta property="og:image:height" content="1024">
@@ -124,12 +122,14 @@
     
 <div class="post">
   <h1 class="post-title">
-    <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">Identifying and Reverse engineering Linked List constructs</a></h1>
+    <a href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/">Reverse engineering Linkeds lists</a></h1>
   <div class="post-meta">
     
       <span class="post-date">
-        2021-10-03 
+        2021-10-03
+        
       </span>
+    
     
     
   </div>
@@ -145,15 +145,19 @@
     
   </span>
   
-
   
+  <img src="https://rxOred.github.io/img/reverse-linkedlist/linkedlist.png"
+    class="post-cover"
+    alt="Reverse engineering Linkeds lists"
+    title="Cover Image" />
+
 
   
 
   <div class="post-content"><div>
         <p>Oh hi. Personally, I&rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named <code>Reorder List</code>. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.</p>
 <p>And in this article, I&rsquo;m hoping to cover everything from what is a linked list, how they are implemented in assembly to solving and reversing the solution of the above problem.</p>
-<h2 id="what-is-it-and-implementation">What is it? and implementation<a href="#what-is-it-and-implementation" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="what-is-it-and-implementation">What is it? and Implementation<a href="#what-is-it-and-implementation" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>A linked list is a data structure. unlike an array where memory is organized linearly, nodes of linked list is scrattered around memory. Each of these nodes contains a pointer to the next node and thats how those scrattered nodes are located.</p>
 <p>Lets take a linked list which stores integers as an example</p>
 <p>Each node must contain space to store the integer and the pointer to next node. So, a connection between nodes in memory may look like this</p>
@@ -488,14 +492,14 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
         <span class="button previous">
             <a href="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/">
                 <span class="button__icon">←</span>
-                <span class="button__text">Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</span>
+                <span class="button__text">From AMSI to Reflection</span>
             </a>
         </span>
         
         
         <span class="button next">
             <a href="https://rxOred.github.io/post/practical-re/practical-re-answers2/">
-                <span class="button__text">Practical Reverse Engineering Answers 2 - sample_J DllMain</span>
+                <span class="button__text">sample_j DllMain</span>
                 <span class="button__icon">→</span>
             </a>
         </span>

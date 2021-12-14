@@ -6,8 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
-Environment - linux host with analysis tools - android vm (API version 16)  tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files." />
+<meta name="description" content="dissecting a simple android ransomware" />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/" />
@@ -26,7 +25,7 @@ Environment - linux host with analysis tools - android vm (API version 16)  tool
 
 <link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
 
-  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon/red.png">
+  <link rel="shortcut icon" href="https://rxOred.github.io/favicon.ico">
 
 
 
@@ -37,14 +36,11 @@ Environment - linux host with analysis tools - android vm (API version 16)  tool
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
 <meta property="og:title" content="Simplelocker, an android ransomware">
-<meta property="og:description" content="Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
-Environment - linux host with analysis tools - android vm (API version 16)  tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files." />
+<meta property="og:description" content="dissecting a simple android ransomware" />
 <meta property="og:url" content="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/" />
 <meta property="og:site_name" content="rxOred&#39;s blog" />
 
-  
-    <meta property="og:image" content="https://rxOred.github.io/img/favicon/red.png">
-  
+  <meta property="og:image" content="https://rxOred.github.io/img/simplelocker/simplelocker.jpg">
 
 <meta property="og:image:width" content="2048">
 <meta property="og:image:height" content="1024">
@@ -130,8 +126,10 @@ Environment - linux host with analysis tools - android vm (API version 16)  tool
   <div class="post-meta">
     
       <span class="post-date">
-        2021-11-18 
+        2021-11-18
+        
       </span>
+    
     
     
   </div>
@@ -147,8 +145,12 @@ Environment - linux host with analysis tools - android vm (API version 16)  tool
     
   </span>
   
-
   
+  <img src="https://rxOred.github.io/img/simplelocker/simplelocker.jpg"
+    class="post-cover"
+    alt="Simplelocker, an android ransomware"
+    title="Cover Image" />
+
 
   
 
@@ -474,7 +476,7 @@ and you can copy it to android studio.</p>
         
         <span class="button next">
             <a href="https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/">
-                <span class="button__text">Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</span>
+                <span class="button__text">From AMSI to Reflection</span>
                 <span class="button__icon">→</span>
             </a>
         </span>

@@ -8,7 +8,7 @@
     <language>en-us</language>
     <lastBuildDate>Sat, 02 Oct 2021 00:40:06 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/categories/write-up/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Practical Reverse Engineering Answers 2 - sample_J DllMain</title>
+      <title>sample_j DllMain</title>
       <link>https://rxOred.github.io/post/practical-re/practical-re-answers2/</link>
       <pubDate>Sat, 02 Oct 2021 00:40:06 +0000</pubDate>
       
@@ -167,7 +167,7 @@ Basically this stub go through each process of the snapshot until it finds &lt;c
     </item>
     
     <item>
-      <title>Practical Reverse Engineering Answers</title>
+      <title>Practical Reverse Engineering writeup</title>
       <link>https://rxOred.github.io/post/practical-re/practical-re-answers/</link>
       <pubDate>Wed, 29 Sep 2021 09:46:25 +0000</pubDate>
       

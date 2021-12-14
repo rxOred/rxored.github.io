@@ -325,7 +325,7 @@ and you can copy it to android studio.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Bypassing AMSI (Antimalware Scan Interface) With CSharp 0x00</title>
+      <title>From AMSI to Reflection</title>
       <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
       
@@ -460,7 +460,7 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
     </item>
     
     <item>
-      <title>Identifying and Reverse engineering Linked List constructs</title>
+      <title>Reverse engineering Linkeds lists</title>
       <link>https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/</link>
       <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
       
@@ -468,7 +468,7 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
       <description>Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.</description>
       <content>&lt;p&gt;Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named &lt;code&gt;Reorder List&lt;/code&gt;. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around.&lt;/p&gt;
 &lt;p&gt;And in this article, I&amp;rsquo;m hoping to cover everything from what is a linked list, how they are implemented in assembly to solving and reversing the solution of the above problem.&lt;/p&gt;
-&lt;h2 id=&#34;what-is-it-and-implementation&#34;&gt;What is it? and implementation&lt;/h2&gt;
+&lt;h2 id=&#34;what-is-it-and-implementation&#34;&gt;What is it? and Implementation&lt;/h2&gt;
 &lt;p&gt;A linked list is a data structure. unlike an array where memory is organized linearly, nodes of linked list is scrattered around memory. Each of these nodes contains a pointer to the next node and thats how those scrattered nodes are located.&lt;/p&gt;
 &lt;p&gt;Lets take a linked list which stores integers as an example&lt;/p&gt;
 &lt;p&gt;Each node must contain space to store the integer and the pointer to next node. So, a connection between nodes in memory may look like this&lt;/p&gt;
@@ -792,7 +792,7 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
     </item>
     
     <item>
-      <title>Practical Reverse Engineering Answers 2 - sample_J DllMain</title>
+      <title>sample_j DllMain</title>
       <link>https://rxOred.github.io/post/practical-re/practical-re-answers2/</link>
       <pubDate>Sat, 02 Oct 2021 00:40:06 +0000</pubDate>
       
@@ -951,7 +951,7 @@ Basically this stub go through each process of the snapshot until it finds &lt;c
     </item>
     
     <item>
-      <title>Practical Reverse Engineering Answers</title>
+      <title>Practical Reverse Engineering writeup</title>
       <link>https://rxOred.github.io/post/practical-re/practical-re-answers/</link>
       <pubDate>Wed, 29 Sep 2021 09:46:25 +0000</pubDate>
       
@@ -1062,7 +1062,7 @@ stack frame. Guess what? stack is non-executable :3&lt;/p&gt;
     </item>
     
     <item>
-      <title>Compilers 101 - The front end</title>
+      <title>Compilers 101</title>
       <link>https://rxOred.github.io/post/compilers/compilers01/</link>
       <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
       
@@ -1223,7 +1223,7 @@ And I&amp;rsquo;m familiar with C/C++ (language of choice :), assembly, python a
     </item>
     
     <item>
-      <title>Hello, welcome to rxOred&#39;s corner of this inter-networked maze!</title>
+      <title>Hello!</title>
       <link>https://rxOred.github.io/post/hello/</link>
       <pubDate>Tue, 28 Sep 2021 16:21:05 +0000</pubDate>
       
@@ -1235,6 +1235,7 @@ Anyway, about this blog. Here I will be posting my projects, research, guides, a
 &lt;p&gt;Here I am, editing the first blog post :)&lt;/p&gt;
 &lt;p&gt;Anyway, about this blog. Here I will be posting my projects, research, guides, and other useless information on programming, system security, and reverse engineering. I&amp;rsquo;m also looking forward to starting posting malware analysis reports and CTF writeups.&lt;/p&gt;
 &lt;p&gt;So, I think that&amp;rsquo;s it :3&lt;/p&gt;
+&lt;p&gt;#spread anarchy!&lt;/p&gt;
 </content>
     </item>
     
