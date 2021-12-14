@@ -13,12 +13,12 @@
       <pubDate>Mon, 13 Dec 2021 11:50:35 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/analysis/anubis/anubis/</guid>
-      <description>Samples https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip
+      <description>Samples github
 Environment - linux host - android vm (API version 23) (no google services)  Tools - apktool - adb - frida - mobsf - jd-gui  Setting things up First of all, finding the SDK version is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.
 &amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&amp;lt;manifest xmlns:android=&amp;#34;http://schemas.android.com/apk/res/android&amp;#34; android:compileSdkVersion=&amp;#34;23&amp;#34; android:compileSdkVersionCodename=&amp;#34;6.0-2438415&amp;#34; package=&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34; platformBuildVersionCode=&amp;#34;23&amp;#34; platformBuildVersionName=&amp;#34;6.0-2438415&amp;#34;&amp;gt; as it is shown, the SDK version is 23.
 However, since frida will be used in dynamic analysis, it is easier to use an image without Google services.</description>
       <content>&lt;h1 id=&#34;samples&#34;&gt;Samples&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&#34;&gt;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&#34;&gt;github&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;environment&#34;&gt;Environment&lt;/h1&gt;
 &lt;pre&gt;&lt;code&gt;- linux host
 - android vm (API version 23) (no google services)
