@@ -3,12 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://rxOred.github.io/tags/android/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
   </url><url>
-    <loc>https://rxOred.github.io/categories/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
+    <loc>https://rxOred.github.io/post/analysis/anubis/anubis/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/tags/malware/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/post/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/tags/reverse-engineering/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/tags/</loc>
+    <lastmod>2021-12-13T11:50:35+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/categories/</loc>
     <lastmod>2021-11-18T13:07:00+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/tags/ransomware/</loc>
@@ -17,16 +32,7 @@
     <loc>https://rxOred.github.io/categories/report/</loc>
     <lastmod>2021-11-18T13:07:00+00:00</lastmod>
   </url><url>
-    <loc>https://rxOred.github.io/tags/reverse-engineering/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
-  </url><url>
-    <loc>https://rxOred.github.io/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
-  </url><url>
     <loc>https://rxOred.github.io/post/analysis/simplelocker/simplelocker/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
-  </url><url>
-    <loc>https://rxOred.github.io/tags/</loc>
     <lastmod>2021-11-18T13:07:00+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</loc>

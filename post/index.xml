@@ -6,7 +6,137 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 18 Nov 2021 13:07:00 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 13 Dec 2021 11:50:35 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Anubis, the banking trojan</title>
+      <link>https://rxOred.github.io/post/analysis/anubis/anubis/</link>
+      <pubDate>Mon, 13 Dec 2021 11:50:35 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/post/analysis/anubis/anubis/</guid>
+      <description>Samples https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip
+Environment - linux host - android vm (API version 23) (no google services)  Tools - apktool - adb - frida - mobsf - jd-gui  Setting things up First of all, finding the SDK version is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.
+&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&amp;lt;manifest xmlns:android=&amp;#34;http://schemas.android.com/apk/res/android&amp;#34; android:compileSdkVersion=&amp;#34;23&amp;#34; android:compileSdkVersionCodename=&amp;#34;6.0-2438415&amp;#34; package=&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34; platformBuildVersionCode=&amp;#34;23&amp;#34; platformBuildVersionName=&amp;#34;6.0-2438415&amp;#34;&amp;gt; as it is shown, the SDK version is 23.
+However, since frida will be used in dynamic analysis, it is easier to use an image without Google services.</description>
+      <content>&lt;h1 id=&#34;samples&#34;&gt;Samples&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&#34;&gt;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;environment&#34;&gt;Environment&lt;/h1&gt;
+&lt;pre&gt;&lt;code&gt;- linux host
+- android vm (API version 23) (no google services)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;tools&#34;&gt;Tools&lt;/h1&gt;
+&lt;pre&gt;&lt;code&gt;- apktool
+- adb
+- frida
+- mobsf
+- jd-gui
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h1 id=&#34;setting-things-up&#34;&gt;Setting things up&lt;/h1&gt;
+&lt;p&gt;First of all, finding the SDK version is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_apktool.png&#34; alt=&#34;extracting with apktool&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;manifest&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;xmlns:android=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;http://schemas.android.com/apk/res/android&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:compileSdkVersion=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;23&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:compileSdkVersionCodename=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;6.0-2438415&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;package=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;platformBuildVersionCode=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;23&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;platformBuildVersionName=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;6.0-2438415&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;as it is shown, the SDK version is 23.&lt;/p&gt;
+&lt;p&gt;However, since frida will be used in dynamic analysis, it is easier to use
+an image without Google services. (because root access can be easily gained
+in those images + running frida without root access is pain in the ass work)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_newemulator.png&#34; alt=&#34;installing a new emulator&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;rxOred-aspiree :: Analysis/android/anubis » adb shell
+root@generic_x86_64:/ &lt;span style=&#34;color:#75715e&#34;&gt;# &lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now it is straight forward to install frida on the device. Im not going to
+do that here.&lt;/p&gt;
+&lt;h1 id=&#34;analysis&#34;&gt;Analysis&lt;/h1&gt;
+&lt;h1 id=&#34;permissions&#34;&gt;Permissions&lt;/h1&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.ACCESS_FINE_LOCATION&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.GET_TASKS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.RECEIVE_SMS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.READ_SMS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.WRITE_SMS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.PACKAGE_USAGE_STATS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.SYSTEM_ALERT_WINDOW&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.ACCESS_NETWORK_STATE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.CALL_PHONE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.INTERNET&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.SEND_SMS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.WRITE_EXTERNAL_STORAGE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.READ_EXTERNAL_STORAGE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.RECORD_AUDIO&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.READ_CONTACTS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.READ_PHONE_STATE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.WAKE_LOCK&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.RECEIVE_BOOT_COMPLETED&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As we can see, this malware can send, recieve SMS, read contacts, access location, read and write
+to external storage. It is also requesting permission to get notified once when the system boots
+up.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_androgaurd.png&#34; alt=&#34;androguard results&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here we can see that the application has 17 activities.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_androguard.png&#34; alt=&#34;androguard results&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here androguard shows us recievers, main activity and the services.&lt;/p&gt;
+&lt;p&gt;However all the above stuff are obfuscated.&lt;/p&gt;
+&lt;p&gt;Lets try to identify the obfuscator by analyzing the smali code.&lt;/p&gt;
+&lt;h1 id=&#34;identifying-the-obfuscator&#34;&gt;Identifying the obfuscator&lt;/h1&gt;
+&lt;p&gt;It is possible to identify the obfuscator just by looking at smali code. For example, ProGuard,
+which is one of the most popular android obfuscators out there, can be idenitified if the smali
+code contains variable names, strings with &lt;code&gt;a&lt;/code&gt;, &lt;code&gt;a;-&amp;gt;a&lt;/code&gt; characters. (However ProGuard accepts different sets of characters for this, and it is not a good idea to make decision just based ont this).&lt;/p&gt;
+&lt;p&gt;first lets check for DexGuard, another common obfuscator. DexGuard is known to use non ascii
+chars for obfuscation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; re&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; os
+&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; pathlib &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; Path
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;non_ascii_in_string&lt;/span&gt;(string):
+    regexp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; re&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;compile(&lt;span style=&#34;color:#e6db74&#34;&gt;r&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[^\00-\xff]&amp;#39;&lt;/span&gt;)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; regexp&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;search(string):
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;True&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;False&lt;/span&gt;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;scan_file&lt;/span&gt;(filepath):
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;try&lt;/span&gt;:
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; open(filepath, mode&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;r&amp;#39;&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; f: 
+            i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; line &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; f:
+                i&lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; non_ascii_in_string(line):
+                    print &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;line [&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{lno}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;] &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{line}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt; - &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{file}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;format(lno&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;i, line&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;line, file&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;filepath)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;except&lt;/span&gt;:
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;():
+    pathlist &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Path(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;smali&amp;#34;&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;rglob(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;*.smali&amp;#34;&lt;/span&gt;)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; path &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; pathlist:
+        scan_file(str(path))
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; __name__ &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;:
+    main()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;above python script scans the smali directory generated by apktool for strings that contain non
+ascii characters.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_notdexguard.png&#34; alt=&#34;DexGuard detection&#34;&gt;&lt;/p&gt;
+&lt;p&gt;so its no harm to conclude that this sample is not obfuscated with DexGuard.&lt;/p&gt;
+&lt;p&gt;we can use the same script to detect ProGuard by replacing the regular expression with &lt;code&gt;a/a;-&amp;gt;a&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;here is the result.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_proguard.png&#34; alt=&#34;detecting obfuscation&#34;&gt;&lt;/p&gt;
+&lt;p&gt;from that, we can conclude that this sample is obfuscated using ProGuard.&lt;/p&gt;
+&lt;p&gt;Thing only makes things worse because, as far as im aware of, there is no way we can rename the
+variables, classes and methods.&lt;/p&gt;
+&lt;h1 id=&#34;automated-analysis-with-mobsf&#34;&gt;Automated analysis with MobSf&lt;/h1&gt;
+&lt;p&gt;Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis&lt;/p&gt;
+&lt;p&gt;before running the sample on the vm, it wwould be better to run it on a automated framework. Then
+we can focus on the specific details. Here im going to use MobSF.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsf.png&#34; alt=&#34;automated analysis&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfstatic.png&#34; alt=&#34;mobsf results&#34;&gt;&lt;/p&gt;
+&lt;p&gt;with the above result, we can confirm our assumptions on receivers, activities and services we made
+considering the result of androguard.&lt;/p&gt;
+&lt;p&gt;MobSF also provides us with some other useful information like, which activities, services use
+which APIs, which classes makes use of requested permissions and so on.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfapi.png&#34; alt=&#34;apis&#34;&gt;&lt;/p&gt;
+&lt;p&gt;However when i try to run a dynamic analysis, MobSF failed with few errors.&lt;/p&gt;
+&lt;h1 id=&#34;dynamic-analysis&#34;&gt;Dynamic analysis&lt;/h1&gt;
+&lt;p&gt;first, im going to stop the emulator and restart it with following parameters&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;-show-kernel -tcpdump dump.cap&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;so we can take a look at network traffic later on, in case.&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>Simplelocker, an android ransomware</title>
       <link>https://rxOred.github.io/post/analysis/simplelocker/simplelocker/</link>
