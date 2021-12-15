@@ -253,7 +253,7 @@ ascii characters.</p>
 <p><img src="/img/anubis/anubis_proguard.png" alt="detecting obfuscation"></p>
 <p>from that, we can conclude that this sample is obfuscated using ProGuard.</p>
 <p>Thing only makes things worse because, as far as im aware of, there is no way we can rename the
-variables, classes and methods.</p>
+variables, classes and methods without the mapping file.</p>
 <h1 id="automated-analysis-with-mobsf">Automated analysis with MobSf<a href="#automated-analysis-with-mobsf" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis</p>
 <p>before running the sample on the vm, it wwould be better to run it on a automated framework. Then
@@ -265,11 +265,25 @@ considering the result of androguard.</p>
 <p>MobSF also provides us with some other useful information like, which activities, services use
 which APIs, which classes makes use of requested permissions and so on.</p>
 <p><img src="/img/anubis/anubis_mobsfapi.png" alt="apis"></p>
-<p>However when i try to run a dynamic analysis, MobSF failed with few errors.</p>
+<p>However when i try to run a dynamic analysis on the apk, MobSF failed with few errors.</p>
 <h1 id="dynamic-analysis">Dynamic analysis<a href="#dynamic-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>first, im going to stop the emulator and restart it with following parameters</p>
 <p><code>-show-kernel -tcpdump dump.cap</code></p>
-<p>so we can take a look at network traffic later on, in case.</p>
+<p>so we can take a look at network traffic later on, in case. (I&rsquo;ve also setup mitmproxy)</p>
+<p><img src="/img/anubis/anubis_installapk.png" alt="installing the malware"></p>
+<p>running the sample, its asking to enable &lsquo;accessibility permissions&rsquo;. And the user is forced to grant the permission. This enables application run in the background.</p>
+<p><img src="/img/anubis/anubis_accessibilities.png" alt="accessibility permissions"></p>
+<p>Here&rsquo;s the network traffic.</p>
+<p><img src="/img/anubis/anubis_requeststorandom.png" alt="network traffic"></p>
+<p><img src="/img/anubis/anubis_request.png" alt="request"></p>
+<p>when granted the requested permission, the malware seemed to be deleted from the devic.
+However, its listed in the packages.</p>
+<pre tabindex="0"><code>root@generic_x86_64:/ # pm list packages | grep slsa                           
+package:wocwvy.czyxoxmbauu.slsa
+root@generic_x86_64:/ # 
+</code></pre><p>which means that it has only deleted the icon from the application launcher not
+the app itself.</p>
+<h1 id="diving-deep">Diving deep<a href="#diving-deep" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 
       </div></div>
 

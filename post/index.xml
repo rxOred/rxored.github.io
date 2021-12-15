@@ -117,7 +117,7 @@ ascii characters.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_proguard.png&#34; alt=&#34;detecting obfuscation&#34;&gt;&lt;/p&gt;
 &lt;p&gt;from that, we can conclude that this sample is obfuscated using ProGuard.&lt;/p&gt;
 &lt;p&gt;Thing only makes things worse because, as far as im aware of, there is no way we can rename the
-variables, classes and methods.&lt;/p&gt;
+variables, classes and methods without the mapping file.&lt;/p&gt;
 &lt;h1 id=&#34;automated-analysis-with-mobsf&#34;&gt;Automated analysis with MobSf&lt;/h1&gt;
 &lt;p&gt;Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis&lt;/p&gt;
 &lt;p&gt;before running the sample on the vm, it wwould be better to run it on a automated framework. Then
@@ -129,11 +129,25 @@ considering the result of androguard.&lt;/p&gt;
 &lt;p&gt;MobSF also provides us with some other useful information like, which activities, services use
 which APIs, which classes makes use of requested permissions and so on.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfapi.png&#34; alt=&#34;apis&#34;&gt;&lt;/p&gt;
-&lt;p&gt;However when i try to run a dynamic analysis, MobSF failed with few errors.&lt;/p&gt;
+&lt;p&gt;However when i try to run a dynamic analysis on the apk, MobSF failed with few errors.&lt;/p&gt;
 &lt;h1 id=&#34;dynamic-analysis&#34;&gt;Dynamic analysis&lt;/h1&gt;
 &lt;p&gt;first, im going to stop the emulator and restart it with following parameters&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;-show-kernel -tcpdump dump.cap&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;so we can take a look at network traffic later on, in case.&lt;/p&gt;
+&lt;p&gt;so we can take a look at network traffic later on, in case. (I&amp;rsquo;ve also setup mitmproxy)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_installapk.png&#34; alt=&#34;installing the malware&#34;&gt;&lt;/p&gt;
+&lt;p&gt;running the sample, its asking to enable &amp;lsquo;accessibility permissions&amp;rsquo;. And the user is forced to grant the permission. This enables application run in the background.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_accessibilities.png&#34; alt=&#34;accessibility permissions&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Here&amp;rsquo;s the network traffic.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_requeststorandom.png&#34; alt=&#34;network traffic&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_request.png&#34; alt=&#34;request&#34;&gt;&lt;/p&gt;
+&lt;p&gt;when granted the requested permission, the malware seemed to be deleted from the devic.
+However, its listed in the packages.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;root@generic_x86_64:/ # pm list packages | grep slsa                           
+package:wocwvy.czyxoxmbauu.slsa
+root@generic_x86_64:/ # 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;which means that it has only deleted the icon from the application launcher not
+the app itself.&lt;/p&gt;
+&lt;h1 id=&#34;diving-deep&#34;&gt;Diving deep&lt;/h1&gt;
 </content>
     </item>
     
