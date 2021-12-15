@@ -14,9 +14,8 @@
       
       <guid>https://rxOred.github.io/post/analysis/anubis/anubis/</guid>
       <description>Samples github
-Environment - linux host - android vm (API version 23) (no google services)  Tools - apktool - adb - frida - mobsf - jd-gui  Setting things up First of all, finding the SDK version is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.
-&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&amp;lt;manifest xmlns:android=&amp;#34;http://schemas.android.com/apk/res/android&amp;#34; android:compileSdkVersion=&amp;#34;23&amp;#34; android:compileSdkVersionCodename=&amp;#34;6.0-2438415&amp;#34; package=&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34; platformBuildVersionCode=&amp;#34;23&amp;#34; platformBuildVersionName=&amp;#34;6.0-2438415&amp;#34;&amp;gt; as it is shown, the SDK version is 23.
-However, since frida will be used in dynamic analysis, it is easier to use an image without Google services.</description>
+Environment - linux host - android vm (API version 23) (no google services)  Tools - apktool - adb - frida - mobsf - jd-gui  Setting things up First of all, finding the compiled/supported SDK versions is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.
+&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&amp;lt;manifest xmlns:android=&amp;#34;http://schemas.android.com/apk/res/android&amp;#34; android:compileSdkVersion=&amp;#34;23&amp;#34; android:compileSdkVersionCodename=&amp;#34;6.0-2438415&amp;#34; package=&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34; platformBuildVersionCode=&amp;#34;23&amp;#34; platformBuildVersionName=&amp;#34;6.0-2438415&amp;#34;&amp;gt; as it is shown, the SDK version is 23.</description>
       <content>&lt;h1 id=&#34;samples&#34;&gt;Samples&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip&#34;&gt;github&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;environment&#34;&gt;Environment&lt;/h1&gt;
@@ -31,7 +30,7 @@ However, since frida will be used in dynamic analysis, it is easier to use an im
 - jd-gui
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h1 id=&#34;setting-things-up&#34;&gt;Setting things up&lt;/h1&gt;
-&lt;p&gt;First of all, finding the SDK version is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.&lt;/p&gt;
+&lt;p&gt;First of all, finding the compiled/supported SDK versions is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_apktool.png&#34; alt=&#34;extracting with apktool&#34;&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34; standalone=&amp;#34;no&amp;#34;?&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;manifest&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;xmlns:android=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;http://schemas.android.com/apk/res/android&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:compileSdkVersion=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;23&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:compileSdkVersionCodename=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;6.0-2438415&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;package=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;wocwvy.czyxoxmbauu.slsa&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;platformBuildVersionCode=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;23&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;platformBuildVersionName=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;6.0-2438415&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;as it is shown, the SDK version is 23.&lt;/p&gt;
@@ -45,7 +44,7 @@ root@generic_x86_64:/ &lt;span style=&#34;color:#75715e&#34;&gt;# &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now it is straight forward to install frida on the device. Im not going to
 do that here.&lt;/p&gt;
 &lt;h1 id=&#34;analysis&#34;&gt;Analysis&lt;/h1&gt;
-&lt;h1 id=&#34;permissions&#34;&gt;Permissions&lt;/h1&gt;
+&lt;h2 id=&#34;the-manifest&#34;&gt;The manifest&lt;/h2&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.ACCESS_FINE_LOCATION&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.GET_TASKS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.RECEIVE_SMS&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
@@ -68,16 +67,25 @@ do that here.&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As we can see, this malware can send, recieve SMS, read contacts, access location, read and write
 to external storage. It is also requesting permission to get notified once when the system boots
 up.&lt;/p&gt;
+&lt;p&gt;Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis&lt;/p&gt;
+&lt;p&gt;before running the sample on the vm, it wwould be better to run it on a automated framework. Then
+we can focus on the specific details. Here im going to use MobSF.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsf.png&#34; alt=&#34;automated analysis&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfstatic.png&#34; alt=&#34;mobsf results&#34;&gt;&lt;/p&gt;
+&lt;p&gt;here we can see that the application has 17 activities, 24 services, 4 recievers and 0 providers.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfapi.png&#34; alt=&#34;apis&#34;&gt;&lt;/p&gt;
+&lt;p&gt;However when i try to run a dynamic analysis on the apk, MobSF failed with few errors.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_androgaurd.png&#34; alt=&#34;androguard results&#34;&gt;&lt;/p&gt;
-&lt;p&gt;here we can see that the application has 17 activities.&lt;/p&gt;
+&lt;p&gt;with the above result, we can confirm our assumptions on receivers, activities and services we made
+considering the result of MobSF.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_androguard.png&#34; alt=&#34;androguard results&#34;&gt;&lt;/p&gt;
 &lt;p&gt;here androguard shows us recievers, main activity and the services.&lt;/p&gt;
-&lt;p&gt;However all the above stuff are obfuscated.&lt;/p&gt;
+&lt;p&gt;However all the above names seemed to be obfuscated.&lt;/p&gt;
 &lt;p&gt;Lets try to identify the obfuscator by analyzing the smali code.&lt;/p&gt;
-&lt;h1 id=&#34;identifying-the-obfuscator&#34;&gt;Identifying the obfuscator&lt;/h1&gt;
+&lt;h2 id=&#34;identifying-the-obfuscator&#34;&gt;Identifying the obfuscator&lt;/h2&gt;
 &lt;p&gt;It is possible to identify the obfuscator just by looking at smali code. For example, ProGuard,
 which is one of the most popular android obfuscators out there, can be idenitified if the smali
-code contains variable names, strings with &lt;code&gt;a&lt;/code&gt;, &lt;code&gt;a;-&amp;gt;a&lt;/code&gt; characters. (However ProGuard accepts different sets of characters for this, and it is not a good idea to make decision just based ont this).&lt;/p&gt;
+code contains variable names, strings with &lt;code&gt;d&lt;/code&gt;, &lt;code&gt;a&lt;/code&gt;, &lt;code&gt;a;-&amp;gt;a&lt;/code&gt; characters. (However ProGuard accepts different sets of characters for this, and it is not a good idea to make decision just based ont this).&lt;/p&gt;
 &lt;p&gt;first lets check for DexGuard, another common obfuscator. DexGuard is known to use non ascii
 chars for obfuscation.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; re&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; os
@@ -112,25 +120,59 @@ chars for obfuscation.&lt;/p&gt;
 ascii characters.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_notdexguard.png&#34; alt=&#34;DexGuard detection&#34;&gt;&lt;/p&gt;
 &lt;p&gt;so its no harm to conclude that this sample is not obfuscated with DexGuard.&lt;/p&gt;
-&lt;p&gt;we can use the same script to detect ProGuard by replacing the regular expression with &lt;code&gt;a/a;-&amp;gt;a&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;we can use the same script to detect ProGuard by replacing the regular expression with &lt;code&gt;a/a;-&amp;gt;a&lt;/code&gt;. ()&lt;/p&gt;
 &lt;p&gt;here is the result.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_proguard.png&#34; alt=&#34;detecting obfuscation&#34;&gt;&lt;/p&gt;
 &lt;p&gt;from that, we can conclude that this sample is obfuscated using ProGuard.&lt;/p&gt;
-&lt;p&gt;Thing only makes things worse because, as far as im aware of, there is no way we can rename the
-variables, classes and methods without the mapping file.&lt;/p&gt;
-&lt;h1 id=&#34;automated-analysis-with-mobsf&#34;&gt;Automated analysis with MobSf&lt;/h1&gt;
-&lt;p&gt;Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis&lt;/p&gt;
-&lt;p&gt;before running the sample on the vm, it wwould be better to run it on a automated framework. Then
-we can focus on the specific details. Here im going to use MobSF.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsf.png&#34; alt=&#34;automated analysis&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfstatic.png&#34; alt=&#34;mobsf results&#34;&gt;&lt;/p&gt;
-&lt;p&gt;with the above result, we can confirm our assumptions on receivers, activities and services we made
-considering the result of androguard.&lt;/p&gt;
-&lt;p&gt;MobSF also provides us with some other useful information like, which activities, services use
-which APIs, which classes makes use of requested permissions and so on.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_mobsfapi.png&#34; alt=&#34;apis&#34;&gt;&lt;/p&gt;
-&lt;p&gt;However when i try to run a dynamic analysis on the apk, MobSF failed with few errors.&lt;/p&gt;
-&lt;h1 id=&#34;dynamic-analysis&#34;&gt;Dynamic analysis&lt;/h1&gt;
+&lt;p&gt;There are few projects that are capable of deobfuscating ProGuard. dex-oracle, simplify
+are two of such projects.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_simplify.png&#34; alt=&#34;simplify&#34;&gt;&lt;/p&gt;
+&lt;p&gt;simplify get to somewhere but then horribly fails.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;(4 / 7) Executing top level method: Lwocwvy/czyxoxmbauu/slsa/ncec/pltrfi;-&amp;gt;onStart()V
+23:43:18.370 WARN  InvokeOp     - org.cf.smalivm.exception.MaxAddressVisitsExceededException: Exceeded max address visits @0 ExecutionNode{signature=Lwocwvy/czyxoxmbauu/slsa/b;-&amp;gt;b(Ljava/lang/String;)[B, op=invoke-virtual {r8}, Ljava/lang/String;-&amp;gt;length()I, @=0} in Lwocwvy/czyxoxmbauu/slsa/b;-&amp;gt;b(Ljava/lang/String;)[B
+23:45:46.813 WARN  InvokeOp     - org.cf.smalivm.exception.MaxAddressVisitsExceededException: Exceeded max address visits @0 ExecutionNode{signature=Lwocwvy/czyxoxmbauu/slsa/oyqwzkyy/a;-&amp;gt;b([B)[B, op=array-length r0, r7, @=0} in Lwocwvy/czyxoxmbauu/slsa/oyqwzkyy/a;-&amp;gt;b([B)[B
+23:45:46.923 WARN  InvokeOp     - org.cf.smalivm.exception.MaxAddressVisitsExceededException: Exceeded max address visits @0 ExecutionNode{signature=Lwocwvy/czyxoxmbauu/slsa/b;-&amp;gt;b(Ljava/lang/String;)[B, op=invoke-virtual {r8}, Ljava/lang/String;-&amp;gt;length()I, @=0} in Lwocwvy/czyxoxmbauu/slsa/b;-&amp;gt;b(Ljava/lang/String;)[B
+23:48:14.474 WARN  InvokeOp     - org.cf.smalivm.exception.MaxAddressVisitsExceededException: Exceeded max address visits @0 ExecutionNode{signature=Lwocwvy/czyxoxmbauu/slsa/oyqwzkyy/a;-&amp;gt;b([B)[B, op=array-length r0, r7, @=0} in Lwocwvy/czyxoxmbauu/slsa/oyqwzkyy/a;-&amp;gt;b([B)[B
+23:48:15.842 WARN  ExecutionContext - org.cf.smalivm.exception.MaxAddressVisitsExceededException: Exceeded max address visits @0 ExecutionNode{signature=Landroid/util/StateSet;-&amp;gt;&amp;lt;clinit&amp;gt;()V, op=const/4 r13, 0x1, @=0} in Landroid/util/StateSet;-&amp;gt;&amp;lt;clinit&amp;gt;()V
+23:48:15.842 ERROR NodeExecutor - ExecutionNode{signature=Landroid/util/StateSet;-&amp;gt;get(I)[I, op=array-length r0, r0, @=2} unhandled virtual exception: 
+java.lang.NullPointerException: Attempt to get length of null array
+	at java.base/jdk.internal.reflect.GeneratedConstructorAccessor6.newInstance(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+	at org.cf.smalivm.ExceptionFactory.build(ExceptionFactory.java:28)
+	at org.cf.smalivm.opcode.ArrayLengthOp.&amp;lt;init&amp;gt;(ArrayLengthOp.java:28)
+	at org.cf.smalivm.opcode.ArrayLengthOpFactory.create(ArrayLengthOpFactory.java:19)
+	at org.cf.smalivm.opcode.OpCreator.create(OpCreator.java:29)
+	at org.cf.smalivm.context.ExecutionGraph.buildLocationToNodePile(ExecutionGraph.java:89)
+	at org.cf.smalivm.context.ExecutionGraph.&amp;lt;init&amp;gt;(ExecutionGraph.java:62)
+	at org.cf.smalivm.VirtualMachine.updateInstructionGraph(VirtualMachine.java:180)
+	at org.cf.smalivm.VirtualMachine.spawnInstructionGraph(VirtualMachine.java:131)
+	at org.cf.smalivm.MethodExecutorFactory.build(MethodExecutorFactory.java:62)
+	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:75)
+	at org.cf.smalivm.opcode.InvokeOp.executeLocalMethod(InvokeOp.java:434)
+	at org.cf.smalivm.opcode.InvokeOp.execute(InvokeOp.java:136)
+	at org.cf.smalivm.context.ExecutionNode.execute(ExecutionNode.java:53)
+	at org.cf.smalivm.NodeExecutor.execute(NodeExecutor.java:81)
+	at org.cf.smalivm.MethodExecutor.step(MethodExecutor.java:50)
+	at org.cf.smalivm.NonInteractiveMethodExecutor.execute(NonInteractiveMethodExecutor.java:54)
+	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:76)
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:205)
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:182)
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:182)
+	at org.cf.smalivm.context.ExecutionContext.readClassState(ExecutionContext.java:132)
+	at org.cf.smalivm.opcode.NewInstanceOp.execute(NewInstanceOp.java:37)
+	at org.cf.smalivm.context.ExecutionNode.execute(ExecutionNode.java:53)
+	at org.cf.smalivm.NodeExecutor.execute(NodeExecutor.java:81)
+	at org.cf.smalivm.MethodExecutor.step(MethodExecutor.java:50)
+	at org.cf.smalivm.NonInteractiveMethodExecutor.execute(NonInteractiveMethodExecutor.java:54)
+	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:76)
+	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:63)
+	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:59)
+	at org.cf.simplify.Launcher.executeMethods(Launcher.java:195)
+	at org.cf.simplify.Launcher.run(Launcher.java:141)
+	at org.cf.simplify.Main.main(Main.java:14)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;I tried running dex-oracle and it failed too.&lt;/p&gt;
+&lt;h2 id=&#34;behavioral-analysis&#34;&gt;Behavioral analysis&lt;/h2&gt;
 &lt;p&gt;first, im going to stop the emulator and restart it with following parameters&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;-show-kernel -tcpdump dump.cap&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;so we can take a look at network traffic later on, in case. (I&amp;rsquo;ve also setup mitmproxy)&lt;/p&gt;
@@ -147,7 +189,14 @@ package:wocwvy.czyxoxmbauu.slsa
 root@generic_x86_64:/ # 
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;which means that it has only deleted the icon from the application launcher not
 the app itself.&lt;/p&gt;
-&lt;h1 id=&#34;diving-deep&#34;&gt;Diving deep&lt;/h1&gt;
+&lt;h2 id=&#34;diving-deep&#34;&gt;Diving deep&lt;/h2&gt;
+&lt;p&gt;To do a code analysis, first, the apk should be converted into jar format.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rxOred-aspiree :: Analysis/android/anubis » enjarify anubis.apk
+Using python3 as Python interpreter
+Output written to anubis-enjarify.jar
+136 classes translated successfully, 0 classes had errors
+rxOred-aspiree :: Analysis/android/anubis » 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then, using the jd-gui decompiler, we can analyse the code.&lt;/p&gt;
 </content>
     </item>
     
