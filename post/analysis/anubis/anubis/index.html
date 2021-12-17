@@ -166,22 +166,10 @@
 - mobsf
 - jadx
 </code></pre>
-<h1 id="setting-things-up">Setting things up<a href="#setting-things-up" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
-<p>First of all, finding the compiled/supported SDK versions is essential to continue dynamic analysis. This can be extracted from AndroidManifest.xml.</p>
-<p><img src="/img/anubis/anubis_apktool.png" alt="extracting with apktool"></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34; standalone=&#34;no&#34;?&gt;</span><span style="color:#f92672">&lt;manifest</span> <span style="color:#a6e22e">xmlns:android=</span><span style="color:#e6db74">&#34;http://schemas.android.com/apk/res/android&#34;</span> <span style="color:#a6e22e">android:compileSdkVersion=</span><span style="color:#e6db74">&#34;23&#34;</span> <span style="color:#a6e22e">android:compileSdkVersionCodename=</span><span style="color:#e6db74">&#34;6.0-2438415&#34;</span> <span style="color:#a6e22e">package=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa&#34;</span> <span style="color:#a6e22e">platformBuildVersionCode=</span><span style="color:#e6db74">&#34;23&#34;</span> <span style="color:#a6e22e">platformBuildVersionName=</span><span style="color:#e6db74">&#34;6.0-2438415&#34;</span><span style="color:#f92672">&gt;</span>
-</code></pre></div><p>as it is shown, the SDK version is 23.</p>
-<p>However, since frida will be used in dynamic analysis, it is easier to use
-an image without Google services. (because root access can be easily gained
-in those images + running frida without root access is pain in the ass work)</p>
-<p><img src="/img/anubis/anubis_newemulator.png" alt="installing a new emulator"></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rxOred-aspiree :: Analysis/android/anubis Â» adb shell
-root@generic_x86_64:/ <span style="color:#75715e"># </span>
-
-</code></pre></div><p>Now it is straight forward to install frida on the device. Im not going to
-do that here.</p>
 <h1 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <h2 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>to analyze the manifest
+<img src="/img/anubis/anubis_apktool.png" alt="extracting with apktool"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">    <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.ACCESS_FINE_LOCATION&#34;</span><span style="color:#f92672">/&gt;</span>
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.GET_TASKS&#34;</span><span style="color:#f92672">/&gt;</span>
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.RECEIVE_SMS&#34;</span><span style="color:#f92672">/&gt;</span>
@@ -263,7 +251,7 @@ ascii characters.</p>
 <p>from that, we can conclude that this sample is obfuscated using ProGuard.</p>
 <p>There are few projects that are capable of deobfuscating ProGuard. dex-oracle, simplify
 are two of such projects. However the goal here is not to deobfuscate the class names, variable names, and methods, but to deobfuscate constants and strings
-because without the mapping.txt, there is no way to rename classes, methods and variables things.</p>
+because without the mapping.txt, there is no way to rename classes, methods and variables things to their original names, but jadx&rsquo;s deobfuscator can help us with that for a bit.</p>
 <p><img src="/img/anubis/anubis_simplify.png" alt="simplify"></p>
 <p>simplify get to somewhere but then horribly fails.</p>
 <pre tabindex="0"><code>java.lang.NullPointerException: Attempt to get length of null array
@@ -349,7 +337,7 @@ rxOred-aspiree :: Analysis/android/anubis Â»
         <span style="color:#f92672">}</span> 
         
         <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
-</code></pre></div><p>In the MainActivity, it declares some variables, including <code>banking_apps</code> of type <code>class BankingApps</code>. (which i reverse engineered and renamed before coming to this hehe :3).</p>
+</code></pre></div><p>In the MainActivity, it declares some variables, including <code>banking_apps</code> of type <code>class BankingApps</code>. (which i reversd before coming to this hehe :3).</p>
 <p>onCreate method then check whether if <code>consts.f388o</code> is false (which is initially false, and defined in <code>Constants</code> class) or <code>Build.VERSION.SDK_INT</code> is less than 19.</p>
 <p>if yes, it creates the service <code>jtfxlnc</code>, else (if const.f388o is true or Build.VERSION.SDK_INT &gt;= 19),
 it creates a <code>WebView</code>, enable javascript and load the url specified in <code>consts.f389p</code>. then it
@@ -387,7 +375,94 @@ All this makes sense because, this is why malware has started a service to run i
     <span style="color:#f92672">}</span>
 <span style="color:#f92672">}</span>
 </code></pre></div><p>This piece of code tries to start an alarm with the return value of <code>SomeHttpClass.mo234e()</code>, if fails, it sets a default value of 10000.</p>
-<p>Lets focus on this <code>SomeHttpClass</code>.</p>
+<p>Now its time to do some instrumentation and find out whats returning from that method.</p>
+<p>first off, we need a frida agent and a wrapper script. I chose python to write the wrapper script.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> frida
+<span style="color:#f92672">import</span> sys<span style="color:#f92672">,</span> codecs<span style="color:#f92672">,</span> os<span style="color:#f92672">,</span> time
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(message, data):
+    <span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#39;payload&#39;</span> <span style="color:#f92672">in</span> message <span style="color:#f92672">and</span> message[<span style="color:#e6db74">&#39;type&#39;</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;send&#39;</span>:
+        print(<span style="color:#e6db74">&#34;[!] callback -&gt; </span><span style="color:#e6db74">{0}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(message[<span style="color:#e6db74">&#39;payload&#39;</span>]))
+    <span style="color:#66d9ef">else</span>:
+        print(message)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
+    <span style="color:#66d9ef">if</span> len(sys<span style="color:#f92672">.</span>argv) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>:
+        print(<span style="color:#e6db74">&#34;wrapper.py &lt;appname&gt; &lt;agent&gt;&#34;</span>)
+        os<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">0</span>)
+
+    source <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+    <span style="color:#66d9ef">with</span> codecs<span style="color:#f92672">.</span>open(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">2</span>], <span style="color:#e6db74">&#34;r&#34;</span>, <span style="color:#e6db74">&#34;utf-8&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        source <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()
+
+    <span style="color:#66d9ef">if</span> source:
+        device <span style="color:#f92672">=</span> frida<span style="color:#f92672">.</span>get_usb_device()
+        pid <span style="color:#f92672">=</span> device<span style="color:#f92672">.</span>spawn([sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>]])
+        device<span style="color:#f92672">.</span>resume(pid)
+        time<span style="color:#f92672">.</span>sleep(<span style="color:#ae81ff">1</span>)
+        session <span style="color:#f92672">=</span> device<span style="color:#f92672">.</span>attach(pid)
+        script <span style="color:#f92672">=</span> session<span style="color:#f92672">.</span>create_script(source)
+        script<span style="color:#f92672">.</span>on(<span style="color:#e6db74">&#39;message&#39;</span>, callback)
+        script<span style="color:#f92672">.</span>load()
+        
+        sys<span style="color:#f92672">.</span>stdin<span style="color:#f92672">.</span>read()
+
+    <span style="color:#66d9ef">else</span>:
+        print(<span style="color:#e6db74">&#34;failed to read the frida agent&#34;</span>)
+        os<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">1</span>)
+
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+    main()
+</code></pre></div><p>let&rsquo;s write a frida agent that hooks SomeHttpClass.mo234e();
+Without jadx deobfuscator, method is named as below</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">e</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">)</span> <span style="color:#f92672">{...}</span>
+</code></pre></div><p>and it is overloaded. So we have to handle that within the frida agent.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#e6db74">&#39;use strict&#39;</span>;
+
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">available</span>) { 
+    <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">perform</span>(<span style="color:#66d9ef">function</span>() {
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">some_http_class</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.b&#34;</span>);
+        <span style="color:#a6e22e">some_http_class</span>.<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">overload</span>(<span style="color:#e6db74">&#34;andorid.context.Context&#34;</span>, <span style="color:#e6db74">&#34;java.lang.String&#34;</span>)<span style="color:#a6e22e">implementation</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>) {
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ret</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">e</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>);
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] method called SomeHttpClass.mo234e(&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span><span style="color:#e6db74">&#34;) =&gt; return: &#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">ret</span>.<span style="color:#a6e22e">toString</span>());
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ret</span>;
+        }
+    })
+}
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">rxOred-aspiree :: ~/Analysis/android ï¿½ python wrapper.py wocwvy.czyxoxmbauu.slsa agent3.js
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;save_inj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;cryptfile&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: false
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startRecordSound&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: stop
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startRequest&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: Access<span style="color:#f92672">=</span>0Perm<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startRequest&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: Access<span style="color:#f92672">=</span>0Perm<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;recordsoundseconds&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: <span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;lookscreen&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;StringAccessibility&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: Enable access <span style="color:#66d9ef">for</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;save_inj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;cryptfile&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: false
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startRecordSound&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: stop
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;recordsoundseconds&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: <span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;lookscreen&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;save_inj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;cryptfile&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: false
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startRecordSound&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: stop
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;recordsoundseconds&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: <span style="color:#ae81ff">0</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;lookscreen&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;keylogger&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>... more stuff here<span style="color:#f92672">]</span>
+</code></pre></div><p>well that&rsquo;s a lot. it seems like the malware calls the method many times before the MainActivity calls it.
+My guess is that would be the service that it starts.
+However we see some interesting stuff in the above snippet.</p>
+<p>for example, when the method is called with <code>url</code> as an argument, it returns <code>https://cdnjs.sv</code>.</p>
+<p>and we can also see that the method is called with <code>keylogger</code> as the argument, which gives us a hint that this malware is capable of keylogging.</p>
+<pre tabindex="0"><code>[!] callback -&gt; [*] method called SomeHttpClass.mo234e(&quot;interval&quot;) =&gt; return: 10000
+</code></pre><p>SomeHttpClass.mo234e() method returns value 10000, which is exactly the same value thats going to
+be used when the condition fails.</p>
+<p>Now lets focus on this <code>SomeHttpClass</code>.</p>
 <p>class got following member variables.</p>
 <pre tabindex="0"><code>    /* renamed from: c */
     static final Constants consts = new Constants();
@@ -432,8 +507,8 @@ All this makes sense because, this is why malware has started a service to run i
 then it gets an <code>InputStream</code> from the connection and reads data to <code>StringBuffer stringBuffer</code> with the help of a
 <code>BufferedReader reader</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> stringBuffer<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">().</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">);</span>
-                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo208a</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ï¿½ï¿½ï¿½ï¿½ï¿½&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ï¿½ï¿½ï¿½ï¿½ï¿½&#34;</span><span style="color:#f92672">);</span>
-                <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo208a</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ï¿½ï¿½ï¿½ï¿½ï¿½&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ï¿½ï¿½ï¿½ï¿½ï¿½&#34;</span><span style="color:#f92672">);</span>  <span style="color:#75715e">// some chinese characters
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
                 <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
                     BankingApps aVar <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">banking_apps</span><span style="color:#f92672">;</span>
                     <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&gt;=</span> BankingApps<span style="color:#f92672">.</span><span style="color:#a6e22e">f332s</span><span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
@@ -447,7 +522,10 @@ then it gets an <code>InputStream</code> from the connection and reads data to <
                     i<span style="color:#f92672">++;</span>
                 <span style="color:#f92672">}</span>
                 <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo230d</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">);</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
+</code></pre></div><p>The malware then replaces all the spaces with empty string, and calls <code>SomeHttpClass.mo208a</code>, passing some random looking
+chinese letters as the the second and third argument.</p>
+<p>lets see what&rsquo;s the return value with frida.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
 
     <span style="color:#75715e">/* renamed from: h */</span>
@@ -487,7 +565,8 @@ then it gets an <code>InputStream</code> from the connection and reads data to <
 <p>little below that, another two string arrays are declared, both size equal to <code>62</code>, and the first one is assigned with each letter of the english alphebet + some characters and the the other is assigned with the chinese alphebet (i dont know if there&rsquo;s chinese alphebet).</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> String<span style="color:#f92672">[]</span> permissions <span style="color:#f92672">=</span> <span style="color:#f92672">{</span><span style="color:#e6db74">&#34;android.permission.SEND_SMS&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.permission.WRITE_EXTERNAL_STORAGE&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.permission.READ_CONTACTS&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.permission.ACCESS_FINE_LOCATION&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.permission.CALL_PHONE&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.permission.RECORD_AUDIO&#34;</span><span style="color:#f92672">};</span>
 </code></pre></div><p>then there is this string array (which, i renamed) specifying the permissions reqested by the apk.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">mo206a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
+    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">mo206a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
         <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span>ApplicationInfo applicationInfo <span style="color:#f92672">:</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getPackageManager</span><span style="color:#f92672">().</span><span style="color:#a6e22e">getInstalledApplications</span><span style="color:#f92672">(</span>128<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
             <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>applicationInfo<span style="color:#f92672">.</span><span style="color:#a6e22e">packageName</span><span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;at.spardat.bcrmobile&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
@@ -517,10 +596,8 @@ then it gets an <code>InputStream</code> from the connection and reads data to <
         <span style="color:#f92672">}</span>
         <span style="color:#66d9ef">return</span> str<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;com.ebay.mobile,&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;com.ebay.mobile,&#34;</span><span style="color:#f92672">;</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><p>at the top, the method declares string <code>str</code> and initliaze it to an empty string.
-then it iterates through each installed application and compares the application&rsquo;s name with a shit ton of string, which are basically names of banking apps.
-if the current application&rsquo;s name is equal to one of those strings, string <code>str</code> is appended with the name followed by a comma.</p>
-<p>when the iteration is finished, it checks if <code>str</code> contains following names</p>
+</code></pre></div><p>at the top, the method declares string <code>str</code> and initliaze it to an empty string. then it iterates through each installed application and compares the application¿s name with a shit ton of string, which are basically names of banking apps. if the current application¿s name is equal to one of those strings, string <code>str</code> is appended with the name followed by a comma.</p>
+<p>when the iteration is finished, it checks if <code>str</code> contains following names.</p>
 <pre><code>- com.paypal.android.p2pmobile
 - com.amazon.mShop.android.shopping
 - com.ebay.mobile
