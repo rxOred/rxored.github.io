@@ -254,43 +254,43 @@ are two of such projects. However the goal here is not to deobfuscate the class 
 because without the mapping.txt, there is no way to rename classes, methods and variables things to their original names, but jadx&rsquo;s deobfuscator can help us with that for a bit.</p>
 <p><img src="/img/anubis/anubis_simplify.png" alt="simplify"></p>
 <p>simplify get to somewhere but then horribly fails.</p>
-<pre tabindex="0"><code>java.lang.NullPointerException: Attempt to get length of null array
-	at java.base/jdk.internal.reflect.GeneratedConstructorAccessor6.newInstance(Unknown Source)
-	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
-	at org.cf.smalivm.ExceptionFactory.build(ExceptionFactory.java:28)
-	at org.cf.smalivm.opcode.ArrayLengthOp.&lt;init&gt;(ArrayLengthOp.java:28)
-	at org.cf.smalivm.opcode.ArrayLengthOpFactory.create(ArrayLengthOpFactory.java:19)
-	at org.cf.smalivm.opcode.OpCreator.create(OpCreator.java:29)
-	at org.cf.smalivm.context.ExecutionGraph.buildLocationToNodePile(ExecutionGraph.java:89)
-	at org.cf.smalivm.context.ExecutionGraph.&lt;init&gt;(ExecutionGraph.java:62)
-	at org.cf.smalivm.VirtualMachine.updateInstructionGraph(VirtualMachine.java:180)
-	at org.cf.smalivm.VirtualMachine.spawnInstructionGraph(VirtualMachine.java:131)
-	at org.cf.smalivm.MethodExecutorFactory.build(MethodExecutorFactory.java:62)
-	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:75)
-	at org.cf.smalivm.opcode.InvokeOp.executeLocalMethod(InvokeOp.java:434)
-	at org.cf.smalivm.opcode.InvokeOp.execute(InvokeOp.java:136)
-	at org.cf.smalivm.context.ExecutionNode.execute(ExecutionNode.java:53)
-	at org.cf.smalivm.NodeExecutor.execute(NodeExecutor.java:81)
-	at org.cf.smalivm.MethodExecutor.step(MethodExecutor.java:50)
-	at org.cf.smalivm.NonInteractiveMethodExecutor.execute(NonInteractiveMethodExecutor.java:54)
-	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:76)
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:205)
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:182)
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary(ExecutionContext.java:182)
-	at org.cf.smalivm.context.ExecutionContext.readClassState(ExecutionContext.java:132)
-	at org.cf.smalivm.opcode.NewInstanceOp.execute(NewInstanceOp.java:37)
-	at org.cf.smalivm.context.ExecutionNode.execute(ExecutionNode.java:53)
-	at org.cf.smalivm.NodeExecutor.execute(NodeExecutor.java:81)
-	at org.cf.smalivm.MethodExecutor.step(MethodExecutor.java:50)
-	at org.cf.smalivm.NonInteractiveMethodExecutor.execute(NonInteractiveMethodExecutor.java:54)
-	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:76)
-	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:63)
-	at org.cf.smalivm.VirtualMachine.execute(VirtualMachine.java:59)
-	at org.cf.simplify.Launcher.executeMethods(Launcher.java:195)
-	at org.cf.simplify.Launcher.run(Launcher.java:141)
-	at org.cf.simplify.Main.main(Main.java:14)
-</code></pre><p>I tried running dex-oracle and it failed too.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">java.lang.NullPointerException: Attempt to get length of null array
+	at java.base/jdk.internal.reflect.GeneratedConstructorAccessor6.newInstance<span style="color:#f92672">(</span>Unknown Source<span style="color:#f92672">)</span>
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance<span style="color:#f92672">(</span>DelegatingConstructorAccessorImpl.java:45<span style="color:#f92672">)</span>
+	at java.base/java.lang.reflect.Constructor.newInstance<span style="color:#f92672">(</span>Constructor.java:490<span style="color:#f92672">)</span>
+	at org.cf.smalivm.ExceptionFactory.build<span style="color:#f92672">(</span>ExceptionFactory.java:28<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.ArrayLengthOp.&lt;init&gt;<span style="color:#f92672">(</span>ArrayLengthOp.java:28<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.ArrayLengthOpFactory.create<span style="color:#f92672">(</span>ArrayLengthOpFactory.java:19<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.OpCreator.create<span style="color:#f92672">(</span>OpCreator.java:29<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionGraph.buildLocationToNodePile<span style="color:#f92672">(</span>ExecutionGraph.java:89<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionGraph.&lt;init&gt;<span style="color:#f92672">(</span>ExecutionGraph.java:62<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.updateInstructionGraph<span style="color:#f92672">(</span>VirtualMachine.java:180<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.spawnInstructionGraph<span style="color:#f92672">(</span>VirtualMachine.java:131<span style="color:#f92672">)</span>
+	at org.cf.smalivm.MethodExecutorFactory.build<span style="color:#f92672">(</span>MethodExecutorFactory.java:62<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:75<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.InvokeOp.executeLocalMethod<span style="color:#f92672">(</span>InvokeOp.java:434<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.InvokeOp.execute<span style="color:#f92672">(</span>InvokeOp.java:136<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionNode.execute<span style="color:#f92672">(</span>ExecutionNode.java:53<span style="color:#f92672">)</span>
+	at org.cf.smalivm.NodeExecutor.execute<span style="color:#f92672">(</span>NodeExecutor.java:81<span style="color:#f92672">)</span>
+	at org.cf.smalivm.MethodExecutor.step<span style="color:#f92672">(</span>MethodExecutor.java:50<span style="color:#f92672">)</span>
+	at org.cf.smalivm.NonInteractiveMethodExecutor.execute<span style="color:#f92672">(</span>NonInteractiveMethodExecutor.java:54<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:76<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:205<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:182<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:182<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionContext.readClassState<span style="color:#f92672">(</span>ExecutionContext.java:132<span style="color:#f92672">)</span>
+	at org.cf.smalivm.opcode.NewInstanceOp.execute<span style="color:#f92672">(</span>NewInstanceOp.java:37<span style="color:#f92672">)</span>
+	at org.cf.smalivm.context.ExecutionNode.execute<span style="color:#f92672">(</span>ExecutionNode.java:53<span style="color:#f92672">)</span>
+	at org.cf.smalivm.NodeExecutor.execute<span style="color:#f92672">(</span>NodeExecutor.java:81<span style="color:#f92672">)</span>
+	at org.cf.smalivm.MethodExecutor.step<span style="color:#f92672">(</span>MethodExecutor.java:50<span style="color:#f92672">)</span>
+	at org.cf.smalivm.NonInteractiveMethodExecutor.execute<span style="color:#f92672">(</span>NonInteractiveMethodExecutor.java:54<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:76<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:63<span style="color:#f92672">)</span>
+	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:59<span style="color:#f92672">)</span>
+	at org.cf.simplify.Launcher.executeMethods<span style="color:#f92672">(</span>Launcher.java:195<span style="color:#f92672">)</span>
+	at org.cf.simplify.Launcher.run<span style="color:#f92672">(</span>Launcher.java:141<span style="color:#f92672">)</span>
+	at org.cf.simplify.Main.main<span style="color:#f92672">(</span>Main.java:14<span style="color:#f92672">)</span>
+</code></pre></div><p>I tried running dex-oracle and it failed too.</p>
 <h2 id="behavioral-analysis">Behavioral analysis<a href="#behavioral-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>first, im going to stop the emulator and restart it with following parameters</p>
 <p><code>-show-kernel -tcpdump dump.cap</code></p>
@@ -459,29 +459,29 @@ My guess is that would be the service that it starts.
 However we see some interesting stuff in the above snippet.</p>
 <p>for example, when the method is called with <code>url</code> as an argument, it returns <code>https://cdnjs.sv</code>.</p>
 <p>and we can also see that the method is called with <code>keylogger</code> as the argument, which gives us a hint that this malware is capable of keylogging.</p>
-<pre tabindex="0"><code>[!] callback -&gt; [*] method called SomeHttpClass.mo234e(&quot;interval&quot;) =&gt; return: 10000
-</code></pre><p>SomeHttpClass.mo234e() method returns value 10000, which is exactly the same value thats going to
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;interval&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: <span style="color:#ae81ff">10000</span>
+</code></pre></div><p>SomeHttpClass.mo234e() method returns value 10000, which is exactly the same value thats going to
 be used when the condition fails.</p>
 <p>Now lets focus on this <code>SomeHttpClass</code>.</p>
 <p>class got following member variables.</p>
-<pre tabindex="0"><code>    /* renamed from: c */
-    static final Constants consts = new Constants();
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: c */</span>
+    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Constants consts <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Constants<span style="color:#f92672">();</span>
 
-    /* renamed from: d */
-    static final String android_sec = &quot;Android Security&quot;;
+    <span style="color:#75715e">/* renamed from: d */</span>
+    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> String android_sec <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Android Security&#34;</span><span style="color:#f92672">;</span>
 
-    /* renamed from: e */
-    private static SharedPreferences shared_prefs;
+    <span style="color:#75715e">/* renamed from: e */</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> SharedPreferences shared_prefs<span style="color:#f92672">;</span>
 
-    /* renamed from: f */
-    private static SharedPreferences.Editor shared_ref_editor;
+    <span style="color:#75715e">/* renamed from: f */</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> SharedPreferences<span style="color:#f92672">.</span><span style="color:#a6e22e">Editor</span> shared_ref_editor<span style="color:#f92672">;</span>
 
-    /* renamed from: a */
-    Constants consts2 = new Constants();
+    <span style="color:#75715e">/* renamed from: a */</span>
+    Constants consts2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Constants<span style="color:#f92672">();</span>
 
-    /* renamed from: b */
-    BankingApps banking_apps = new BankingApps();
-</code></pre><p>Inside the class, there is another class, which I renamed to <code>MakeTwitterRequest</code> because this is the class that makes the twitter request to <code>qweqweqwe</code> before.</p>
+    <span style="color:#75715e">/* renamed from: b */</span>
+    BankingApps banking_apps <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BankingApps<span style="color:#f92672">();</span>
+</code></pre></div><p>Inside the class, there is another class, which I renamed to <code>MakeTwitterRequest</code> because this is the class that makes the twitter request to <code>qweqweqwe</code> before.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MakeTwitterRequest</span> <span style="color:#66d9ef">extends</span> AsyncTask <span style="color:#f92672">{</span>
 
         <span style="color:#f92672">[...</span> more code and data<span style="color:#f92672">]</span>
