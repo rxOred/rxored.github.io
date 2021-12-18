@@ -153,7 +153,10 @@
   
 
   <div class="post-content"><div>
-        <h1 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+        <h1 id="intro">Intro<a href="#intro" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Anubis is a pretty big banking trojan that targets android devices. // more stuff</p>
+<p>In this blog post, i will poke various parts of the malware while reverse engineering it to understand how it works and how to defeat it.</p>
+<h1 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p><a href="https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip">github</a></p>
 <h1 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <pre><code>- linux host
@@ -191,10 +194,55 @@
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS&#34;</span><span style="color:#f92672">/&gt;</span>
 </code></pre></div><p>As we can see, this malware can send, recieve SMS, read contacts, access location, read and write
 to external storage. It is also requesting permission to get notified once when the system boots
-up.</p>
-<p>Now we have a very basic idea of what malware is capable of, its time for some dynamic analysis</p>
-<p>before running the sample on the vm, it wwould be better to run it on a automated framework. Then
-we can focus on the specific details. Here im going to use MobSF.</p>
+up, which helps malware to persist on a device.</p>
+<p>by investigating the activities in the xml, we can get a rough idea about which classes use which permissions and point our attention to those classes when we do actual reversing.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;activity</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.ncec.myvbo&#34;</span><span style="color:#f92672">&gt;</span>
+            <span style="color:#f92672">&lt;intent-filter&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.MAIN&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;category</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.category.LAUNCHER&#34;</span><span style="color:#f92672">/&gt;</span>
+            <span style="color:#f92672">&lt;/intent-filter&gt;</span>
+        <span style="color:#f92672">&lt;/activity&gt;</span>
+</code></pre></div><p>Its the MainActivity, which will be our first target when approaching the malware.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;receiver</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.cmtstflxlxb&#34;</span> <span style="color:#a6e22e">android:permission=</span><span style="color:#e6db74">&#34;android.permission.BROADCAST_SMS&#34;</span><span style="color:#f92672">&gt;</span>
+            <span style="color:#f92672">&lt;intent-filter&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.provider.Telephony.SMS_DELIVER&#34;</span><span style="color:#f92672">/&gt;</span>
+            <span style="color:#f92672">&lt;/intent-filter&gt;</span>
+        <span style="color:#f92672">&lt;/receiver&gt;</span>
+</code></pre></div><p>class <code>wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.cmtstflxlxb</code> is responsible for delivering messages.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;receiver</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.hypihteeavv&#34;</span><span style="color:#f92672">&gt;</span>
+            <span style="color:#f92672">&lt;intent-filter</span> <span style="color:#a6e22e">android:priority=</span><span style="color:#e6db74">&#34;999&#34;</span><span style="color:#f92672">&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.BOOT_COMPLETED&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.QUICKBOOT_POWERON&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;com.htc.intent.action.QUICKBOOT_POWERON&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.USER_PRESENT&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.PACKAGE_ADDED&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.PACKAGE_REMOVED&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.provider.Telephony.SMS_RECEIVED&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.SCREEN_ON&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.EXTERNAL_APPLICATIONS_AVAILABLE&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;category</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.category.HOME&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.net.conn.CONNECTIVITY_CHANGE&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.net.conn.CONNECTIVITY_CHANGE&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.net.wifi.WIFI_STATE_CHANGED&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.DREAMING_STOPPED&#34;</span><span style="color:#f92672">/&gt;</span>
+            <span style="color:#f92672">&lt;/intent-filter&gt;</span>
+        <span style="color:#f92672">&lt;/receiver&gt;</span>
+</code></pre></div><p>The receiver <code>&quot;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.hypihteeavv</code> is listening for <code>BOOT_COMPLETED</code>, <code>PACKAGE_ADDED</code>, <code>SMS_RECEIVED</code> and many more stuff. it looks like this one is really important.</p>
+<p>Since we know this is a banking trojan, we assume that application is waiting for the user to
+install banking apps and the above mentioned class is responsible for that.</p>
+<p>manifest also mentions that the application uses accessibility framework, by class <code>wocwvy.czyxoxmbauu.slsa.egxltnv</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;service</span> <span style="color:#a6e22e">android:label=</span><span style="color:#e6db74">&#34;Android Security&#34;</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.egxltnv&#34;</span> <span style="color:#a6e22e">android:permission=</span><span style="color:#e6db74">&#34;android.permission.BIND_ACCESSIBILITY_SERVICE&#34;</span><span style="color:#f92672">&gt;</span>
+            <span style="color:#f92672">&lt;intent-filter&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.accessibilityservice.AccessibilityService&#34;</span><span style="color:#f92672">/&gt;</span>
+            <span style="color:#f92672">&lt;/intent-filter&gt;</span>
+            <span style="color:#f92672">&lt;meta-data</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.accessibilityservice&#34;</span> <span style="color:#a6e22e">android:resource=</span><span style="color:#e6db74">&#34;@xml/mihaf&#34;</span><span style="color:#f92672">/&gt;</span>
+        <span style="color:#f92672">&lt;/service&gt;</span>
+</code></pre></div><p>it also references another xml, which specifies what kind of operation does this application do with the framework.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;</span>
+<span style="color:#f92672">&lt;accessibility-service</span> <span style="color:#a6e22e">android:settingsActivity=</span><span style="color:#e6db74">&#34;com.example.root.myapplication.MainActivity&#34;</span> <span style="color:#a6e22e">android:accessibilityEventTypes=</span><span style="color:#e6db74">&#34;typeWindowContentChanged|typeWindowStateChanged&#34;</span> <span style="color:#a6e22e">android:accessibilityFlags=</span><span style="color:#e6db74">&#34;flagDefault|flagIncludeNotImportantViews|flagReportViewIds&#34;</span> <span style="color:#a6e22e">android:canRetrieveWindowContent=</span><span style="color:#e6db74">&#34;true&#34;</span>
+  <span style="color:#a6e22e">xmlns:android=</span><span style="color:#e6db74">&#34;http://schemas.android.com/apk/res/android&#34;</span> <span style="color:#f92672">/&gt;</span>
+</code></pre></div><p>Here, we can see that the application is listening for events such as <code>typeWindowStateChanged</code>, <code>typeWindowContentChanged</code>. Which basically means this application is listening to everything. And guess what? it can also retrieve the content.</p>
+<p>before running the sample on the vm or decompiling it, it would be better to run it on a automated framework just to make sure (dunno, it is just a habit :3). Then we can focus on the specific details. Here im going to use MobSF.</p>
 <p><img src="/img/anubis/anubis_mobsf.png" alt="automated analysis"></p>
 <p><img src="/img/anubis/anubis_mobsfstatic.png" alt="mobsf results"></p>
 <p>here we can see that the application has 17 activities, 24 services, 4 recievers and 0 providers.</p>
@@ -206,7 +254,23 @@ considering the result of MobSF.</p>
 <p><img src="/img/anubis/anubis_androguard.png" alt="androguard results"></p>
 <p>here androguard shows us recievers, main activity and the services.</p>
 <p>However all the above names seemed to be obfuscated.</p>
-<p>Lets try to identify the obfuscator by analyzing the smali code.</p>
+<h2 id="behavioral-analysis">Behavioral analysis<a href="#behavioral-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>first, im going to stop the emulator and restart it with following parameters</p>
+<p><code>-show-kernel -tcpdump dump.cap</code></p>
+<p>so we can take a look at network traffic later on, in case. (I&rsquo;ve also setup mitmproxy)</p>
+<p><img src="/img/anubis/anubis_installapk.png" alt="installing the malware"></p>
+<p>running the sample, its asking to enable &lsquo;accessibility permissions&rsquo;. And the user is forced to grant the permission. This enables application run in the background.</p>
+<p><img src="/img/anubis/anubis_accessibilities.png" alt="accessibility permissions"></p>
+<p>Here&rsquo;s the network traffic.</p>
+<p><img src="/img/anubis/anubis_requeststorandom.png" alt="network traffic"></p>
+<p><img src="/img/anubis/anubis_request.png" alt="request"></p>
+<p>when granted the requested permission, the malware seemed to be deleted from the devic.
+However, its listed in the packages.</p>
+<pre tabindex="0"><code>root@generic_x86_64:/ # pm list packages | grep slsa                           
+package:wocwvy.czyxoxmbauu.slsa
+root@generic_x86_64:/ # 
+</code></pre><p>which means that it has only deleted the icon from the application launcher not
+the app itself.</p>
 <h2 id="identifying-the-obfuscator">Identifying the obfuscator<a href="#identifying-the-obfuscator" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>It is possible to identify the obfuscator just by looking at smali code. For example, ProGuard,
 which is one of the most popular android obfuscators out there, can be idenitified if the smali
@@ -271,51 +335,45 @@ because without the mapping.txt, there is no way to rename classes, methods and 
 	at org.cf.smalivm.opcode.InvokeOp.executeLocalMethod<span style="color:#f92672">(</span>InvokeOp.java:434<span style="color:#f92672">)</span>
 	at org.cf.smalivm.opcode.InvokeOp.execute<span style="color:#f92672">(</span>InvokeOp.java:136<span style="color:#f92672">)</span>
 	at org.cf.smalivm.context.ExecutionNode.execute<span style="color:#f92672">(</span>ExecutionNode.java:53<span style="color:#f92672">)</span>
-	at org.cf.smalivm.NodeExecutor.execute<span style="color:#f92672">(</span>NodeExecutor.java:81<span style="color:#f92672">)</span>
-	at org.cf.smalivm.MethodExecutor.step<span style="color:#f92672">(</span>MethodExecutor.java:50<span style="color:#f92672">)</span>
-	at org.cf.smalivm.NonInteractiveMethodExecutor.execute<span style="color:#f92672">(</span>NonInteractiveMethodExecutor.java:54<span style="color:#f92672">)</span>
-	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:76<span style="color:#f92672">)</span>
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:205<span style="color:#f92672">)</span>
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:182<span style="color:#f92672">)</span>
-	at org.cf.smalivm.context.ExecutionContext.staticallyInitializeClassIfNecessary<span style="color:#f92672">(</span>ExecutionContext.java:182<span style="color:#f92672">)</span>
-	at org.cf.smalivm.context.ExecutionContext.readClassState<span style="color:#f92672">(</span>ExecutionContext.java:132<span style="color:#f92672">)</span>
-	at org.cf.smalivm.opcode.NewInstanceOp.execute<span style="color:#f92672">(</span>NewInstanceOp.java:37<span style="color:#f92672">)</span>
-	at org.cf.smalivm.context.ExecutionNode.execute<span style="color:#f92672">(</span>ExecutionNode.java:53<span style="color:#f92672">)</span>
-	at org.cf.smalivm.NodeExecutor.execute<span style="color:#f92672">(</span>NodeExecutor.java:81<span style="color:#f92672">)</span>
-	at org.cf.smalivm.MethodExecutor.step<span style="color:#f92672">(</span>MethodExecutor.java:50<span style="color:#f92672">)</span>
-	at org.cf.smalivm.NonInteractiveMethodExecutor.execute<span style="color:#f92672">(</span>NonInteractiveMethodExecutor.java:54<span style="color:#f92672">)</span>
-	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:76<span style="color:#f92672">)</span>
-	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:63<span style="color:#f92672">)</span>
-	at org.cf.smalivm.VirtualMachine.execute<span style="color:#f92672">(</span>VirtualMachine.java:59<span style="color:#f92672">)</span>
-	at org.cf.simplify.Launcher.executeMethods<span style="color:#f92672">(</span>Launcher.java:195<span style="color:#f92672">)</span>
-	at org.cf.simplify.Launcher.run<span style="color:#f92672">(</span>Launcher.java:141<span style="color:#f92672">)</span>
-	at org.cf.simplify.Main.main<span style="color:#f92672">(</span>Main.java:14<span style="color:#f92672">)</span>
+    
+    <span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
 </code></pre></div><p>I tried running dex-oracle and it failed too.</p>
-<h2 id="behavioral-analysis">Behavioral analysis<a href="#behavioral-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<p>first, im going to stop the emulator and restart it with following parameters</p>
-<p><code>-show-kernel -tcpdump dump.cap</code></p>
-<p>so we can take a look at network traffic later on, in case. (I&rsquo;ve also setup mitmproxy)</p>
-<p><img src="/img/anubis/anubis_installapk.png" alt="installing the malware"></p>
-<p>running the sample, its asking to enable &lsquo;accessibility permissions&rsquo;. And the user is forced to grant the permission. This enables application run in the background.</p>
-<p><img src="/img/anubis/anubis_accessibilities.png" alt="accessibility permissions"></p>
-<p>Here&rsquo;s the network traffic.</p>
-<p><img src="/img/anubis/anubis_requeststorandom.png" alt="network traffic"></p>
-<p><img src="/img/anubis/anubis_request.png" alt="request"></p>
-<p>when granted the requested permission, the malware seemed to be deleted from the devic.
-However, its listed in the packages.</p>
-<pre tabindex="0"><code>root@generic_x86_64:/ # pm list packages | grep slsa                           
-package:wocwvy.czyxoxmbauu.slsa
-root@generic_x86_64:/ # 
-</code></pre><p>which means that it has only deleted the icon from the application launcher not
-the app itself.</p>
+<h2 id="packed">Packed?<a href="#packed" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Lets try to identify whether is apk is packed. This is pretty straightfoward. To use a class in an
+android application, one must define it in the manifest file.</p>
+<p>If the application doesnt have the classes specified in the manifest, then chances are that it is
+packed.</p>
+<p>If the apk has got more classes than that of the manifest, it also indicates that the apk is packed.</p>
+<p>In case of above situations, following APIs will be used to load and run classes at runtime.</p>
+<pre><code>- dalvik.system.DexClassLoader
+- dalvik.system.PathClassLoader
+- dalvik.system.InMemoryDexClassLoader
+</code></pre>
+<p>Eventhough our apk does specify the exact same classes specified in the manifest (other than few classes), let&rsquo;s search for above mentioned APIs.</p>
+<p><img src="/img/anubis/anubis_DexClassLoader.png" alt="DexClassLoader"></p>
+<p>we get few occurances of the <code>DexClassLoader</code> in the class <code>wocwvy.czyxoxmbauu.slsa.b</code> (no result for the other two).</p>
+<p>when I trace <code>DexClassLoader</code> using below frida agent,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">available</span>) {
+    <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">perform</span>(<span style="color:#66d9ef">function</span>(){
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">dex_class_loader</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#39;dalvik.system.DexClassLoader&#39;</span>);
+        <span style="color:#a6e22e">dex_class_loader</span>.<span style="color:#a6e22e">$init</span>.<span style="color:#a6e22e">implementation</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">c</span>, <span style="color:#a6e22e">d</span>) {
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ret</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">$init</span>(<span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">c</span>, <span style="color:#a6e22e">d</span>);
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] constructor called DexClassLoad(\&#34;&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">+</span><span style="color:#e6db74">&#34;, &#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">b</span><span style="color:#f92672">+</span><span style="color:#e6db74">&#34;, &#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">c</span><span style="color:#f92672">+</span><span style="color:#e6db74">&#34;\&#34;);&#34;</span>);
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ret</span>;
+        }
+    )}
+}
+</code></pre></div><p>the result was empty, which implies that the malware is not loading classes at runtime.
+From which i assume that this malware is not packed.</p>
 <h2 id="diving-deep">Diving deep<a href="#diving-deep" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Since we have idenitified the MainActivity and some other useful classes using the manifest, we know where to start. We&rsquo;ll start with the MainActivity (obiviously) and move into other stuff we idenitified.</p>
 <p>To do a code analysis, first, the apk should be converted into jar format.</p>
 <pre tabindex="0"><code>rxOred-aspiree :: Analysis/android/anubis Â» enjarify anubis.apk
 Using python3 as Python interpreter
 Output written to anubis-enjarify.jar
 136 classes translated successfully, 0 classes had errors
 rxOred-aspiree :: Analysis/android/anubis Â» 
-</code></pre><p>Then, using jadx, we can analyse the code. To make it easy, I did some analysis and found <code>MainActivity</code>.</p>
+</code></pre><p>Then, using jadx, we can analyse the code.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.ncec.myvbo */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MainActivity</span> <span style="color:#66d9ef">extends</span> Activity <span style="color:#f92672">{</span>
 
@@ -430,7 +488,7 @@ Without jadx deobfuscator, method is named as below</p>
         }
     })
 }
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">rxOred-aspiree :: ~/Analysis/android ï¿½ python wrapper.py wocwvy.czyxoxmbauu.slsa agent3.js
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">rxOred-aspiree :: ~/Analysis/android ï¿½ python wrapper.py wocwvy.czyxoxmbauu.slsa mo234e.js
 <span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
 <span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;save_inj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
 <span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;cryptfile&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: false
@@ -460,9 +518,148 @@ However we see some interesting stuff in the above snippet.</p>
 <p>for example, when the method is called with <code>url</code> as an argument, it returns <code>https://cdnjs.sv</code>.</p>
 <p>and we can also see that the method is called with <code>keylogger</code> as the argument, which gives us a hint that this malware is capable of keylogging.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo234e<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;interval&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: <span style="color:#ae81ff">10000</span>
-</code></pre></div><p>SomeHttpClass.mo234e() method returns value 10000, which is exactly the same value thats going to
+</code></pre></div><p><code>SomeHttpClass.mo234e()</code> method returns value 10000, which is exactly the same value thats going to
 be used when the condition fails.</p>
-<p>Now lets focus on this <code>SomeHttpClass</code>.</p>
+<p>So what exactly <code>SomeHttpClass.mo234e()</code> does? Well, I think its reading data from some kind of data storage using the <code>key</code>
+which it recieves as an argument. Yaeee?? what comes to your mind?? shared preferences!!!.</p>
+<p>To confirm our assumption</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: e */</span>
+    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">mo234e</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>shared_pef <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            shared_pef <span style="color:#f92672">=</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getSharedPreferences</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;set&#34;</span><span style="color:#f92672">,</span> 0<span style="color:#f92672">);</span>
+            shared_pref_editor <span style="color:#f92672">=</span> shared_pef<span style="color:#f92672">.</span><span style="color:#a6e22e">edit</span><span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span>
+        String string <span style="color:#f92672">=</span> shared_pef<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span>str<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urlInj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">||</span> str<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">?</span> mo230d<span style="color:#f92672">(</span>string<span style="color:#f92672">)</span> <span style="color:#f92672">:</span> string<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>See?</p>
+<p>Now, what we can do is, trace back and find the xml file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#e6db74">&#39;use strict&#39;</span>;
+
+<span style="color:#a6e22e">Interceptor</span>.<span style="color:#a6e22e">attach</span>(<span style="color:#a6e22e">Module</span>.<span style="color:#a6e22e">findExportByName</span>(<span style="color:#66d9ef">null</span>, <span style="color:#e6db74">&#34;open&#34;</span>), {
+    <span style="color:#a6e22e">onEnter</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">args</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">flag</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">filename</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Memory</span>.<span style="color:#a6e22e">readCString</span>(<span style="color:#a6e22e">ptr</span>(<span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">0</span>])); 
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">filename</span>.<span style="color:#a6e22e">endsWith</span>(<span style="color:#e6db74">&#34;.xml&#34;</span>)) {
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] open called =&gt; (\&#34;&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">filename</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\&#34;)&#34;</span>);
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">flag</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">backtrace</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Thread</span>.<span style="color:#a6e22e">backtrace</span>(<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">Backtracer</span>.<span style="color:#a6e22e">ACCURATE</span>).<span style="color:#a6e22e">map</span>(<span style="color:#a6e22e">DebugSymbol</span>.<span style="color:#a6e22e">fromAddress</span>).<span style="color:#a6e22e">join</span>(<span style="color:#e6db74">&#34;\n\t&#34;</span>);
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[-] traced [&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">Memory</span>.<span style="color:#a6e22e">readCString</span>(<span style="color:#a6e22e">ptr</span>(<span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">0</span>])) <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;]\nBacktrace =&gt; &#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">backtrace</span>);
+        }
+    }
+});        
+</code></pre></div><p>the resul:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">[!] callback -&gt; [*] open called =&gt; (&#34;/data/user/0/wocwvy.czyxoxmbauu.slsa/shared_prefs/set.xml&#34;)
+[!] callback -&gt; [-] traced [/data/user/0/wocwvy.czyxoxmbauu.slsa/shared_prefs/set.xml]
+Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
+	0x79f058be791c frida-agent-64.so!0x2e591c
+	0x79f058bf33d9 frida-agent-64.so!0x2f13d9
+	0x79f058bf4bf6 frida-agent-64.so!0x2f2bf6
+	0x79f058bf3077 frida-agent-64.so!0x2f1077
+	0x79f058b909d5 frida-agent-64.so!0x28e9d5
+	0x79f058b90adb frida-agent-64.so!0x28eadb
+	0x79f058ba41fd frida-agent-64.so!0x2a21fd
+	0x79f058b64cfc frida-agent-64.so!0x262cfc
+	0x79f0f2a3a077
+	0x241
+</code></pre></div><p>see? we&rsquo;ve found the shared preference xml. Now its all about extracting it from the device using adb and look for interesting stuff.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39; standalone=&#39;yes&#39; ?&gt;</span>
+<span style="color:#f92672">&lt;map&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;madeSettings&#34;</span><span style="color:#f92672">&gt;</span>1 2 3 4 5 6 7 8 9 10 11 12 13 <span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;StringPermis&#34;</span><span style="color:#f92672">&gt;</span>Allow<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;uninstall1&#34;</span><span style="color:#f92672">&gt;</span>uninstall<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;VNC_Start_NEW&#34;</span><span style="color:#f92672">&gt;</span>http://ktosdelaetskrintotpidor.com<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;startRequest&#34;</span><span style="color:#f92672">&gt;</span>Access=0Perm=0<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;sound&#34;</span><span style="color:#f92672">&gt;</span>start<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;vkladmin&#34;</span><span style="color:#f92672">&gt;</span>include<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;DexSocksMolude&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;uninstall2&#34;</span><span style="color:#f92672">&gt;</span>to remove<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;lookscreen&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;StringAccessibility&#34;</span><span style="color:#f92672">&gt;</span>Enable access for<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;dateCJ&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;id_windows_bot&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;StringActivate&#34;</span><span style="color:#f92672">&gt;</span>activate<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;checkStartGrabber&#34;</span><span style="color:#f92672">&gt;</span>0<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;vnc&#34;</span><span style="color:#f92672">&gt;</span>start<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;cryptfile&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;recordsoundseconds&#34;</span><span style="color:#f92672">&gt;</span>0<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;gps&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;swspacket&#34;</span><span style="color:#f92672">&gt;</span>com.android.messaging<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;perehvat_sws&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;buttonPlayProtect&#34;</span><span style="color:#f92672">&gt;</span>Ð¡ontinue<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;name&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;interval&#34;</span><span style="color:#f92672">&gt;</span>10000<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;del_sws&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;RequestGPS&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;straccessibility&#34;</span><span style="color:#f92672">&gt;</span>start now<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;status&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;timeStartGrabber&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;play_protect&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;spamSMS&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;Starter&#34;</span><span style="color:#f92672">&gt;</span>http://sositehuypidarasi.com<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;network&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;getNumber&#34;</span><span style="color:#f92672">&gt;</span>false<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;indexSMSSPAM&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">&gt;</span>ZWViZGQ3NjRjOGZlOWNjMjAzODhhNzFhNzg4MDJi&amp;#10;    <span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;str_push_fish&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;time_start_permission&#34;</span><span style="color:#f92672">&gt;</span>120<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;save_inj&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;textSPAM&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;straccessibility2&#34;</span><span style="color:#f92672">&gt;</span>to start<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;findfiles&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;key&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;StringYes&#34;</span><span style="color:#f92672">&gt;</span>Yes<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;startRecordSound&#34;</span><span style="color:#f92672">&gt;</span>stop<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;urlInj&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;htmllocker&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;foregroundwhile&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;lock_btc&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;SettingsAll&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;RequestINJ&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;time_work&#34;</span><span style="color:#f92672">&gt;</span>375<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;iconCJ&#34;</span><span style="color:#f92672">&gt;</span>0:0<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;keylogger&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;step&#34;</span><span style="color:#f92672">&gt;</span>0<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;textPlayProtect&#34;</span><span style="color:#f92672">&gt;</span>The system does not work correctly, disable Google Play Protect!<span style="color:#f92672">&lt;/string&gt;</span>
+    <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;lock_amount&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
+<span style="color:#f92672">&lt;/map&gt;</span>
+</code></pre></div><p>here&rsquo;s another agent to monitor what values are being written to the xml file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#e6db74">&#39;use strict&#39;</span>;
+
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">fds</span> <span style="color:#f92672">=</span> {};
+<span style="color:#a6e22e">Interceptor</span>.<span style="color:#a6e22e">attach</span>(<span style="color:#a6e22e">Module</span>.<span style="color:#a6e22e">findExportByName</span>(<span style="color:#66d9ef">null</span>, <span style="color:#e6db74">&#34;open&#34;</span>), {
+    <span style="color:#a6e22e">onEnter</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">args</span>) {
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">filename</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Memory</span>.<span style="color:#a6e22e">readCString</span>(<span style="color:#a6e22e">ptr</span>(<span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">0</span>]));
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">filename</span>.<span style="color:#a6e22e">endsWith</span>(<span style="color:#e6db74">&#39;.xml&#39;</span>)) {
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] open called =&gt; (\&#34;&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">filename</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\&#34;)&#34;</span>);
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">flag</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span>;
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fname</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">filename</span>;
+        }
+    },
+    <span style="color:#a6e22e">onLeave</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">retval</span>) {
+        <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">flag</span>) {
+            <span style="color:#a6e22e">fds</span>[<span style="color:#a6e22e">retval</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">fname</span>;
+        }
+    }
+});
+[<span style="color:#e6db74">&#39;read&#39;</span>, <span style="color:#e6db74">&#39;write&#39;</span>, <span style="color:#e6db74">&#39;pread&#39;</span>, <span style="color:#e6db74">&#39;pwrite&#39;</span>, <span style="color:#e6db74">&#39;readv&#39;</span>, <span style="color:#e6db74">&#39;writev&#39;</span>].<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">func</span> =&gt; {
+    <span style="color:#a6e22e">Interceptor</span>.<span style="color:#a6e22e">attach</span>(<span style="color:#a6e22e">Module</span>.<span style="color:#a6e22e">findExportByName</span>(<span style="color:#66d9ef">null</span>, <span style="color:#a6e22e">func</span>), {
+        <span style="color:#a6e22e">onEnter</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">args</span>) {
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">fd</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">0</span>];
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fd</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">fds</span>) {
+                <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">func</span><span style="color:#e6db74">}</span><span style="color:#e6db74">: </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">fds</span>[<span style="color:#a6e22e">fd</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74"> \t`</span>);
+                <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span>) {
+                    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">func</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;write&#39;</span>) {
+                        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">buffer</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Memory</span>.<span style="color:#a6e22e">readCString</span>(<span style="color:#a6e22e">ptr</span>(<span style="color:#a6e22e">args</span>[<span style="color:#ae81ff">1</span>]));
+                        <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;\tbuffer =&gt; &#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">buffer</span>);
+                    }
+                }
+            }
+        }
+    });
+});
+</code></pre></div><p>We have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
 <p>class got following member variables.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: c */</span>
     <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Constants consts <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Constants<span style="color:#f92672">();</span>
@@ -523,7 +720,7 @@ then it gets an <code>InputStream</code> from the connection and reads data to <
                 <span style="color:#f92672">}</span>
                 <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo230d</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">);</span>
 </code></pre></div><p>The malware then replaces all the spaces with empty string, and calls <code>SomeHttpClass.mo208a</code>, passing some random looking
-chinese letters as the the second and third argument.</p>
+chinese letters as second and third arguments.</p>
 <p>lets see what&rsquo;s the return value with frida.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
@@ -596,7 +793,7 @@ chinese letters as the the second and third argument.</p>
         <span style="color:#f92672">}</span>
         <span style="color:#66d9ef">return</span> str<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;com.ebay.mobile,&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;com.ebay.mobile,&#34;</span><span style="color:#f92672">;</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><p>at the top, the method declares string <code>str</code> and initliaze it to an empty string. then it iterates through each installed application and compares the application¿s name with a shit ton of string, which are basically names of banking apps. if the current application¿s name is equal to one of those strings, string <code>str</code> is appended with the name followed by a comma.</p>
+</code></pre></div><p>at the top, the method declares string <code>str</code> and initliaze it to an empty string. then it iterates through each installed application and compares the applicationï¿½s name with a shit ton of string, which are basically names of banking apps. if the current applicationï¿½s name is equal to one of those strings, string <code>str</code> is appended with the name followed by a comma.</p>
 <p>when the iteration is finished, it checks if <code>str</code> contains following names.</p>
 <pre><code>- com.paypal.android.p2pmobile
 - com.amazon.mShop.android.shopping
