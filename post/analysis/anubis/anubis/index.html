@@ -659,9 +659,12 @@ Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
         }
     });
 });
-</code></pre></div><p>We have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
+</code></pre></div><p>However it does not explicitly specify what are the new values written to the file. Instead, it prints the whole buffer. In this case, the buffer is
+the xml.</p>
+<p>Since we have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
 <p>class got following member variables.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: c */</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
+    <span style="color:#75715e">/* renamed from: c */</span>
     <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Constants consts <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Constants<span style="color:#f92672">();</span>
 
     <span style="color:#75715e">/* renamed from: d */</span>
@@ -721,7 +724,36 @@ then it gets an <code>InputStream</code> from the connection and reads data to <
                 <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo230d</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">);</span>
 </code></pre></div><p>The malware then replaces all the spaces with empty string, and calls <code>SomeHttpClass.mo208a</code>, passing some random looking
 chinese letters as second and third arguments.</p>
-<p>lets see what&rsquo;s the return value with frida.</p>
+<p>lets see what&rsquo;s the return value with frida. again, this shit is overloaded too. (pretty common in obfuscated java code.)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#e6db74">&#39;use strict&#39;</span>;
+
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">available</span>) {
+    <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">perform</span>(<span style="color:#66d9ef">function</span>() {
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">some_http_class</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.b&#34;</span>);
+        <span style="color:#a6e22e">some_http_class</span>.<span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">overload</span>(<span style="color:#e6db74">&#34;java.lang.String&#34;</span>, <span style="color:#e6db74">&#34;java.lang.String&#34;</span>, <span style="color:#e6db74">&#34;java.lang.String&#34;</span>).<span style="color:#a6e22e">implementation</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span>) { 
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] method called SomeHttpClass.mo208a(\&#34;&#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span><span style="color:#e6db74">&#34;\&#34;, &#34;</span> <span style="color:#f92672">+</span><span style="color:#a6e22e">y</span><span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\&#34;, &#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">z</span><span style="color:#f92672">+</span><span style="color:#e6db74">&#34;\&#34;)&#34;</span>);
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ret</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">a</span>(<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">z</span>); 
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">ret</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">undefined</span>) {
+                <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34; =&gt; return: &#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">ret</span>);
+                <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ret</span>;
+            }
+            <span style="color:#66d9ef">else</span> {
+                <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34; =&gt; return: undefined&#34;</span>);
+                <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#39;java.lang.String&#39;</span>).<span style="color:#a6e22e">$new</span>(<span style="color:#e6db74">&#34;undefined&#34;</span>);
+            }       
+        }
+    });
+}
+</code></pre></div><p>when ran the above agent,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo208a<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;null&#34;</span>, &lt;tag&gt;<span style="color:#e6db74">&#34;, &lt;/tag&gt;&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: undefined
+</code></pre></div><p>we can see that the method is called by with some unexpected arguments. And this is even before the malware makes the request to twitter url.
+If you wait bit longer (until the malware makes that request), we can see the arguments we expected.</p>
+<p>I cant drop the result here because first argument is too long. which makes sense because malware is using the response html as the first argument.
+Unfortunately, the return value we get is, &quot;&quot; :3.</p>
+<pre tabindex="0"><code>[!] callback -&gt;  =&gt; return:
+</code></pre><p>However we can try to understand what <code>SomeHttpClass.mo208a</code> is doing with the input either using frida or by intercepting the request and writing a response that suite our needs.</p>
+<p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
 
