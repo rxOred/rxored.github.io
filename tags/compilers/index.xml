@@ -113,9 +113,9 @@ E   +   E
 &lt;p&gt;Remember CFGs?, in modern programming languages, there are lots of things that CFGs cant express. for example type definitions. Almost every modern language allows new types. However, CFGs cannot represent new types and&lt;/p&gt;
 &lt;p&gt;their usage. ASTs can solve these problems.&lt;/p&gt;
 &lt;p&gt;Another major usage of ASTs is that a full traversal of the AST data structure represents the correctness of the program. ASTs are heavily used in semantic analysis too.&lt;/p&gt;
-&lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
 &lt;p&gt;So yeah that&amp;rsquo;s it for the compiler front end. I suggest readers go through &amp;ldquo;Concepts of programming languages&amp;rdquo; for more detailed explanations.&lt;/p&gt;
-&lt;p&gt;I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll do the optimization article soon.&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
     

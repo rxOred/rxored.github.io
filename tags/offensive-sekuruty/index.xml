@@ -137,8 +137,9 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
 &lt;p&gt;Without much analysis, we can clearly say that this one calls &lt;code&gt;AmsiScanString&lt;/code&gt; internally. before that, it checks whether the enum pointed by &lt;code&gt;target&lt;/code&gt; is empty.&lt;/p&gt;
 &lt;p&gt;Then there is a loop that increases &lt;code&gt;rax&lt;/code&gt; register until it finds a null byte. This is a strlen. After that, &lt;code&gt;rax&lt;/code&gt; is added to &lt;code&gt;rax&lt;/code&gt; and gets compared to &lt;code&gt;r11&lt;/code&gt;, which holds value &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, if the value in &lt;code&gt;rax&lt;/code&gt; is above &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, it moves &lt;code&gt;0x80070057&lt;/code&gt; to &lt;code&gt;rax&lt;/code&gt; register and returns. else, it calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after some random value loaded into rax, and else, it simply calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;thats-it-kids&#34;&gt;that&amp;rsquo;s it, kids!&lt;/h2&gt;
+&lt;h2 id=&#34;thats-it&#34;&gt;that&amp;rsquo;s it.&lt;/h2&gt;
 &lt;p&gt;So yeah that&amp;rsquo;s it for now&amp;hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass techniques.&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
     

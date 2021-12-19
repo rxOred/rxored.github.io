@@ -137,8 +137,9 @@ scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of 
 &lt;p&gt;Without much analysis, we can clearly say that this one calls &lt;code&gt;AmsiScanString&lt;/code&gt; internally. before that, it checks whether the enum pointed by &lt;code&gt;target&lt;/code&gt; is empty.&lt;/p&gt;
 &lt;p&gt;Then there is a loop that increases &lt;code&gt;rax&lt;/code&gt; register until it finds a null byte. This is a strlen. After that, &lt;code&gt;rax&lt;/code&gt; is added to &lt;code&gt;rax&lt;/code&gt; and gets compared to &lt;code&gt;r11&lt;/code&gt;, which holds value &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, if the value in &lt;code&gt;rax&lt;/code&gt; is above &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, it moves &lt;code&gt;0x80070057&lt;/code&gt; to &lt;code&gt;rax&lt;/code&gt; register and returns. else, it calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after some random value loaded into rax, and else, it simply calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;thats-it-kids&#34;&gt;that&amp;rsquo;s it, kids!&lt;/h2&gt;
+&lt;h2 id=&#34;thats-it&#34;&gt;that&amp;rsquo;s it.&lt;/h2&gt;
 &lt;p&gt;So yeah that&amp;rsquo;s it for now&amp;hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass techniques.&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
     
@@ -469,8 +470,8 @@ In the next few lines, return value (rax) of the GetNext method is set to &lt;co
     set end   = ennode
     jump loop
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
-&lt;p&gt;Soooo yeaaaah, Oh mmy freaking god i spent two days writing this damned article. I guess that is it. I hope yall understood what i did here :3&lt;/p&gt;
+&lt;p&gt;Oh my freaking god i spent two days writing this damned article. I guess that is it. I hope yall understood what i did here :3&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
     
@@ -580,9 +581,9 @@ E   +   E
 &lt;p&gt;Remember CFGs?, in modern programming languages, there are lots of things that CFGs cant express. for example type definitions. Almost every modern language allows new types. However, CFGs cannot represent new types and&lt;/p&gt;
 &lt;p&gt;their usage. ASTs can solve these problems.&lt;/p&gt;
 &lt;p&gt;Another major usage of ASTs is that a full traversal of the AST data structure represents the correctness of the program. ASTs are heavily used in semantic analysis too.&lt;/p&gt;
-&lt;h2 id=&#34;the-end&#34;&gt;THE END&lt;/h2&gt;
 &lt;p&gt;So yeah that&amp;rsquo;s it for the compiler front end. I suggest readers go through &amp;ldquo;Concepts of programming languages&amp;rdquo; for more detailed explanations.&lt;/p&gt;
-&lt;p&gt;I&amp;rsquo;ll do the optimization article soon. until then&amp;hellip;&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll do the optimization article soon.&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
     

@@ -276,8 +276,9 @@ scanned by the anti-malware vendor - <code>buffer</code>, length of the buffer -
 <p>Without much analysis, we can clearly say that this one calls <code>AmsiScanString</code> internally. before that, it checks whether the enum pointed by <code>target</code> is empty.</p>
 <p>Then there is a loop that increases <code>rax</code> register until it finds a null byte. This is a strlen. After that, <code>rax</code> is added to <code>rax</code> and gets compared to <code>r11</code>, which holds value <code>0xFFFFFFFF</code>, if the value in <code>rax</code> is above <code>0xFFFFFFFF</code>, it moves <code>0x80070057</code> to <code>rax</code> register and returns. else, it calls <code>AmsiScanBuffer</code>.</p>
 <p>And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after some random value loaded into rax, and else, it simply calls <code>AmsiScanBuffer</code>.</p>
-<h2 id="thats-it-kids">that&rsquo;s it, kids!<a href="#thats-it-kids" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="thats-it">that&rsquo;s it.<a href="#thats-it" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>So yeah that&rsquo;s it for now&hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass techniques.</p>
+<p>#Spread Anarchy!</p>
 
       </div></div>
 
