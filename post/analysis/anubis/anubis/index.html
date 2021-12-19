@@ -532,7 +532,7 @@ which it recieves as an argument. Yaeee?? what comes to your mind?? shared prefe
         String string <span style="color:#f92672">=</span> shared_pef<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
         <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span>str<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urlInj&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">||</span> str<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">?</span> mo230d<span style="color:#f92672">(</span>string<span style="color:#f92672">)</span> <span style="color:#f92672">:</span> string<span style="color:#f92672">;</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><p>See?</p>
+</code></pre></div><p>See? (keep in mind that, when returning from the function is checks whether <code>str</code> contains <code>urls</code> or <code>urlInj</code>, if so, it calles another method with <code>string</code> and return it, probably a decoder.)</p>
 <p>Now, what we can do is, trace back and find the xml file.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#e6db74">&#39;use strict&#39;</span>;
 
@@ -548,7 +548,7 @@ which it recieves as an argument. Yaeee?? what comes to your mind?? shared prefe
         }
     }
 });        
-</code></pre></div><p>the resul:</p>
+</code></pre></div><p>result:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">[!] callback -&gt; [*] open called =&gt; (&#34;/data/user/0/wocwvy.czyxoxmbauu.slsa/shared_prefs/set.xml&#34;)
 [!] callback -&gt; [-] traced [/data/user/0/wocwvy.czyxoxmbauu.slsa/shared_prefs/set.xml]
 Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
@@ -801,7 +801,46 @@ then <code>str</code> is reassigned to itself with its every <code>BankingApps.f
         <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">consts2</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getClass</span><span style="color:#f92672">();</span>
         <span style="color:#66d9ef">return</span> mo226c<span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;zanubis&#34;</span><span style="color:#f92672">);</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><p>Now we can move onto another interesting method of the <code>SomeHttpClass</code>.</p>
+</code></pre></div><p>Alright i guess this is how this malware got its name :). anyways, this method does nothing but calling another method with our string and <code>zanubis</code> as an
+arguments. And i think we should trace it with frida.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#e6db74">&#39;use strict&#39;</span>;
+
+<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">available</span>) {
+    <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">perform</span>(<span style="color:#66d9ef">function</span>() {
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">java_string</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#34;java.lang.String&#34;</span>);
+        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">some_http_class</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.b&#34;</span>);
+        <span style="color:#a6e22e">some_http_class</span>.<span style="color:#a6e22e">d</span>.<span style="color:#a6e22e">overload</span>(<span style="color:#e6db74">&#39;java.lang.String&#39;</span>).<span style="color:#a6e22e">implementation</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">x</span>) {
+            <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;[*] method called SomeHttpClass.mo230d(\&#34;&#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">x</span><span style="color:#f92672">+</span><span style="color:#e6db74">&#34;\&#34;)&#34;</span>);
+            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ret</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">d</span>(<span style="color:#a6e22e">x</span>);
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">ret</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">undefined</span>) {
+                <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34; =&gt; return: &#34;</span><span style="color:#f92672">+</span> <span style="color:#a6e22e">ret</span>);
+                <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">ret</span>;
+            }
+            <span style="color:#66d9ef">else</span> {
+                <span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34; =&gt; return: undefined&#34;</span>);
+                <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Java</span>.<span style="color:#a6e22e">use</span>(<span style="color:#e6db74">&#39;java.lang.String&#39;</span>).<span style="color:#a6e22e">$new</span>(<span style="color:#e6db74">&#34;undefined&#34;</span>);
+            }
+        }
+    });
+}
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo230d<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;ZWViZGQ3NjRjOGZlOWNjMjAzODhhNzFhNzg4MDJi
+</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo230d<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;ZWViZGQ3NjRjOGZlOWNjMjAzODhhNzFhNzg4MDJi
+</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: http://cdnjs.su
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo230d<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt; <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> method called SomeHttpClass.mo230d<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>!<span style="color:#f92672">]</span> callback -&gt;  <span style="color:#f92672">=</span>&gt; <span style="color:#66d9ef">return</span>: 
+</code></pre></div><p>It seems like <code>MakeTwitterRequest</code> is not the only function that calls <code>SomeHttpClass.mo230d()</code>. And doesnt that string looks familiar? yaee.. its the same string we saw in the shared preference xml file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;urls&#34;</span><span style="color:#f92672">&gt;</span>ZWViZGQ3NjRjOGZlOWNjMjAzODhhNzFhNzg4MDJi&amp;#10;    <span style="color:#f92672">&lt;/string&gt;</span>
+
+</code></pre></div><p>and the return value is a url. <code>http://cdnjs.su</code>, it is the same url that we met when we were analyzing <code>SomeHttpClass.mo234e</code> with frida, which will
+return after its been decoded if we request <code>url</code> key from the shared preference. So my assumption on <code>SomeHttpClass.mo226c</code> being a decoder function is true!</p>
+<p>Since the web request that malware returns an empty string, we get nothing decoded :(.</p>
+<p>As a summery what <code>MakeTwitterRequest</code> does is,</p>
+<p>Now we can move onto another interesting methods of the <code>SomeHttpClass</code>.</p>
 <p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
