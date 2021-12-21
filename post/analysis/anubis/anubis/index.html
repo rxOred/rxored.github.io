@@ -205,12 +205,30 @@ up, which helps malware to persist on a device.</p>
             <span style="color:#f92672">&lt;/intent-filter&gt;</span>
         <span style="color:#f92672">&lt;/activity&gt;</span>
 </code></pre></div><p>Its the MainActivity, which will be our first target when approaching the malware.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;receiver</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.cmtstflxlxb&#34;</span> <span style="color:#a6e22e">android:permission=</span><span style="color:#e6db74">&#34;android.permission.BROADCAST_SMS&#34;</span><span style="color:#f92672">&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;activity</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.opzsdswiddt&#34;</span><span style="color:#f92672">&gt;</span>
             <span style="color:#f92672">&lt;intent-filter&gt;</span>
-                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.provider.Telephony.SMS_DELIVER&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.SEND&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.SENDTO&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;sms&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;smsto&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;mms&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;mmsto&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;category</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.category.DEFAULT&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;category</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.category.BROWSABLE&#34;</span><span style="color:#f92672">/&gt;</span>
             <span style="color:#f92672">&lt;/intent-filter&gt;</span>
-        <span style="color:#f92672">&lt;/receiver&gt;</span>
-</code></pre></div><p>class <code>wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.cmtstflxlxb</code> is responsible for delivering messages.</p>
+        <span style="color:#f92672">&lt;/activity&gt;</span>
+</code></pre></div><p>Activity <code>wocwvy.czyxoxmbauu.slsa.opzsdswiddt</code> has capabilities to send sms.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;service</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.p003x881dce2d.slsa.lmimy&#34;</span> <span style="color:#a6e22e">android:permission=</span><span style="color:#e6db74">&#34;android.permission.SEND_RESPOND_VIA_MESSAGE&#34;</span> <span style="color:#a6e22e">android:exported=</span><span style="color:#e6db74">&#34;true&#34;</span><span style="color:#f92672">&gt;</span>
+            <span style="color:#f92672">&lt;intent-filter&gt;</span>
+                <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.RESPOND_VIA_MESSAGE&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;category</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.category.DEFAULT&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;sms&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;smsto&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;mms&#34;</span><span style="color:#f92672">/&gt;</span>
+                <span style="color:#f92672">&lt;data</span> <span style="color:#a6e22e">android:scheme=</span><span style="color:#e6db74">&#34;mmsto&#34;</span><span style="color:#f92672">/&gt;</span>
+            <span style="color:#f92672">&lt;/intent-filter&gt;</span>
+        <span style="color:#f92672">&lt;/service&gt;</span>
+</code></pre></div><p>class <code>wocwvy.czyxoxmbauu.slsa.lmily</code> is service that it responsible for responding messages.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">        <span style="color:#f92672">&lt;receiver</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;wocwvy.czyxoxmbauu.slsa.pworotsvjdlioho.hypihteeavv&#34;</span><span style="color:#f92672">&gt;</span>
             <span style="color:#f92672">&lt;intent-filter</span> <span style="color:#a6e22e">android:priority=</span><span style="color:#e6db74">&#34;999&#34;</span><span style="color:#f92672">&gt;</span>
                 <span style="color:#f92672">&lt;action</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.intent.action.BOOT_COMPLETED&#34;</span><span style="color:#f92672">/&gt;</span>
@@ -960,8 +978,7 @@ class <code>C0067b</code> and a string.</p>
 </code></pre></div><p>inside the try block we see a call to a famililar method, getSharedPreference. In this case key is <code>&quot;url&quot;</code>.
 well if search the xml, you wont find any.</p>
 <p>Now the problem is, how is this thing retrieving value of a shared preference with a non-existing key?</p>
-<p>Probably because malware is generating and writing the url dynamically to the xml.</p>
-<p>Let&rsquo;s analyze the method that makes use of above <strong>php endpoints</strong>.</p>
+<p>Probably because malware is generating and writing the url dynamically to the xml. Let&rsquo;s analyze the method that makes use of above <strong>php endpoints</strong>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> 
         String e <span style="color:#f92672">=</span> getSharedPreference<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">);</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
@@ -1228,7 +1245,22 @@ Soo what this method actually does is, it starts recording audio on the given so
 </code></pre>
 <p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
 <p>here is the list of applications that anubis targets.</p>
+<h3 id="achieving-persistance-and-control">Achieving Persistance and Control<a href="#achieving-persistance-and-control" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <h3 id="sms-sending-recieving-and-spamming">SMS Sending, Recieving and Spamming<a href="#sms-sending-recieving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
+<p>let&rsquo;s start with <code>wocwvy.czyxoxmbauu.slsa.lmily</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> wocwvy.czyxoxmbauu.slsa<span style="color:#f92672">;</span>
+
+<span style="color:#f92672">import</span> android.app.Service<span style="color:#f92672">;</span>
+<span style="color:#f92672">import</span> android.content.Intent<span style="color:#f92672">;</span>
+<span style="color:#f92672">import</span> android.os.IBinder<span style="color:#f92672">;</span>
+
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">lmimy</span> <span style="color:#66d9ef">extends</span> Service <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">public</span> IBinder <span style="color:#a6e22e">onBind</span><span style="color:#f92672">(</span>Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>this looks sus. There&rsquo;s nothing important here. Maybe the malware author is trying to distract us with false information.</p>
 <p>Some methods in <code>SomeHttpClass</code> is responsible for reading, intercepting and spamming SMS messages.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReadSMS</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
