@@ -172,7 +172,7 @@ other than stealing your banking information.</p>
 - jadx-gui
 </code></pre>
 <h1 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
-<h2 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h3 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>to analyze the manifest
 <img src="/img/anubis/anubis_apktool.png" alt="extracting with apktool"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">    <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.ACCESS_FINE_LOCATION&#34;</span><span style="color:#f92672">/&gt;</span>
@@ -1317,7 +1317,8 @@ earlier that <code>mo443a</code> calls this method by passing the same values th
                         i<span style="color:#f92672">++;</span>
                         str <span style="color:#f92672">=</span> displayOriginatingAddress<span style="color:#f92672">;</span>
                     <span style="color:#f92672">}</span>
-</code></pre></div><p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
+</code></pre></div><p>then it loops through the object array, and for each object in the array, it Creates an <code>SmsMessage</code>,</p>
+<p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
 <p>let&rsquo;s start with <code>wocwvy.czyxoxmbauu.slsa.lmily</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> wocwvy.czyxoxmbauu.slsa<span style="color:#f92672">;</span>
 

@@ -34,7 +34,7 @@ other than stealing your banking information.&lt;/p&gt;
 - jadx-gui
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h1 id=&#34;analysis&#34;&gt;Analysis&lt;/h1&gt;
-&lt;h2 id=&#34;the-manifest&#34;&gt;The manifest&lt;/h2&gt;
+&lt;h3 id=&#34;the-manifest&#34;&gt;The manifest&lt;/h3&gt;
 &lt;p&gt;to analyze the manifest
 &lt;img src=&#34;https://rxOred.github.io/img/anubis/anubis_apktool.png&#34; alt=&#34;extracting with apktool&#34;&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;uses-permission&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;android:name=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;android.permission.ACCESS_FINE_LOCATION&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&amp;gt;&lt;/span&gt;
@@ -1179,7 +1179,8 @@ earlier that &lt;code&gt;mo443a&lt;/code&gt; calls this method by passing the sa
                         i&lt;span style=&#34;color:#f92672&#34;&gt;++;&lt;/span&gt;
                         str &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; displayOriginatingAddress&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
                     &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then it loops through the object array, and for each object in the array, it Creates an &lt;code&gt;SmsMessage&lt;/code&gt;,&lt;/p&gt;
+&lt;p&gt;as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.&lt;/p&gt;
 &lt;p&gt;let&amp;rsquo;s start with &lt;code&gt;wocwvy.czyxoxmbauu.slsa.lmily&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;package&lt;/span&gt; wocwvy.czyxoxmbauu.slsa&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
 
