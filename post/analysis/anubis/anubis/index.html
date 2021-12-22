@@ -386,7 +386,7 @@ packed.</p>
 }
 </code></pre></div><p>the result was empty, which implies that the malware is not loading classes at runtime.
 From which i assume that this malware is not packed.</p>
-<h2 id="diving-deep">Diving deep<a href="#diving-deep" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h3 id="diving-deep">Diving deep<a href="#diving-deep" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Since we have idenitified the MainActivity and some other useful classes using the manifest, we know where to start. We&rsquo;ll start with the MainActivity (obiviously) and move into other stuff we idenitified.</p>
 <p>To do a code analysis, first, the apk should be converted into jar format.</p>
 <pre tabindex="0"><code>rxOred-aspiree :: Analysis/android/anubis » enjarify anubis.apk
@@ -1288,9 +1288,8 @@ Since we have already identified that the return value of <code>GetSharedPrefere
     <span style="color:#f92672">}</span>
 </code></pre></div><p>next few lines check whether if the action string is equal to <code>&quot;android.intent.action.USER_PRESENT&quot;</code>, if so, it starts another service.</p>
 <h3 id="sms-sending-recieving-and-spamming">SMS Sending, Recieving and Spamming<a href="#sms-sending-recieving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
-<p>it also checks whether action is equal to <code>&quot;android.intent.action.SMS_RECEIVED&quot;</code> and value for shared preference key <code>perehvat_sws</code>
-is equal to to true. if so, it calls another method. I think it is good to take a look at that method since it might be related to
-SMS stuff.</p>
+<p><code>EventListener.mo443a</code> also checks whether the action is equal to <code>&quot;android.intent.action.SMS_RECEIVED&quot;</code> and value for shared preference key <code>perehvat_sws</code>
+is equal to to true. if so, it calls another method. Since it is clear that <code>mo443a</code> method is essentially listening for incoming messages, this could be the one that process and convert it into a content.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo444b</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         Bundle extras <span style="color:#f92672">=</span> intent<span style="color:#f92672">.</span><span style="color:#a6e22e">getExtras</span><span style="color:#f92672">();</span>
 </code></pre></div><p>it takes two parameters, a <code>Context</code> and <code>Intent</code>. then it initializes a variable of class <code>Bundle</code> with <code>intent.getExtras()</code>. We saw
@@ -1301,7 +1300,7 @@ earlier that <code>mo443a</code> calls this method by passing the same values th
                 String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
                 String str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
 </code></pre></div><p>in the next few lines, it checks whether the variable of type <code>Bundle</code> is not equals to null. A Bundle is a if the evaluation turns out to be true, it does some work inside the try block.</p>
-<p>inside the block, it creates and initializes an <code>Object</code> array named <code>objArr</code>, and call <code>extras.get(&quot;pdus&quot;)</code> on it to retrieve value of key <code>pdus</code>.</p>
+<p>inside the block, it creates and initializes an <code>Object</code> array named <code>objArr</code>, and call <code>extras.get(&quot;pdus&quot;)</code> on it to retrieve values for key <code>pdus</code>. (A PDU (payload data unit) which contains information regarding a SMS)</p>
 <p>it also declares two string empty strings.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>objArr <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
                     <span style="color:#66d9ef">int</span> length <span style="color:#f92672">=</span> objArr<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">;</span>
@@ -1317,7 +1316,33 @@ earlier that <code>mo443a</code> calls this method by passing the same values th
                         i<span style="color:#f92672">++;</span>
                         str <span style="color:#f92672">=</span> displayOriginatingAddress<span style="color:#f92672">;</span>
                     <span style="color:#f92672">}</span>
-</code></pre></div><p>then it loops through the object array, and for each object in the array, it Creates an <code>SmsMessage</code>,</p>
+</code></pre></div><p>then it loops through the object array, and for each object in the array, it creates an object named <code>createFromPdu</code> that of class <code>SmsMessage</code> by calling <code>SmsMessage.createFromPdu</code>,
+variables <code>displayOriginatingAddress</code>, <code>displayMessageBody</code> is assigned to <code>createFromPdu.getDisplayOriginatingAddress()</code> and <code>createFromPdu.getDisplayMessageBody()</code> respectively. And, <code>displayMessageBody</code> is appended to <code>str2</code>. in the next line, it starts another
+service.</p>
+<p>So in summery what this method does is, it retrieves every SMS that has been recieved using the <code>intent</code> passed to it by the method that calls it, interate through each and every one of them, parse the SMS to a SmsMessag object using <code>createFromPdu</code> method, and start a service passing the originating address and SMS content through the intent after parsing those information.</p>
+<p>Let&rsquo;s take a look at the new service.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">whemsbk</span> <span style="color:#66d9ef">extends</span> Service <span style="color:#f92672">{</span>
+
+    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">m487c</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+
+            <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+            Uri parse <span style="color:#f92672">=</span> Uri<span style="color:#f92672">.</span><span style="color:#a6e22e">parse</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;content://sms/inbox&#34;</span><span style="color:#f92672">);</span>
+            Cursor query <span style="color:#f92672">=</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getContentResolver</span><span style="color:#f92672">().</span><span style="color:#a6e22e">query</span><span style="color:#f92672">(</span>parse<span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[]{</span><span style="color:#e6db74">&#34;_id&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;thread_id&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;address&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;person&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;date&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;body&#34;</span><span style="color:#f92672">},</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>query <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;&amp;</span> query<span style="color:#f92672">.</span><span style="color:#a6e22e">moveToFirst</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">do</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">long</span> j <span style="color:#f92672">=</span> query<span style="color:#f92672">.</span><span style="color:#a6e22e">getLong</span><span style="color:#f92672">(</span>0<span style="color:#f92672">);</span>
+                    query<span style="color:#f92672">.</span><span style="color:#a6e22e">getLong</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
+                    String string <span style="color:#f92672">=</span> query<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>2<span style="color:#f92672">);</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>str<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>5<span style="color:#f92672">))</span> <span style="color:#f92672">&amp;&amp;</span> string<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span>str2<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        ContentResolver contentResolver <span style="color:#f92672">=</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getContentResolver</span><span style="color:#f92672">();</span>
+                        contentResolver<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">(</span>Uri<span style="color:#f92672">.</span><span style="color:#a6e22e">parse</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;content://sms/&#34;</span> <span style="color:#f92672">+</span> j<span style="color:#f92672">),</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
+                    <span style="color:#f92672">}</span>
+                <span style="color:#f92672">}</span> <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">moveToNext</span><span style="color:#f92672">());</span>
+            <span style="color:#f92672">}</span>
+</code></pre></div><p>Basically, the above method retrieves <strong>id</strong>, <strong>thread_id</strong>, <strong>address</strong>, <strong>person</strong>, <strong>date</strong>, and <strong>body</strong>. from <code>content://sms/inbox</code> using a ContentResolver. So with that, we can conclude that this method is parsing the contents of the SMS.</p>
 <p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
 <p>let&rsquo;s start with <code>wocwvy.czyxoxmbauu.slsa.lmily</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> wocwvy.czyxoxmbauu.slsa<span style="color:#f92672">;</span>
