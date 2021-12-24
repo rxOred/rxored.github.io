@@ -5,37 +5,6 @@
     <link>https://rxOred.github.io/categories/</link>
     <description>Recent content in Categories on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Thu, 18 Nov 2021 13:07:00 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>report</title>
-      <link>https://rxOred.github.io/categories/report/</link>
-      <pubDate>Thu, 18 Nov 2021 13:07:00 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/categories/report/</guid>
-      <description></description>
-      <content></content>
-    </item>
-    
-    <item>
-      <title>guide</title>
-      <link>https://rxOred.github.io/categories/guide/</link>
-      <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/categories/guide/</guid>
-      <description></description>
-      <content></content>
-    </item>
-    
-    <item>
-      <title>write-up</title>
-      <link>https://rxOred.github.io/categories/write-up/</link>
-      <pubDate>Sat, 02 Oct 2021 00:40:06 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/categories/write-up/</guid>
-      <description></description>
-      <content></content>
-    </item>
-    
+    <language>en-us</language><atom:link href="https://rxOred.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

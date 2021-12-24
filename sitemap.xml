@@ -23,22 +23,13 @@
     <loc>https://rxOred.github.io/tags/</loc>
     <lastmod>2021-12-13T11:50:35+00:00</lastmod>
   </url><url>
-    <loc>https://rxOred.github.io/categories/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
-  </url><url>
     <loc>https://rxOred.github.io/tags/ransomware/</loc>
-    <lastmod>2021-11-18T13:07:00+00:00</lastmod>
-  </url><url>
-    <loc>https://rxOred.github.io/categories/report/</loc>
     <lastmod>2021-11-18T13:07:00+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/post/analysis/simplelocker/simplelocker/</loc>
     <lastmod>2021-11-18T13:07:00+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</loc>
-    <lastmod>2021-10-23T14:20:04+00:00</lastmod>
-  </url><url>
-    <loc>https://rxOred.github.io/categories/guide/</loc>
     <lastmod>2021-10-23T14:20:04+00:00</lastmod>
   </url><url>
     <loc>https://rxOred.github.io/tags/offensive-sekuruty/</loc>
@@ -59,9 +50,6 @@
     <loc>https://rxOred.github.io/post/practical-re/practical-re-answers2/</loc>
     <lastmod>2021-10-02T00:40:06+00:00</lastmod>
   </url><url>
-    <loc>https://rxOred.github.io/categories/write-up/</loc>
-    <lastmod>2021-10-02T00:40:06+00:00</lastmod>
-  </url><url>
     <loc>https://rxOred.github.io/post/practical-re/practical-re-answers/</loc>
     <lastmod>2021-09-29T09:46:25+00:00</lastmod>
   </url><url>
@@ -79,5 +67,7 @@
   </url><url>
     <loc>https://rxOred.github.io/post/hello/</loc>
     <lastmod>2021-09-28T16:21:05+00:00</lastmod>
+  </url><url>
+    <loc>https://rxOred.github.io/categories/</loc>
   </url>
 </urlset>
