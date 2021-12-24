@@ -1702,7 +1702,7 @@ be fiiled with byte array &lt;code&gt;b&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;We can conclude that this method is the on in charge for encrypting and decrypting the file system based on the shared preferene value &lt;code&gt;status&lt;/code&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;the-end&#34;&gt;the end&lt;/h3&gt;
 &lt;p&gt;This is the longest article I have ever typed. hell its over 2000 lines. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques to understand what it is capable of doing.&lt;/p&gt;
-&lt;p&gt;with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, that is capable of many things.&lt;/p&gt;
+&lt;p&gt;with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, which is capable of many things.&lt;/p&gt;
 &lt;p&gt;#Speard anarchy&lt;/p&gt;
 </content>
     </item>
