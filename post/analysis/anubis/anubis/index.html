@@ -153,26 +153,62 @@
   
 
   <div class="post-content"><div>
-        <h1 id="intro">Intro<a href="#intro" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+        <h1 id="table-of-content">Table of Content<a href="#table-of-content" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ol>
+<li><a href="#introduction">Introduction</a>
+<ol>
+<li><a href="#samples">Samples</a></li>
+</ol>
+</li>
+<li><a href="#environment">Environment</a>
+<ol>
+<li><a href="#tools">Tools</a></li>
+</ol>
+</li>
+<li><a href="#analysis">Analysis</a>
+<ol>
+<li><a href="#the-manifest">The Manifest</a></li>
+<li><a href="#behavioral-analysis">Behavioral analysis</a></li>
+<li><a href="#identifying-the-obfuscator">Identifying the obfuscator</a></li>
+<li><a href="#packed-or-what">Packed or what</a></li>
+<li><a href="#going-down-the-rabbit-hole">Going Down the Rabbit Hole</a>
+<ol>
+<li><a href="#mainactivity">MainActivity</a></li>
+<li><a href="#c2s-tweets-and-data-exfiltration">C2s, Tweets and Data Exfiltration</a></li>
+<li><a href="#audio-recording">Audio Recording</a></li>
+<li><a href="#banking-apps">Banking Apps</a></li>
+<li><a href="#remote-access">Remote Access</a></li>
+<li><a href="#achieving-persistence-and-user-presence">Achieving Persistence and User Presence</a></li>
+<li><a href="#sms-sending-receiving-and-spamming">SMS Sending, Receiving and Spamming</a></li>
+<li><a href="#reading-contacts">Reading Contacts</a></li>
+<li><a href="#say-no-to-google-play-protect">Say No to google play protect</a></li>
+<li><a href="#ransomware-mode">Ransomware Mode</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li><a href="#the-end">The end</a></li>
+</ol>
+<h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>Anubis is a pretty big banking trojan that targets android devices. Its first appearance dates back to 2016.
 And anubis is reported to have keylogging capabilities, sms spam, GPS tracking and many other scary stuff, of course,
 other than stealing your banking information.</p>
 <p>In this blog post, i will poke various parts of the malware while reverse engineering it to understand how it works and how to defeat it.</p>
-<h1 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p><a href="https://github.com/sk3ptre/AndroidMalware_2020/blob/master/anubis.zip">github</a></p>
 <h1 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <pre><code>- linux host
 - android vm (API version 23) (no google services)
 </code></pre>
-<h1 id="tools">Tools<a href="#tools" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="tools">Tools<a href="#tools" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <pre><code>- apktool
 - adb
 - frida
 - mobsf
 - jadx-gui
 </code></pre>
-<h2 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<h3 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h1 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="the-manifest">The manifest<a href="#the-manifest" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>to analyze the manifest
 <img src="/img/anubis/anubis_apktool.png" alt="extracting with apktool"></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">    <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.ACCESS_FINE_LOCATION&#34;</span><span style="color:#f92672">/&gt;</span>
@@ -194,7 +230,7 @@ other than stealing your banking information.</p>
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.WAKE_LOCK&#34;</span><span style="color:#f92672">/&gt;</span>
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.RECEIVE_BOOT_COMPLETED&#34;</span><span style="color:#f92672">/&gt;</span>
     <span style="color:#f92672">&lt;uses-permission</span> <span style="color:#a6e22e">android:name=</span><span style="color:#e6db74">&#34;android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS&#34;</span><span style="color:#f92672">/&gt;</span>
-</code></pre></div><p>As we can see, this malware can send, recieve SMS, read contacts, access location, read and write
+</code></pre></div><p>As we can see, this malware can send, receive SMS, read contacts, access location, read and write
 to external storage. It is also requesting permission to get notified once when the system boots
 up, which helps malware to persist on a device.</p>
 <p>by investigating the activities in the xml, we can get a rough idea about which classes use which permissions and point our attention to those classes when we do actual reversing.</p>
@@ -266,14 +302,14 @@ install banking apps (PACKAGE_ADDED) and the above mentioned class is responsibl
 <p>before running the sample on the vm or decompiling it, it would be better to run it on a automated framework just to make sure (dunno, it is just a habit :3). Then we can focus on the specific details. Here im going to use MobSF.</p>
 <p><img src="/img/anubis/anubis_mobsf.png" alt="automated analysis"></p>
 <p><img src="/img/anubis/anubis_mobsfstatic.png" alt="mobsf results"></p>
-<p>here we can see that the application has 17 activities, 24 services, 4 recievers and 0 providers.</p>
+<p>here we can see that the application has 17 activities, 24 services, 4 receivers and 0 providers.</p>
 <p><img src="/img/anubis/anubis_mobsfapi.png" alt="apis"></p>
 <p>However when i try to run a dynamic analysis on the apk, MobSF failed with few errors.</p>
 <p><img src="/img/anubis/anubis_androgaurd.png" alt="androguard results"></p>
 <p>with the above result, we can confirm our assumptions on receivers, activities and services we made
 considering the result of MobSF.</p>
 <p><img src="/img/anubis/anubis_androguard.png" alt="androguard results"></p>
-<p>here androguard shows us recievers, main activity and the services.</p>
+<p>here androguard shows us receivers, main activity and the services.</p>
 <p>However all the above names seemed to be obfuscated.</p>
 <h2 id="behavioral-analysis">Behavioral analysis<a href="#behavioral-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>first, im going to stop the emulator and restart it with following parameters</p>
@@ -359,7 +395,7 @@ because without the mapping.txt, there is no way to rename classes, methods and 
     
     <span style="color:#f92672">[</span>...<span style="color:#f92672">]</span>
 </code></pre></div><p>I tried running dex-oracle and it failed too.</p>
-<h2 id="packed">Packed?<a href="#packed" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="packed-or-what">Packed or what<a href="#packed-or-what" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Lets try to identify whether is apk is packed. This is pretty straightfoward. To use a class in an
 android application, one must define it in the manifest file.</p>
 <p>If the application doesnt have the classes specified in the manifest, then chances are that it is
@@ -437,7 +473,7 @@ sets the content view to the web view.</p>
 </code></pre></div><p>Above snippet shows the constants</p>
 <p>Then we can see an interesting piece of code in the MainActivity after the if else statement.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">            getPackageManager<span style="color:#f92672">().</span><span style="color:#a6e22e">setComponentEnabledSetting</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> ComponentName<span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> MainActivity<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">),</span> 2<span style="color:#f92672">,</span> 1<span style="color:#f92672">);</span>
-</code></pre></div><p>According to Android developers, <code>setComponentEnabledSetting</code> &lsquo;sets te enabled setting fot a package component (activity, reciever, service, provider). this setting will override any enabled state which may have been set by the component manifest&rsquo;</p>
+</code></pre></div><p>According to Android developers, <code>setComponentEnabledSetting</code> &lsquo;sets te enabled setting fot a package component (activity, receiver, service, provider). this setting will override any enabled state which may have been set by the component manifest&rsquo;</p>
 <p>Here, MainActivity calls above API for itself, with constant 2 as the second argument. which is stands for  <code>COMPONENT_ENABLED_STATE_DISABLED</code>.
 In short terms, malware basically <strong>hides its icon from the launcher</strong> (by disabling) to make it harder for a regular user to delete the application.
 All this makes sense because, this is why malware has started a service to run in the background.</p>
@@ -543,7 +579,7 @@ However we see some interesting stuff in the above snippet.</p>
 </code></pre></div><p><code>SomeHttpClass.mo234e()</code> method returns value 10000, which is exactly the same value thats going to
 be used when the condition fails.</p>
 <p>So what exactly <code>SomeHttpClass.mo234e()</code> does? Well, I think its reading data from some kind of data storage using the <code>key</code>
-which it recieves as an argument. Yaeee?? what comes to your mind?? <strong>shared preferences</strong>.</p>
+which it receives as an argument. Yaeee?? what comes to your mind?? <strong>shared preferences</strong>.</p>
 <p>To confirm our assumption</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#75715e">/* renamed from: mo234e */</span>
     <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">getSharedPreference</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> String str<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
@@ -1177,7 +1213,7 @@ we see another call <code>SomeHttpClass.mo213a</code> but this time with <code>&
         <span style="color:#f92672">}</span>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>this is the block that actually starts the thread :).
-Soo what this method actually does is, it starts recording audio on the given source, waits until <code>i</code> amount of time and stops recording. then it calls our <code>SomeHttpClass.SendFileToEndpoint</code> method to send it to an endpoint so attacker can recieve the file.</p>
+Soo what this method actually does is, it starts recording audio on the given source, waits until <code>i</code> amount of time and stops recording. then it calls our <code>SomeHttpClass.SendFileToEndpoint</code> method to send it to an endpoint so attacker can receive the file.</p>
 <h3 id="banking-apps">Banking Apps<a href="#banking-apps" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>Lets get an idea of how this malware gets banking applications.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.a */</span>
@@ -1401,7 +1437,7 @@ In the next few lines of the method, it checks whether if response string contai
 <p>and stops the service. it also sets whatever shared preference at <code>str3</code> to <code>&quot;stop&quot;</code>, and <code>str3</code> should be either <code>&quot;vnc&quot;</code> or <code>&quot;sound&quot;</code>.
 It seems like after diconnecting with the attacker, it resets all the associated shared preferences.</p>
 <p><strong>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at some other features mentioned in the shared preference xml and manifest xml.</strong></p>
-<h3 id="achieving-persistance-and-user-presence">Achieving Persistance and User Presence<a href="#achieving-persistance-and-user-presence" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="achieving-persistence-and-user-presence">Achieving Persistence and User Presence<a href="#achieving-persistence-and-user-presence" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>When we were analyzing the manifest xml file, we came across a broadcast receiver that listens for BOOT_COMPLETE. Let&rsquo;s take a look at that class.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
 <span style="color:#75715e">/* renamed to EventListener */</span>
@@ -1441,7 +1477,7 @@ Since we have already identified that the return value of <code>GetSharedPrefere
         <span style="color:#f92672">}</span>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>next few lines check whether if the action string is equal to <code>&quot;android.intent.action.USER_PRESENT&quot;</code>, if so, it starts another service.</p>
-<h3 id="sms-sending-recieving-and-spamming">SMS Sending, Recieving and Spamming<a href="#sms-sending-recieving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="sms-sending-receiving-and-spamming">SMS Sending, Receiving and Spamming<a href="#sms-sending-receiving-and-spamming" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p><code>EventListener.mo443a</code> also checks whether the action is equal to <code>&quot;android.intent.action.SMS_RECEIVED&quot;</code> and value for shared preference key <code>perehvat_sws</code>
 is equal to to true. if so, it calls another method. Since it is clear that <code>mo443a</code> method is essentially listening for incoming messages, this could be the one that process and convert it into a content.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mo444b</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
@@ -1473,7 +1509,7 @@ earlier that <code>mo443a</code> calls this method by passing the same values th
 </code></pre></div><p>then it loops through the object array, and for each object in the array, it creates an object named <code>createFromPdu</code> that of class <code>SmsMessage</code> by calling <code>SmsMessage.createFromPdu</code>,
 variables <code>displayOriginatingAddress</code>, <code>displayMessageBody</code> is assigned to <code>createFromPdu.getDisplayOriginatingAddress()</code> and <code>createFromPdu.getDisplayMessageBody()</code> respectively. And, <code>displayMessageBody</code> is appended to <code>str2</code>. in the next line, it starts another
 service.</p>
-<p>So in summery what this method does is, it retrieves every SMS that has been recieved using the <code>intent</code> passed to it by the method that calls it, interate through each and every one of them, parse the SMS to a SmsMessag object using <code>createFromPdu</code> method, and start a service passing the originating address and SMS content through the intent after parsing those information.</p>
+<p>So in summery what this method does is, it retrieves every SMS that has been received using the <code>intent</code> passed to it by the method that calls it, interate through each and every one of them, parse the SMS to a SmsMessag object using <code>createFromPdu</code> method, and start a service passing the originating address and SMS content through the intent after parsing those information.</p>
 <p>Let&rsquo;s take a look at the new service.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">whemsbk</span> <span style="color:#66d9ef">extends</span> Service <span style="color:#f92672">{</span>
 
@@ -1592,7 +1628,7 @@ string of &ldquo;<code>getnumber</code>&rdquo; and <code>str</code>.</p>
     SomeHttpClass cls <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
 
     <span style="color:#75715e">/* renamed from: c */</span>
-    BroadcastReceiver reciever <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BroadcastReceiver<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+    BroadcastReceiver receiver <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BroadcastReceiver<span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
         <span style="color:#75715e">/* class wocwvy.p003x881dce2d.slsa.oyqwzkyy.p007x2753d1cd.dshd.C00951 */</span>
 
         <span style="color:#75715e">/* renamed from: onReceive */</span>
@@ -1612,7 +1648,7 @@ string of &ldquo;<code>getnumber</code>&rdquo; and <code>str</code>.</p>
                 str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
             <span style="color:#f92672">}</span>
             bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span>context<span style="color:#f92672">,</span> str<span style="color:#f92672">,</span> str2<span style="color:#f92672">);</span>
-            dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">unregisterReceiver</span><span style="color:#f92672">(</span>dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">reciever</span><span style="color:#f92672">);</span>
+            dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">unregisterReceiver</span><span style="color:#f92672">(</span>dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">receiver</span><span style="color:#f92672">);</span>
             dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">stopSelf</span><span style="color:#f92672">();</span>
         <span style="color:#f92672">}</span>
     <span style="color:#f92672">};</span>
@@ -1621,7 +1657,7 @@ string of &ldquo;<code>getnumber</code>&rdquo; and <code>str</code>.</p>
     <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">onStartCommand</span><span style="color:#f92672">(</span>Intent intent<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> i<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> i2<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
         <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SpamSMS</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> intent<span style="color:#f92672">.</span><span style="color:#a6e22e">getStringExtra</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;number&#34;</span><span style="color:#f92672">),</span> intent<span style="color:#f92672">.</span><span style="color:#a6e22e">getStringExtra</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;msg&#34;</span><span style="color:#f92672">));</span>
-        registerReceiver<span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">reciever</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> IntentFilter<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SMS_SENT&#34;</span><span style="color:#f92672">));</span>
+        registerReceiver<span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">receiver</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> IntentFilter<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SMS_SENT&#34;</span><span style="color:#f92672">));</span>
         <span style="color:#66d9ef">return</span> 2<span style="color:#f92672">;</span>
     <span style="color:#f92672">}</span>
 </code></pre></div><p>SMS spam code is implemented in <code>onStartCommand</code> method. it is the method that executes once the service is started. So we can assume that as soon as the service starts, it starts sending spam SMS to the number it receives through the intent. It also retrieves contents for the SMS through the intent (we saw earlier <code>onHandleIntent</code> add those stuff to extras before starting the service).</p>
@@ -1751,7 +1787,7 @@ if creates another activity, named <code>DisplayGooglePlayProtect</code>.</p>
         <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
         <span style="color:#f92672">}</span>
 </code></pre></div><p>here, it uses previously retreived values to create an <code>AlertBuilder</code> that requests permission to disable google play protect.</p>
-<h3 id="ransomware-capabilities">Ransomware capabilities<a href="#ransomware-capabilities" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="ransomware-mode">Ransomware Mode<a href="#ransomware-mode" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>We saw it in the manifest that anubis has ransomware capabilities.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">wahiuolww</span> <span style="color:#66d9ef">extends</span> IntentService <span style="color:#f92672">{</span>
 
@@ -1838,7 +1874,7 @@ be fiiled with byte array <code>b</code>.</p>
                     <span style="color:#f92672">}</span>
 </code></pre></div><p>then the output stream is closed and file is deleted from the disk.</p>
 <p>We can conclude that this method is the on in charge for encrypting and decrypting the file system based on the shared preferene value <code>status</code>.</p>
-<h3 id="the-end">the end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h1 id="the-end">The end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>This is the longest article I have ever typed. hell its over 2000 lines. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques to understand what it is capable of doing.</p>
 <p>with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, which is capable of many things.</p>
 <p>#Speard anarchy</p>
