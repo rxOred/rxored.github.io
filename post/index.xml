@@ -1503,7 +1503,7 @@ be fiiled with byte array &lt;code&gt;b&lt;/code&gt;.&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then the output stream is closed and file is deleted from the disk.&lt;/p&gt;
 &lt;p&gt;We can conclude that this method is the on in charge for encrypting and decrypting the file system based on the shared preferene value &lt;code&gt;status&lt;/code&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;the-end&#34;&gt;the end&lt;/h3&gt;
-&lt;p&gt;Wow this. this is the longest article I have erver wrteen. So eayh&lt;/p&gt;
+&lt;p&gt;This is the longest article I have erver typed. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques.&lt;/p&gt;
 &lt;p&gt;#Speard anarchy&lt;/p&gt;
 </content>
     </item>
