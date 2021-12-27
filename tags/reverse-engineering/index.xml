@@ -1155,7 +1155,6 @@ Soo what this method actually does is, it starts recording audio on the given so
 - com.ebay.mobile
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;if it does, it replaces the name with an empty string and append the name to the end of &lt;code&gt;str&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;here is the list of applications that anubis targets.&lt;/p&gt;
 &lt;h3 id=&#34;remote-access&#34;&gt;Remote Access&lt;/h3&gt;
 &lt;p&gt;We already know anubis has RAT capabilities. And those features are implemented in the below class.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;/* renamed from: wocwvy.czyxoxmbauu.slsa.xelytgswelv */&lt;/span&gt;
