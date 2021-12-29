@@ -130,7 +130,7 @@
     
     
     
-      <span class="post-reading-time">:: 8 min read (1538 words)</span>
+      <span class="post-reading-time">:: 7 min read (1465 words)</span>
     
   </div>
 
@@ -155,10 +155,12 @@
   
 
   <div class="post-content"><div>
-        <p>Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, <code>was</code>.</p>
-<p>Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.</p>
-<p>Out of the tools that they use to fulfill this task, script-based malware and payloads play a major role. And to execute those stuff, they mostly use Windows PowerShell, a powerful administrative tool mostly used by sysadmins. Another most important software when it comes to windows malware is Microsoft office software. It is a proven fact that the most notable malware outbreaks in the past few years have something to do with VBA macros. in 2007 Microsoft shipped office packages with macro disabled by default. Yet those type of malware is still alive and well.</p>
-<p>And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats. For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.</p>
+        <p>In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft
+office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&hellip; basically to
+do the post exploitation stuff. (well of course, there are powershell based droppers.)</p>
+<p>There is something that is common to both of these tools. Windows scripting engine.</p>
+<p>And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats that utilize script-based malware.
+For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.</p>
 <p>And because of that, malware authors use various techniques to bypass those defense mechanisms. One of the major techniques is code obfuscation.</p>
 <p>consider the following example, that I took from MSDN.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">    <span style="color:#66d9ef">function</span> displayEvilString

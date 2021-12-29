@@ -2064,13 +2064,14 @@ and you can copy it to android studio.&lt;/p&gt;
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</guid>
-      <description>Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, was.
-Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.
-Out of the tools that they use to fulfill this task, script-based malware and payloads play a major role.</description>
-      <content>&lt;p&gt;Ah yes. Windoz, the most popular desktop operating system solution out there. And, the most attacker-friendly operating system out there. At least, &lt;code&gt;was&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Windows has a really good reputation in the malware industry. Red teamers often use this to their advantage and use malware to maintain persistent access to the victim machine.&lt;/p&gt;
-&lt;p&gt;Out of the tools that they use to fulfill this task, script-based malware and payloads play a major role. And to execute those stuff, they mostly use Windows PowerShell, a powerful administrative tool mostly used by sysadmins. Another most important software when it comes to windows malware is Microsoft office software. It is a proven fact that the most notable malware outbreaks in the past few years have something to do with VBA macros. in 2007 Microsoft shipped office packages with macro disabled by default. Yet those type of malware is still alive and well.&lt;/p&gt;
-&lt;p&gt;And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats. For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.&lt;/p&gt;
+      <description>In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff. (well of course, there are powershell based droppers.)
+There is something that is common to both of these tools. Windows scripting engine.</description>
+      <content>&lt;p&gt;In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft
+office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to
+do the post exploitation stuff. (well of course, there are powershell based droppers.)&lt;/p&gt;
+&lt;p&gt;There is something that is common to both of these tools. Windows scripting engine.&lt;/p&gt;
+&lt;p&gt;And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats that utilize script-based malware.
+For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.&lt;/p&gt;
 &lt;p&gt;And because of that, malware authors use various techniques to bypass those defense mechanisms. One of the major techniques is code obfuscation.&lt;/p&gt;
 &lt;p&gt;consider the following example, that I took from MSDN.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;function&lt;/span&gt; displayEvilString
