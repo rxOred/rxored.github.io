@@ -2109,7 +2109,7 @@ to Microsoft, that&amp;rsquo;s why they consider Application developers as a tar
 &lt;p&gt;AMSI can also be useful in scenarios like invoking malicious PowerShell commands.&lt;/p&gt;
 &lt;p&gt;In this article I&amp;rsquo;m going to focus on the internals of AMSI. in the next one, I&amp;rsquo;ll provide y&amp;rsquo;all with some bypass techniques.&lt;/p&gt;
 &lt;h2 id=&#34;demo&#34;&gt;Demo&lt;/h2&gt;
-&lt;p&gt;So let&amp;rsquo;s take SafeSploit as our example.&lt;/p&gt;
+&lt;p&gt;So let&amp;rsquo;s take Safetykatz as our example.&lt;/p&gt;
 &lt;p&gt;When we run the binary, the result we get is.
 &lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AMSI.png&#34; alt=&#34;AMSI&#34;&gt;&lt;/p&gt;
 &lt;p&gt;See, as we expected, PowerShell stops the execution of the program once it has detected the program is suspicious using AMSI.
