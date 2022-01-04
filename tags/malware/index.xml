@@ -595,6 +595,7 @@ example,&lt;/p&gt;
 - Call CreateProcessA without `CREATE_SUSPENDED` flag.
 - Set `CREATE_SUSPENDED` flag and jump back to `NtCreateUserProcess`
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;(to learn more about above technique, my seggestion is to reverse IcedID)&lt;/p&gt;
 &lt;p&gt;The other thing to consider is changing the memory permissions of the
 target process after remapping. Even without doing that, it can mislead
 an analyst to beleive it as the malicious binary since it has permissions
