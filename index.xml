@@ -975,7 +975,7 @@ All this makes sense because, this is why malware has started a service to run i
 &lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;():
     &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; len(sys&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;argv) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;:
         print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;wrapper.py &amp;lt;appname&amp;gt; &amp;lt;agent&amp;gt;&amp;#34;&lt;/span&gt;)
-        os&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;exit(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
+        sys&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;exit(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)
 
     source &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;
     &lt;span style=&#34;color:#66d9ef&#34;&gt;with&lt;/span&gt; codecs&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;open(sys&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;argv[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;], &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;r&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;as&lt;/span&gt; f:
@@ -990,12 +990,12 @@ All this makes sense because, this is why malware has started a service to run i
         script &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; session&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;create_script(source)
         script&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;on(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;message&amp;#39;&lt;/span&gt;, callback)
         script&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;load()
-        
+
         sys&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;stdin&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;read()
 
     &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
         print(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;failed to read the frida agent&amp;#34;&lt;/span&gt;)
-        os&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;exit(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
+        sys&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;exit(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)
 
 
 &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; __name__ &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;:
