@@ -14,13 +14,15 @@
       
       <guid>https://rxOred.github.io/post/malware/process-hollowing/process-hollowing/</guid>
       <description>(@bound by jademerien)
-Introduction Process hollowing is a process injection / evasion technique that is often used in malware. To name a few, struxnet, dridex.
-A malware that uses process hollowing starts a target ** process with CREATE_SUSPENDED flag enabled. Then using the handler it got from created the process, it hollows out the legitimate executable image from the target process&amp;rsquo;s memory.
-The problem However, malware tends to use the same set of APIs for this task.</description>
+Introduction Process hollowing is a code injection / evasion technique that is often used in malware.
+Process hollowing technique works by hollowing out a legitimate process image and replacing it with malicous code.
+A malware that uses process hollowing starts a target ** process with CREATE_SUSPENDED flag enabled. Then using the handler it got from created the process, it hollows out the legitimate executable image from the target process&amp;rsquo;s memory.</description>
       <content>&lt;p&gt;&lt;a href=&#34;https://www.deviantart.com/jademerien/art/Bound-855334634?comment=1%3A855334634%3A4959164323&#34;&gt;(@bound by jademerien)&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
-&lt;p&gt;Process hollowing is a process injection / evasion technique that is often
-used in malware. To name a few, struxnet, dridex.&lt;/p&gt;
+&lt;p&gt;Process hollowing is a code injection / evasion technique that is often
+used in malware.&lt;/p&gt;
+&lt;p&gt;Process hollowing technique works by hollowing out a legitimate process
+image and replacing it with malicous code.&lt;/p&gt;
 &lt;p&gt;A malware that uses process hollowing starts a target **
 process with &lt;strong&gt;CREATE_SUSPENDED&lt;/strong&gt; flag enabled. Then using the handler it
 got from created the process, it &lt;strong&gt;hollows out&lt;/strong&gt; the legitimate executable
@@ -42,10 +44,26 @@ without going through &lt;strong&gt;kernel32.dll&lt;/strong&gt;.&lt;/p&gt;
 since i&amp;rsquo;m here to talk about another not-well-known approach for process
 hollowing&lt;/p&gt;
 &lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
-&lt;p&gt;Since most defense solutions monitor API calls from user space, they are
-commonly known to hook WIN32API but not the Native API. Because of that,
-it would be more advantageous for us, attackers to implement the technique
-using NTAPI.&lt;/p&gt;
+&lt;p&gt;Defense solutions mostly operate by hooking common API calls and monitoring
+them for malicious content. These common APIs include the ones that malware
+often uses for various injection techniques. to name a few,&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;- OpenProcess / CreateProcess 
+- VirtualAlloc
+- VirtualProtect
+- WriteProcessMemory
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In past, malware authors extensively used &lt;code&gt;VirtualAlloc&lt;/code&gt; to inject malicous
+code in to a target process. They acheived this buy allocating a memory chunk
+of &lt;strong&gt;RWX&lt;/strong&gt; permissions, which in fact, became a well know indication of code
+injection (Memory artifact).&lt;/p&gt;
+&lt;p&gt;As a solution to this, malware authors used a combination of VirtualAlloc and
+VirtualProtect to inject code into a remote process. First, malware allocates
+a memory chunk in the remote process with &lt;strong&gt;RW&lt;/strong&gt; permissions using
+VirtualAlloc, then it change the permission to &lt;strong&gt;RX&lt;/strong&gt; using VirtualProtect.&lt;/p&gt;
+&lt;p&gt;Although this seem like a victory (since it gets rid off &lt;strong&gt;RWX&lt;/strong&gt; sections),
+defense solutions began hooking these two calls.&lt;/p&gt;
+&lt;p&gt;Then malware authors came up with another technique, which uses two APIs
+from NTAPI.&lt;/p&gt;
 &lt;p&gt;In order to understand the technique, one must understand how following
 functions from NTAPIs work.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;- NtCreateSection
@@ -188,7 +206,7 @@ solutions&lt;/p&gt;
 &lt;p&gt;mapped section in remote process&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/process-hollowing/permissions1.png&#34; alt=&#34;remove this&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the APIs are understood, it is time to demonstrate the process
-hollowing technique.&lt;/p&gt;
+hollowing technique using above code injection technique.&lt;/p&gt;
 &lt;h2 id=&#34;implementation&#34;&gt;Implementation&lt;/h2&gt;
 &lt;p&gt;Before implementing it is essential to undersand what can be done and what
 we are going to do with the above injection technique.&lt;/p&gt;
