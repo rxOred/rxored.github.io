@@ -20,7 +20,8 @@ office suite to gain initial access (using droppers, loaders) to the victim and 
 do the post exploitation stuff. (well of course, there are powershell based droppers.)&lt;/p&gt;
 &lt;p&gt;There is something that is common to both of these tools. Windows scripting engine.&lt;/p&gt;
 &lt;p&gt;And as a result, Microsoft and antimalware vendors have developed many security mechanisms to deal with those threats that utilize script-based malware.
-For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as strings.&lt;/p&gt;
+For example, modern anti-malware solutions can statically analyze scripts, binaries and detect whether they are malicious or not using signatures such as
+strings.&lt;/p&gt;
 &lt;p&gt;And because of that, malware authors use various techniques to bypass those defense mechanisms. One of the major techniques is code obfuscation.&lt;/p&gt;
 &lt;p&gt;consider the following example, that I took from MSDN.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;function&lt;/span&gt; displayEvilString
@@ -45,7 +46,8 @@ For example, modern anti-malware solutions can statically analyze scripts, binar
 &lt;p&gt;AMSI is a standard interface that allows applications to interact with anti-malware products installed on the system. This means is that it provides
 an API for Application developers. Application developers can use the API to implement security features to make sure that the end-user is safe. According
 to Microsoft, that&amp;rsquo;s why they consider Application developers as a target audience of this standard interface.&lt;/p&gt;
-&lt;p&gt;The other one is Anti-malware vendors. Any anti-malware vendor can provide an interface for AMSI to work with. By doing that, they can detect a large number of malicious activities that they could not.  By default, AMSI uses Windows defender as the backing detection engine.&lt;/p&gt;
+&lt;p&gt;The other one is Anti-malware vendors. Any anti-malware vendor can provide an interface for AMSI to work with. By doing that, they can detect a large
+number of malicious activities that they could not. By default, AMSI uses Windows defender as the backing detection engine.&lt;/p&gt;
 &lt;p&gt;According to Microsoft, AMSI provides the following features by default.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;-   User Account Control
 -   PowerShell
@@ -54,7 +56,8 @@ to Microsoft, that&amp;rsquo;s why they consider Application developers as a tar
 -   Office VBA macros
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;As it is clear from those default features, AMSI specifically provides anti-malware security mechanisms to defend against dynamic script-based malware.&lt;/p&gt;
-&lt;p&gt;when running a script, even though the code is initially obfuscated, it has to be deobfuscated to go through the scripting engine. At this point, AMSI APIs can be used to scan the script and determine whether it is malicious or not.&lt;/p&gt;
+&lt;p&gt;when running a script, even though the code is initially obfuscated, it has to be deobfuscated to go through the scripting engine. At this point, AMSI APIs
+can be used to scan the script and determine whether it is malicious or not.&lt;/p&gt;
 &lt;p&gt;AMSI can also be useful in scenarios like invoking malicious PowerShell commands.&lt;/p&gt;
 &lt;p&gt;In this article we&amp;rsquo;ll be focusing on AMSI internals. in the next few, we&amp;rsquo;ll go over some bypass techniques.&lt;/p&gt;
 &lt;h2 id=&#34;demo&#34;&gt;Demo&lt;/h2&gt;
@@ -97,7 +100,8 @@ Even without looking at the dll, it is possible to think of some techniques to b
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;First parameter is a handle to amsi context, which is probably a handle caller recieved from &lt;code&gt;AmsiInitialize&lt;/code&gt; call.
 Second and third paramters describe the buffer that amsi should scan and it&amp;rsquo;s length.&lt;/p&gt;
 &lt;p&gt;fourth parameter is a long pointer to a wide character string for the content name and the fifth is the handle to the amsi session.&lt;/p&gt;
-&lt;p&gt;As MSDN says, this function returns &lt;code&gt;S_OK&lt;/code&gt; if the call is successful. However, the return value does not indicate whether the buffer is malicious. instead, the function uses an output parameter, the sixth one of type &lt;code&gt;AMSI_RESULT&lt;/code&gt; to send the scan results to caller.&lt;/p&gt;
+&lt;p&gt;As MSDN says, this function returns &lt;code&gt;S_OK&lt;/code&gt; if the call is successful. However, the return value does not indicate whether the buffer is malicious. instead,
+the function uses an output parameter, the sixth one of type &lt;code&gt;AMSI_RESULT&lt;/code&gt; to send the scan results to caller.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;enum&lt;/span&gt; AMSI_RESULT {
         AMSI_RESULT_CLEAN,
         AMSI_RESULT_NOT_DETECTED,
@@ -107,7 +111,8 @@ Second and third paramters describe the buffer that amsi should scan and it&amp;
     } ;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And here&amp;rsquo;s how this function looks like in disassembly.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanBufferPrologue.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;here we can see stack pointer is stored in &lt;code&gt;r11&lt;/code&gt; register and since this is x64 _stdcall, the first four parameters are stored in rcx, rdx, r8 and r9 registers. Rest are stored in the stack. With that information, we can assume a pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; enum is stored in the stack.&lt;/p&gt;
+&lt;p&gt;here we can see stack pointer is stored in &lt;code&gt;r11&lt;/code&gt; register and since this is x64 _stdcall, the first four parameters are stored in rcx, rdx, r8 and r9
+registers. Rest are stored in the stack. With that information, we can assume a pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; enum is stored in the stack.&lt;/p&gt;
 &lt;p&gt;then we can see a series of comparisons around global data.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanBuffer2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;followed by,&lt;/p&gt;
@@ -139,15 +144,15 @@ Second and third paramters describe the buffer that amsi should scan and it&amp;
         }
 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
-            amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;firstMember &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;secondMember &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
-            amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;fourthMember &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
+            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
         {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80070057&lt;/span&gt;;    
         } 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
         {
-            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;thirdMember) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)(
-                amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;thirdMember,
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;fourthMember) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)(
+                amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;fourthMember,
                 funcptr,  &lt;span style=&#34;color:#75715e&#34;&gt;// a global function pointer
 &lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;                result,
                 &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
@@ -160,11 +165,24 @@ unique script ID - &lt;code&gt;contentName&lt;/code&gt; and a handler to the ses
 &lt;p&gt;Then the function does some checks against the handle, if the checks turn out to be true, it calls a random function, and continues
 the execution from the next if condition. else, it continues execution without ever calling that random function. (named to &lt;code&gt;SomeFunc&lt;/code&gt;).&lt;/p&gt;
 &lt;p&gt;then there is a pretty huge if condition, which is essentially checks if any of the above parameters does not fullfill specific conditions.
-And if the condition fails, it calls another function. It is a function pointer that is extracted from the &lt;code&gt;amsiContext&lt;/code&gt; parameter. And it&amp;rsquo;s pretty much
-clear that this function pointer is some kind of a handler to the anti-malware vendor&amp;rsquo;s scanning interface.&lt;/p&gt;
-&lt;p&gt;This makes sense because to call &lt;code&gt;AmsiScanBuffer&lt;/code&gt;, one has to initialize amsi with &lt;code&gt;AmsiInitialize&lt;/code&gt; and open a session if required with &lt;code&gt;AmsiOpenSession&lt;/code&gt;.
-And &lt;code&gt;AmsiInitialize&lt;/code&gt; returns a handler and that handler is then passed down to this function as the first parameter (amsiContext).&lt;/p&gt;
-&lt;p&gt;To make sure our assumptions so far are correctly, we&amp;rsquo;ll go over this function using windbg.&lt;/p&gt;
+And if the condition fails, it calls another function. It is a function pointer that is extracted from the &lt;code&gt;amsiContext&lt;/code&gt; parameter.
+And it&amp;rsquo;s pretty much clear that this function pointer is some kind of a handler to the anti-malware vendor&amp;rsquo;s scanning interface.&lt;/p&gt;
+&lt;p&gt;It also passes &lt;strong&gt;*((QWORD *)amsiContext+2)&lt;/strong&gt;, &lt;strong&gt;result&lt;/strong&gt; and 0 as first, third and fourth arguments to the function.&lt;/p&gt;
+&lt;p&gt;Second argment is a function pointer, &lt;strong&gt;funcptr&lt;/strong&gt;, which is specified in a location that looks like a vtable.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;To make sure our assumptions so far are correct, we&amp;rsquo;ll go over this function using windbg.&lt;/p&gt;
+&lt;p&gt;Start off by rebasing IDA.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:015&amp;gt; lm
+00007ffa`26dd0000 00007ffa`26de7000   amsi       (pdb symbols)          c:\myserversymbols\Amsi.pdb\B0605BF6E5E98B4E70628DD06218EE811\Amsi.pdb
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Since we already know interesting parts of the function, it is easy to place breakpoints.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:015&amp;gt; bl
+     0 e Disable Clear  00007ffa26dd3310     0001 (0001)  0:**** amsi!AmsiScanBuffer
+     1 e Disable Clear  00007ffa26dd338d     0001 (0001)  0: amsi!AmsiScanBuffer+0x7d
+     2 e Disable Clear  00007ffa`26dd3395     0001 (0001)  0: amsi!AmsiScanBuffer+0x85
+     3 e Disable Clear  00007ffa26dd339e     0001 (0001)  0:**** amsi!AmsiScanBuffer+0x8e
+     4 e Disable Clear  00007ffa26dd33ac     0001 (0001)  0:** amsi!AmsiScanBuffer+0x9c
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;First few breakpoints are placed at locations in assembly where &lt;strong&gt;amsiContext&lt;/strong&gt; is being referenced.
+Last breakpoint is placed at the address where &lt;strong&gt;funcptr&lt;/strong&gt; is referenced.&lt;/p&gt;
 &lt;p&gt;So the conclusion is, when &lt;code&gt;AmsiInitialize&lt;/code&gt; function gets called, it initializes the anti-malware vendor, registers it, and returns a handler that contains a
 pointer to a registered function.&lt;code&gt;AmsiScanBuffer&lt;/code&gt; function is responsible for doing some basic checks on the handler, extracting registered function from the
 handler and calling it with necessary parameters.&lt;/p&gt;
