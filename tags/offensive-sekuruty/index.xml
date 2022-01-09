@@ -245,8 +245,8 @@ Third member is a pointer to an object of class &lt;code&gt;CAmsiAntimalware&lt;
         }
     }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, I have four questions.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1.  what is **amsi!CAmsiBufferStream** class ?
-2.  what does **amsi!CAmsiAntimalware::Scan** do ? 
+&lt;pre&gt;&lt;code&gt;1.  what is amsi!CAmsiBufferStream class ?
+2.  what does amsi!CAmsiAntimalware::Scan do ? 
 3.  how amsi pass the data (buffer) to the anti-malware vendor&#39;s registered function ?
 4.  What is the second member of HAMSICONTEXT ?
 &lt;/code&gt;&lt;/pre&gt;
