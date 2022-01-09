@@ -635,30 +635,6 @@ leveraged when developing malware.&lt;/p&gt;
     </item>
     
     <item>
-      <title>From AMSI to Reflection 0x01</title>
-      <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp2/</link>
-      <pubDate>Tue, 02 Nov 2021 12:20:27 +0530</pubDate>
-      
-      <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp2/</guid>
-      <description>Here we go with the second part of the series. In this article, we will try to bypass amsi with windbg using the knowledge gained from the previous article.
-Why dont we just ret? This is not a super cool + super hacky trick but it is indeed, really simple. Core idea is why dont we just ret. In case you dont know, ret instruction is used to return from a subroutine.</description>
-      <content>&lt;p&gt;Here we go with the second part of the series. In this article, we will try to bypass amsi with windbg using the knowledge gained from the
-previous article.&lt;/p&gt;
-&lt;h1 id=&#34;why-dont-we-just-ret&#34;&gt;Why dont we just ret?&lt;/h1&gt;
-&lt;p&gt;This is not a super cool + super hacky trick but it is indeed, really simple. Core idea is &lt;strong&gt;why dont we just ret&lt;/strong&gt;. In case you dont know,
-&lt;code&gt;ret&lt;/code&gt; instruction is used to return from a subroutine. It indirecly pops return address stored in &lt;code&gt;rsp&lt;/code&gt; into the &lt;code&gt;rip&lt;/code&gt; register. So if we can replace
-few instructions of the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; with &lt;code&gt;ret&lt;/code&gt;, we can bypass it.&lt;/p&gt;
-&lt;p&gt;To analyze the function, let&amp;rsquo;s place a breakpoint at the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; function, and continue execution using following commands&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bp amsi!AmsiScanBuffer 
-g
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;// windbg image here&lt;/p&gt;
-&lt;p&gt;As we can see, when we input that random string, we will have to go through AmsiScanBuffer function. Lets try patching first few bytes with a
-&lt;code&gt;ret&lt;/code&gt; instruction.&lt;/p&gt;
-&lt;p&gt;// patched PoC here&lt;/p&gt;
-</content>
-    </item>
-    
-    <item>
       <title>From AMSI to Reflection 0x0</title>
       <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
