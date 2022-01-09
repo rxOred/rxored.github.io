@@ -2686,6 +2686,30 @@ and you can copy it to android studio.&lt;/p&gt;
     </item>
     
     <item>
+      <title>From AMSI to Reflection 0x01</title>
+      <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp2/</link>
+      <pubDate>Tue, 02 Nov 2021 12:20:27 +0530</pubDate>
+      
+      <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp2/</guid>
+      <description>Here we go with the second part of the series. In this article, we will try to bypass amsi with windbg using the knowledge gained from the previous article.
+Why dont we just ret? This is not a super cool + super hacky trick but it is indeed, really simple. Core idea is why dont we just ret. In case you dont know, ret instruction is used to return from a subroutine.</description>
+      <content>&lt;p&gt;Here we go with the second part of the series. In this article, we will try to bypass amsi with windbg using the knowledge gained from the
+previous article.&lt;/p&gt;
+&lt;h1 id=&#34;why-dont-we-just-ret&#34;&gt;Why dont we just ret?&lt;/h1&gt;
+&lt;p&gt;This is not a super cool + super hacky trick but it is indeed, really simple. Core idea is &lt;strong&gt;why dont we just ret&lt;/strong&gt;. In case you dont know,
+&lt;code&gt;ret&lt;/code&gt; instruction is used to return from a subroutine. It indirecly pops return address stored in &lt;code&gt;rsp&lt;/code&gt; into the &lt;code&gt;rip&lt;/code&gt; register. So if we can replace
+few instructions of the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; with &lt;code&gt;ret&lt;/code&gt;, we can bypass it.&lt;/p&gt;
+&lt;p&gt;To analyze the function, let&amp;rsquo;s place a breakpoint at the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; function, and continue execution using following commands&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bp amsi!AmsiScanBuffer 
+g
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;// windbg image here&lt;/p&gt;
+&lt;p&gt;As we can see, when we input that random string, we will have to go through AmsiScanBuffer function. Lets try patching first few bytes with a
+&lt;code&gt;ret&lt;/code&gt; instruction.&lt;/p&gt;
+&lt;p&gt;// patched PoC here&lt;/p&gt;
+</content>
+    </item>
+    
+    <item>
       <title>From AMSI to Reflection 0x0</title>
       <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
@@ -2752,7 +2776,7 @@ When we input a malicious command or execute a malicious program, PowerShell wil
 Anti-malware vendors must do all the scans and detect whether the received input is malicious or not.&lt;/p&gt;
 &lt;p&gt;For application programmers to interact with the AMSI, it provides a dll called, amsi.dll. Let&amp;rsquo;s examine PowerShell from a process hacker to check whether th
 is dll is loaded.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/powershellProperties.png&#34; alt=&#34;PoweshellProperties&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/8.png&#34; alt=&#34;PoweshellProperties&#34;&gt;&lt;/p&gt;
 &lt;p&gt;as we can see, amsi.dll has been loaded into powershell.exe. Now, let&amp;rsquo;s take a look at this dll in-depth and see if we can find anything interesting.
 Even without looking at the dll, it is possible to think of some techniques to bypass AMSI, Anyway, its time to dig deep.&lt;/p&gt;
 &lt;p&gt;Before start reading disassembly, let&amp;rsquo;s examine the export table of amsi.dll.&lt;/p&gt;
@@ -2763,7 +2787,7 @@ Even without looking at the dll, it is possible to think of some techniques to b
 -   AmsiScanString
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;maybe &lt;code&gt;AmsiUacInitialize&lt;/code&gt; is interesting to us. but we are not going to take a look at that in this post.&lt;/p&gt;
-&lt;p&gt;First we&amp;rsquo;ll go through AmsiScanBuffer and AmsiScanString.&lt;/p&gt;
+&lt;p&gt;First we&amp;rsquo;ll go through AmsiScanBuffer.&lt;/p&gt;
 &lt;h3 id=&#34;amsiscanbuffer&#34;&gt;AmsiScanBuffer&lt;/h3&gt;
 &lt;p&gt;According to the MSDN and as well as the name suggests, the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; function scans a buffer for malicous content.&lt;/p&gt;
 &lt;p&gt;here is the function prototype &lt;a href=&#34;https://docs.microsoft.com/en-us/windows/win32/api/amsi/nf-amsi-amsiscanbuffer&#34;&gt;msdn&lt;/a&gt;&lt;/p&gt;
@@ -2775,9 +2799,9 @@ Even without looking at the dll, it is possible to think of some techniques to b
       [in, optional] HAMSISESSION amsiSession,
       [out]          AMSI_RESULT  &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;result
     );
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;First parameter is a handle to amsi context, which is probably a handle caller recieved from &lt;code&gt;AmsiInitialize&lt;/code&gt; call.
-Second and third paramters describe the buffer that amsi should scan and it&amp;rsquo;s length.&lt;/p&gt;
-&lt;p&gt;fourth parameter is a long pointer to a wide character string for the content name and the fifth is the handle to the amsi session.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;.
+According to MSDN, others include a buffer, which will be scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of the buffer - &lt;code&gt;length&lt;/code&gt;, filename, URL,
+unique script ID - &lt;code&gt;contentName&lt;/code&gt; and a handler to the session - &lt;code&gt;HAMSISESSION&lt;/code&gt; structure.&lt;/p&gt;
 &lt;p&gt;As MSDN says, this function returns &lt;code&gt;S_OK&lt;/code&gt; if the call is successful. However, the return value does not indicate whether the buffer is malicious. instead,
 the function uses an output parameter, the sixth one of type &lt;code&gt;AMSI_RESULT&lt;/code&gt; to send the scan results to caller.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;enum&lt;/span&gt; AMSI_RESULT {
@@ -2791,13 +2815,85 @@ the function uses an output parameter, the sixth one of type &lt;code&gt;AMSI_RE
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanBufferPrologue.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;here we can see stack pointer is stored in &lt;code&gt;r11&lt;/code&gt; register and since this is x64 _stdcall, the first four parameters are stored in rcx, rdx, r8 and r9
 registers. Rest are stored in the stack. With that information, we can assume a pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; enum is stored in the stack.&lt;/p&gt;
-&lt;p&gt;then we can see a series of comparisons around global data.&lt;/p&gt;
+&lt;p&gt;then we can see few comparisons around global data.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanBuffer2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;followed by,&lt;/p&gt;
+&lt;p&gt;then there is a pretty huge if condition, which is essentially checks if any of the above parameters are invalid&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;And if parameters invalid, it returns 0x80070057 (which i think is the bad return value)&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;which can be roughly decompiled down into,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;    HRESULT &lt;span style=&#34;color:#66d9ef&#34;&gt;__stdcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;AmsiScanBuffer&lt;/span&gt;
+&lt;p&gt;else, as we can see in the above snippet, &lt;code&gt;rdx&lt;/code&gt; register is loaded with address of &lt;code&gt;CAmsiBufferStream::vftable&lt;/code&gt; and stored the value in the stack. This may sound familiar to
+anyone who has done some C++ reverse engineering since this is a one way to represent constructor calls in assembly (setting vtable to
+the object&amp;rsquo;s first bytes).&lt;/p&gt;
+&lt;p&gt;to confirm that we can take a look at &lt;code&gt;CAmsiBufferStream::vftable&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;as we can see, ``CAmsiBufferStream::vftable&lt;code&gt;is a virtual function table and what those two instructions doing is creating an object of type&lt;/code&gt;CAmsiBufferStream`. It is also possible to see some member variable intializations too. &lt;strong&gt;var_48, var_40, var_38, var_30,var_28 and var_20&lt;/strong&gt;  gets assigned to &lt;strong&gt;vtable, buffer, length, amsiContext-&amp;gt;secondMember, contentName and session&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;My assumption is that &lt;code&gt;amsiContext-&amp;gt;thirdMember&lt;/code&gt; is somekind of a class that
+anti-malware vendor has registered to perform scans.&lt;/p&gt;
+&lt;p&gt;To make sure our assumptions so far are correct, we&amp;rsquo;ll go over this function using windbg.&lt;/p&gt;
+&lt;p&gt;Start off by rebasing IDA to match that of the loaded dll.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:015&amp;gt; lm
+00007ff945500000 00007ff945517000   amsi       (pdb symbols)          c:\myserversymbols\Amsi.pdb\B0605BF6E5E98B4E70628DD06218EE811\Amsi.pdb
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Since we already know interesting parts of the function, it is easy to place breakpoints.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:018&amp;gt; bl
+     0 e Disable Clear  00007ff945503310     0001 (0001)  0:**** amsi!AmsiScanBuffer
+     1 e Disable Clear  00007ff94550338d     0001 (0001)  0: amsi!AmsiScanBuffer+0x7d
+     2 e Disable Clear  00007ff9`45503395     0001 (0001)  0: amsi!AmsiScanBuffer+0x85
+     3 e Disable Clear  00007ff94550339e     0001 (0001)  0:**** amsi!AmsiScanBuffer+0x8e
+     4 e Disable Clear  00007ff9455033ac     0001 (0001)  0:** amsi!AmsiScanBuffer+0x9c
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;First few breakpoints are placed at locations in assembly where &lt;strong&gt;amsiContext&amp;rsquo;s&lt;/strong&gt; member variables are
+being referenced. Reason being this handle is still unknown to us.
+Therefore it could be useful to extract every possible information about it.
+Last breakpoint is placed at the address where &lt;strong&gt;funcptr&lt;/strong&gt; is referenced.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/4.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;So from the above image, we can assume that the first member of the
+&lt;code&gt;amsiContext&lt;/code&gt; is a DWORD (4 bytes) and second and third members are QWORDs.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:018&amp;gt; dq /c1 0x000002347f5d44d8 L1
+000002347f5d44d8  000002347e90cce0
+0:018&amp;gt; dq /c1 0x000002347f5d44e0 L1
+000002347f5d44e0  000002347eb5d120
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;We can refer to the memory map to get more information about what those QWORDs are.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/5.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now it is clear those two pointers are from heap segment 1. However, we still have no idea about the type of those pointers.&lt;/p&gt;
+&lt;p&gt;However we already know those are pointers to objects thanks to our previous static analysis.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/6.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Above screenshot shows the virtual function table of &lt;code&gt;CAmsiBufferStream&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Then the next address where we can find some more information regarding &lt;strong&gt;amsiContext members&lt;/strong&gt; is,&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;00007ff9455033d6 488b01           mov     rax, qword ptr [rcx] ds:000002347eb5d120={amsi!ATL::CComObject&amp;lt;CAmsiAntimalware&amp;gt;::vftable&#39; (00007ff94550bb48)}
+00007ff9455033d9 488b4018         mov     rax, qword ptr [rax+18h]
+00007ff9455033dd ff15cd8d0000     call    qword ptr [amsi!_guard_dispatch_icall_fptr (00007ff9`4550c1b0)]
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;in the above snippet, &lt;code&gt;rcx&lt;/code&gt; holds one of those pointers we just discussed, &lt;code&gt;000002347eb5d120&lt;/code&gt; (thirdMember). In the first instruction, 64 bit value at that address is loaded into &lt;code&gt;rax&lt;/code&gt;
+register, which, according to the above snippet, is &lt;code&gt;00007ff94550bb48&lt;/code&gt;. It also specifies that this is a vtable located in .rodata section of the asmi.dll&amp;rsquo;s memory image.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/7.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;next two instructions retreives address &lt;strong&gt;0x18&lt;/strong&gt; offset from the vtable into &lt;code&gt;rax&lt;/code&gt; register and calls the address stored in &lt;code&gt;rax&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/9.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This proves that our assumption on function pointer extracted from the &lt;code&gt;HAMSICONTEXT&lt;/code&gt; being a anti-malware vendor&amp;rsquo;s registered function is false and
+it is a  pointer to &lt;code&gt;amsi!CAmsiAntimalware::Scan&lt;/code&gt; method.&lt;/p&gt;
+&lt;p&gt;We have uncovered some important details about &lt;code&gt;HAMSICONETXT&lt;/code&gt; so far. We already know that the first member is a DWORD, and it should be
+equal to &lt;strong&gt;0x49534d41&lt;/strong&gt; in order for scan to be successful.
+Third member is a pointer to an object of class &lt;code&gt;CAmsiAntimalware&lt;/code&gt;, which has a virtual function called &lt;code&gt;amsi!CAmsiAntimalware::Scan&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;And by moving its 0x0 offset &lt;code&gt;rax&lt;/code&gt; register, we can access it&amp;rsquo;s virtual function table where we can find &lt;code&gt;Scan&lt;/code&gt; at the 0x18.&lt;/p&gt;
+&lt;p&gt;The whole thing can be roughly decompiled down into below C code.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cpp&#34; data-lang=&#34;cpp&#34;&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;CAmsiAntimalware&lt;/span&gt; {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+            [...]
+        
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;virtual&lt;/span&gt; Scan(CAmsiBufferStream &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;, AMSI_RESULT, DWORD);
+
+            [...]
+    }
+
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; HAMSICONTEXT {
+        DWORD               unk1;    
+        DWORD               reserved;
+        QWORD               &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;secondMember;
+        CAmsiAntimalware    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;antimalware;
+
+        [...]
+    };
+
+    HRESULT &lt;span style=&#34;color:#66d9ef&#34;&gt;__stdcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;AmsiScanBuffer&lt;/span&gt;
     (
             HAMSICONTEXT amsiContext, 
             PVOID buffer, 
@@ -2808,10 +2904,10 @@ registers. Rest are stored in the stack. With that information, we can assume a 
     )
     {
         &lt;span style=&#34;color:#66d9ef&#34;&gt;auto&lt;/span&gt; var;
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((handle &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;handle) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ((off_180011000 &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;off_180011000) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(off_180011000 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x1c&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;))
         {
-            SomeFunc(
-                &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)handle &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;), 
+            WPP_SF_qqDqq(
+                &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((BYTE&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)off_180011000 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;), 
                 buffer, 
                 length, 
                 amsiContext, 
@@ -2821,67 +2917,72 @@ registers. Rest are stored in the stack. With that information, we can assume a 
             );
         }
 
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
-            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;) 
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (
+                buffer &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
+                result &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
+                amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; NULL &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
+                &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x49534D41&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
+                &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;||&lt;/span&gt; 
+                &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;((QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x0&lt;/span&gt;
+            ) 
         {
             &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80070057&lt;/span&gt;;    
         } 
         &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; 
         {
-            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;fourthMember) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x18&lt;/span&gt;)(
-                amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;fourthMember,
-                funcptr,  &lt;span style=&#34;color:#75715e&#34;&gt;// a global function pointer
+            CAmsiBufferStream bufferStream &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; CAmsiBufferStream(
+                buffer, 
+                length, 
+                amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;secondMember,
+                contentName,
+                session
+            ); 
+
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;antimalware&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;Scan(
+                amsiContext&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;antimalware, &lt;span style=&#34;color:#75715e&#34;&gt;// this
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;bufferStream, &lt;span style=&#34;color:#75715e&#34;&gt;// CAmsiBufferStream *
 &lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;                result,
                 &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
             );
         }
     }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So as discussed earlier, the function takes 6 parameters. One of which is the pointer to the &lt;code&gt;AMSI_RESULT&lt;/code&gt; structure as I explained above - &lt;code&gt;*result&lt;/code&gt;.
-According to MSDN, others include a buffer, which will be scanned by the anti-malware vendor - &lt;code&gt;buffer&lt;/code&gt;, length of the buffer - &lt;code&gt;length&lt;/code&gt;, filename, URL,
-unique script ID - &lt;code&gt;contentName&lt;/code&gt; and a handler to the session - &lt;code&gt;HAMSISESSION&lt;/code&gt; structure.&lt;/p&gt;
-&lt;p&gt;Then the function does some checks against the handle, if the checks turn out to be true, it calls a random function, and continues
-the execution from the next if condition. else, it continues execution without ever calling that random function. (named to &lt;code&gt;SomeFunc&lt;/code&gt;).&lt;/p&gt;
-&lt;p&gt;then there is a pretty huge if condition, which is essentially checks if any of the above parameters does not fullfill specific conditions.
-And if the condition fails, it calls another function. It is a function pointer that is extracted from the &lt;code&gt;amsiContext&lt;/code&gt; parameter.
-And it&amp;rsquo;s pretty much clear that this function pointer is some kind of a handler to the anti-malware vendor&amp;rsquo;s scanning interface.&lt;/p&gt;
-&lt;p&gt;It also passes &lt;strong&gt;*((QWORD *)amsiContext+2)&lt;/strong&gt;, &lt;strong&gt;result&lt;/strong&gt; and 0 as first, third and fourth arguments to the function.&lt;/p&gt;
-&lt;p&gt;Second argment is a function pointer, &lt;strong&gt;funcptr&lt;/strong&gt;, which is specified in a location that looks like a vtable.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;To make sure our assumptions so far are correct, we&amp;rsquo;ll go over this function using windbg.&lt;/p&gt;
-&lt;p&gt;Start off by rebasing IDA.&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:015&amp;gt; lm
-00007ffa`26dd0000 00007ffa`26de7000   amsi       (pdb symbols)          c:\myserversymbols\Amsi.pdb\B0605BF6E5E98B4E70628DD06218EE811\Amsi.pdb
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Since we already know interesting parts of the function, it is easy to place breakpoints.&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;0:015&amp;gt; bl
-     0 e Disable Clear  00007ffa26dd3310     0001 (0001)  0:**** amsi!AmsiScanBuffer
-     1 e Disable Clear  00007ffa26dd338d     0001 (0001)  0: amsi!AmsiScanBuffer+0x7d
-     2 e Disable Clear  00007ffa`26dd3395     0001 (0001)  0: amsi!AmsiScanBuffer+0x85
-     3 e Disable Clear  00007ffa26dd339e     0001 (0001)  0:**** amsi!AmsiScanBuffer+0x8e
-     4 e Disable Clear  00007ffa26dd33ac     0001 (0001)  0:** amsi!AmsiScanBuffer+0x9c
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;First few breakpoints are placed at locations in assembly where &lt;strong&gt;amsiContext&lt;/strong&gt; is being referenced.
-Last breakpoint is placed at the address where &lt;strong&gt;funcptr&lt;/strong&gt; is referenced.&lt;/p&gt;
-&lt;p&gt;So the conclusion is, when &lt;code&gt;AmsiInitialize&lt;/code&gt; function gets called, it initializes the anti-malware vendor, registers it, and returns a handler that contains a
-pointer to a registered function.&lt;code&gt;AmsiScanBuffer&lt;/code&gt; function is responsible for doing some basic checks on the handler, extracting registered function from the
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, I have four questions.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1.  what is **amsi!CAmsiBufferStream** class ?
+2.  what does **amsi!CAmsiAntimalware::Scan** do ? 
+3.  how amsi pass the data (buffer) to the anti-malware vendor&#39;s registered function ?
+4.  What is the second member of HAMSICONTEXT ?
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Well I think the answers lies in the 2nd question.&lt;/p&gt;
+&lt;p&gt;Therefore, our next target is amsi!CAmsiAntimalware::Scan.&lt;/p&gt;
+&lt;h3 id=&#34;camsiantimalwarescan&#34;&gt;CAmsiAntimalware::Scan&lt;/h3&gt;
+&lt;p&gt;Before reverse engineering this method, we need to construct the classes and structs we dissected above.&lt;/p&gt;
+&lt;p&gt;(function addresses may)&lt;/p&gt;
+&lt;p&gt;Now it is time to conclude our assumptions on AmsiInitialize.&lt;/p&gt;
+&lt;h3 id=&#34;amsiinitialize&#34;&gt;AmsiInitialize&lt;/h3&gt;
+&lt;p&gt;So the conclusion is, when &lt;code&gt;AmsiInitialize&lt;/code&gt; function gets called, it initializes the anti-malware vendor, registers it, and returns a
+handler that contains a pointer to a registered function.&lt;code&gt;AmsiScanBuffer&lt;/code&gt; function is responsible for doing some basic checks on the
+handler, extracting registered function from the
 handler and calling it with necessary parameters.&lt;/p&gt;
 &lt;h3 id=&#34;amsiscanstring&#34;&gt;AmsiScanString&lt;/h3&gt;
-&lt;p&gt;This is pretty much the same as the previous function except this one scan for strings. let&amp;rsquo;s just do a small analysis on this one too for the sake of comple
+&lt;p&gt;This is pretty much the same as the previous function except this one scan for strings. let&amp;rsquo;s just do a small analysis on this one too
+for the sake of comple
 teness.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanString.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Function check if the string is empty or not.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://rxOred.github.io/img/CSharpLoader/AmsiScanString1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;here is how the rest of the function looks like.&lt;/p&gt;
-&lt;p&gt;Without much analysis, we can clearly say that this one calls &lt;code&gt;AmsiScanString&lt;/code&gt; internally. before that, it checks whether the enum pointed by &lt;code&gt;target&lt;/code&gt; is
-empty.&lt;/p&gt;
-&lt;p&gt;Then there is a loop that increases &lt;code&gt;rax&lt;/code&gt; register until it finds a null byte. This is essentially a strlen. After that, &lt;code&gt;rax&lt;/code&gt; is added to &lt;code&gt;rax&lt;/code&gt; and gets
-compared to &lt;code&gt;r11&lt;/code&gt;, which holds value &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, if the value in &lt;code&gt;rax&lt;/code&gt; is above &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, it moves &lt;code&gt;0x80070057&lt;/code&gt; to &lt;code&gt;rax&lt;/code&gt; register and returns. else, it
+&lt;p&gt;Without much analysis, we can clearly say that this one calls &lt;code&gt;AmsiScanString&lt;/code&gt; internally. before that, it checks whether the enum
+pointed by &lt;code&gt;target&lt;/code&gt; is empty.&lt;/p&gt;
+&lt;p&gt;Then there is a loop that increases &lt;code&gt;rax&lt;/code&gt; register until it finds a null byte. This is essentially a strlen. After that, &lt;code&gt;rax&lt;/code&gt; is
+added to &lt;code&gt;rax&lt;/code&gt; and gets
+compared to &lt;code&gt;r11&lt;/code&gt;, which holds value &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, if the value in &lt;code&gt;rax&lt;/code&gt; is above &lt;code&gt;0xFFFFFFFF&lt;/code&gt;, it moves &lt;code&gt;0x80070057&lt;/code&gt; to &lt;code&gt;rax&lt;/code&gt; register
+and returns. else, it
 calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after some random value
-loaded into rax, and else, it simply calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Now it is time to conclude our assumptions on AmsiInitialize.&lt;/p&gt;
-&lt;h3 id=&#34;amsiinitialize&#34;&gt;AmsiInitialize&lt;/h3&gt;
+&lt;p&gt;And what this function does is pretty simple. it checks if the string length is higher than some value and if yes, it returns after
+some random value loaded into rax, and else, it simply calls &lt;code&gt;AmsiScanBuffer&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;the-end&#34;&gt;The End.&lt;/h2&gt;
-&lt;p&gt;So yeah that&amp;rsquo;s it for now&amp;hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass techniques.&lt;/p&gt;
+&lt;p&gt;So yeah that&amp;rsquo;s it for now&amp;hellip; we explored AMSI in-depth in this article. In the next one, We will go through some common AMSI bypass
+techniques.&lt;/p&gt;
 &lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
     </item>
