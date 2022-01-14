@@ -6,7 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="reverse engineering the notorious android banking trojan" />
+<meta name="description" content="Table of Content  Introduction  Samples   Environment  Tools   Analysis  The Manifest Behavioral analysis Identifying the obfuscator Packed or what Going Down the Rabbit Hole  MainActivity C2s, Tweets and Data Exfiltration Audio Recording Banking Apps Remote Access Achieving Persistence and User Presence SMS Sending, Receiving and Spamming Reading Contacts Say No to google play protect Ransomware Mode     The end  Introduction Anubis is a pretty big banking trojan that targets android devices." />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/analysis/anubis/anubis/" />
@@ -16,7 +16,7 @@
 
 <link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
 
-  <link rel="stylesheet" href="https://rxOred.github.io/assets/pink.css">
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/light_red.css">
 
 
 
@@ -60,10 +60,10 @@
 
 
 </head>
-<body class="pink">
+<body class="light_red">
 
 
-<div class="container headings--one-size">
+<div class="container center headings--one-size">
 
   <header class="header">
   <div class="header__inner">
@@ -124,13 +124,9 @@
   <div class="post-meta">
     
       <span class="post-date">
-        2021-12-13
-        
+        2021-12-13 
       </span>
     
-    
-    
-      <span class="post-reading-time">:: 54 min read (11425 words)</span>
     
   </div>
 
@@ -145,12 +141,10 @@
     
   </span>
   
-  
-  <img src="https://rxOred.github.io/img/anubis/anubis.jpg"
-    class="post-cover"
-    alt="Reversing Anubis"
-    title="Cover Image" />
 
+  
+    <img src="https://rxOred.github.io/img/anubis/anubis.jpg" class="post-cover" alt="Reversing Anubis" />
+  
 
   
 
@@ -1877,7 +1871,7 @@ be fiiled with byte array <code>b</code>.</p>
 <p>We can conclude that this method is the on in charge for encrypting and decrypting the file system based on the shared preferene value <code>status</code>.</p>
 <h1 id="the-end">The end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>This is the longest article I have ever typed. hell its over 2000 lines. So eayh, we started analysis with 0 knowledge on a random malware and dissected various part of it using both dynamic and static analysis techniques to understand what it is capable of doing.</p>
-<p>with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, which is capable of many things.</p>
+<p>with our understanding about the malware, we can conclude that anubis is a very sophisticated banking trojan, and is capable of many things.</p>
 <p>#Speard anarchy</p>
 
       </div></div>

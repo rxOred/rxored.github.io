@@ -6,7 +6,8 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="dissecting simple-locker android ransomware" />
+<meta name="description" content="Table of Content  Introduction  Samples   Environment  Tools   Dynamic analysis Static analysis  Main What we know so far Encryption Decryption Other stuff   Writing a decrypter The end  Introduction Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
+Environment - linux host with analysis tools - android vm (API version 16)  Tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files." />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/" />
@@ -16,7 +17,7 @@
 
 <link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
 
-  <link rel="stylesheet" href="https://rxOred.github.io/assets/pink.css">
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/light_red.css">
 
 
 
@@ -40,7 +41,7 @@
 <meta property="og:url" content="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/" />
 <meta property="og:site_name" content="rxOred&#39;s blog" />
 
-  <meta property="og:image" content="https://rxOred.github.io/img/simplelocker/simplelocker.jpg">
+  <meta property="og:image" content="https://rxOred.github.io/img/simplelocker/pentacle.png">
 
 <meta property="og:image:width" content="2048">
 <meta property="og:image:height" content="1024">
@@ -60,10 +61,10 @@
 
 
 </head>
-<body class="pink">
+<body class="light_red">
 
 
-<div class="container headings--one-size">
+<div class="container center headings--one-size">
 
   <header class="header">
   <div class="header__inner">
@@ -124,13 +125,9 @@
   <div class="post-meta">
     
       <span class="post-date">
-        2021-11-18
-        
+        2021-11-18 
       </span>
     
-    
-    
-      <span class="post-reading-time">:: 9 min read (1847 words)</span>
     
   </div>
 
@@ -145,24 +142,48 @@
     
   </span>
   
-  
-  <img src="https://rxOred.github.io/img/simplelocker/simplelocker.jpg"
-    class="post-cover"
-    alt="Simplelocker, an android ransomware"
-    title="Cover Image" />
 
+  
+    <img src="https://rxOred.github.io/img/simplelocker/pentacle.png" class="post-cover" alt="Simplelocker, an android ransomware" />
+  
 
   
 
   <div class="post-content"><div>
-        <h1 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+        <h1 id="table-of-content">Table of Content<a href="#table-of-content" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ol>
+<li><a href="#introduction">Introduction</a>
+<ol>
+<li><a href="#samples">Samples</a></li>
+</ol>
+</li>
+<li><a href="#environment">Environment</a>
+<ol>
+<li><a href="#tools">Tools</a></li>
+</ol>
+</li>
+<li><a href="#dynamic-analysis">Dynamic analysis</a></li>
+<li><a href="#static-analysis">Static analysis</a>
+<ol>
+<li><a href="#main">Main</a></li>
+<li><a href="#what-we-know-so-far">What we know so far</a></li>
+<li><a href="#encryption">Encryption</a></li>
+<li><a href="#decryption">Decryption</a></li>
+<li><a href="#other-stuff">Other stuff</a></li>
+</ol>
+</li>
+<li><a href="#writing-a-decrypter">Writing a decrypter</a></li>
+<li><a href="#the-end">The end</a></li>
+</ol>
+<h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>samples can be obtained from various android malware repositories. I had the dex one but
 had to get an apk version from the koodous website.</p>
-<h2 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h1 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <pre><code>- linux host with analysis tools
 - android vm (API version 16)
 </code></pre>
-<h2 id="tools">tools<a href="#tools" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="tools">Tools<a href="#tools" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <pre><code>- bytecodeviewer
 - apktool
 - androgaurd
@@ -186,7 +207,7 @@ no. not really. remember kid. this is a ransomware. it has probably encrypted ev
 file on the device. To make sure, lets check the external storages we created earlier.</p>
 <p><img src="/img/simple-locker/encrypted-files.png" alt="encrypted files"></p>
 <h1 id="static-analysis">Static analysis<a href="#static-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
-<h2 id="decompiling">decompiling<a href="#decompiling" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="decompiling">Decompiling<a href="#decompiling" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>first, let&rsquo;s run apktool on the apk and get the smali code.</p>
 <p><img src="/img/simple-locker/apk-tool-fails.png" alt="apk tool fails"></p>
 <p>I think the issue is with the charset, cause the app uses some weird alien language which i beleived to be russian. I dont know a specific way to solve this problem so im gonna try updating the tool.</p>
@@ -332,7 +353,7 @@ have analyzed <code>getFileNames</code>, this must be familiar to you&hellip;</p
 <p>Now pay your attention to the first constant defined in the class <code>ADMIN_URL</code>. This sounds
 like a CnC server address. this is a good network based indicator.
 <code>http://xeyocsu7fu2vjhxs.onion/</code>.</p>
-<h2 id="writing-a-decrypter">writing a decrypter<a href="#writing-a-decrypter" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h1 id="writing-a-decrypter">Writing a decrypter<a href="#writing-a-decrypter" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>Since we know how the ecnryption and decryption works, we can write an app that can decrypt all the files. I&rsquo;ll leave a snippet down below
 and you can copy it to android studio.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.example.decrypter<span style="color:#f92672">;</span>
@@ -459,6 +480,7 @@ and you can copy it to android studio.</p>
 <p><img src="/img/simple-locker/decrypter.png" alt="decrypter app"></p>
 <p>yae yae ik. Im not a UI designer or an android developer.</p>
 <p><img src="/img/simple-locker/decryted.png" alt="files decrypted!!"></p>
+<h1 id="the-end">The end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>So yeah i think that&rsquo;s it.</p>
 <p>#Speard Anarchy!</p>
 
