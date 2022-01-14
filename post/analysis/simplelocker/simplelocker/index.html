@@ -193,23 +193,23 @@ had to get an apk version from the koodous website.</p>
 </code></pre>
 <h1 id="dynamic-analysis">Dynamic analysis<a href="#dynamic-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files.</p>
-<p><img src="/img/simple-locker/creating-external-storage.png" alt="creating external storage"></p>
+<p><img src="/img/simplelocker/creating-external-storage.png" alt="creating external storage"></p>
 <p>Now, we can install the malware on the VM.</p>
-<p><img src="/img/simple-locker/installing-malware.png" alt="installing malware"></p>
-<p><img src="/img/simple-locker/installed-malware.png" alt="installed malware"></p>
+<p><img src="/img/simplelocker/installing-malware.png" alt="installing malware"></p>
+<p><img src="/img/simplelocker/installed-malware.png" alt="installed malware"></p>
 <p>after clicking on the installed malware, we get a prompt which contains some text from a
 language which i beleive to be alien. :) (nah its probably russian&hellip;)</p>
-<p><img src="/img/simple-locker/alien-text.png" alt="alien text"></p>
+<p><img src="/img/simplelocker/alien-text.png" alt="alien text"></p>
 <p>Lets try removing the malware using adb.</p>
-<p><img src="/img/simple-locker/uninstalling-malware.png" alt="uninstalling malware"></p>
+<p><img src="/img/simplelocker/uninstalling-malware.png" alt="uninstalling malware"></p>
 <p>whoaa whoaa? did we just uninstalled the ransomeware? wow. we are sooo cool.
 no. not really. remember kid. this is a ransomware. it has probably encrypted every damn
 file on the device. To make sure, lets check the external storages we created earlier.</p>
-<p><img src="/img/simple-locker/encrypted-files.png" alt="encrypted files"></p>
+<p><img src="/img/simplelocker/encrypted-files.png" alt="encrypted files"></p>
 <h1 id="static-analysis">Static analysis<a href="#static-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <h2 id="decompiling">Decompiling<a href="#decompiling" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>first, let&rsquo;s run apktool on the apk and get the smali code.</p>
-<p><img src="/img/simple-locker/apk-tool-fails.png" alt="apk tool fails"></p>
+<p><img src="/img/simplelocker/apk-tool-fails.png" alt="apk tool fails"></p>
 <p>I think the issue is with the charset, cause the app uses some weird alien language which i beleived to be russian. I dont know a specific way to solve this problem so im gonna try updating the tool.</p>
 <p>Well it didnt work.</p>
 <p>Dont lose your hopes comrad i got a way around this. we can use jd-gui!!! However to do
@@ -224,18 +224,18 @@ Output written to simplelocker-enjarify.jar
 <span style="color:#ae81ff">2693</span> classes translated successfully, <span style="color:#ae81ff">0</span> classes had errors
 </code></pre></div><p>here is the result :)</p>
 <p>Now, lets see what jd-gui got for us.</p>
-<p><img src="/img/simple-locker/decompiled.png" alt="decompiled source code"></p>
+<p><img src="/img/simplelocker/decompiled.png" alt="decompiled source code"></p>
 <h2 id="main">Main<a href="#main" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>here we can see <code>Main</code>, which i think is the main activity. if you dont know what it is, refer an android development guide.</p>
-<p><img src="/img/simple-locker/onCreate.png" alt="onCreate function"></p>
+<p><img src="/img/simplelocker/onCreate.png" alt="onCreate function"></p>
 <p>here we can see a call to <code>requestWindowFeature()</code> function, which is used to exclude or include various window features such as toolbar, actionbar and so on. In this case, i honestly dont know what the parameter means (well yes ik its a constant).</p>
 <p>then <code>onCreate</code> invokes <code>setFlags()</code> with <code>E</code> as an argument. then it sets content view to some random looking value.</p>
 <p>Then there is a juicy part. it calls <code>startService</code> function, which is used to start a long running service as the name implies.</p>
 <p>we can see the definition of that function right above the <code>onCreate()</code>.</p>
-<p><img src="/img/simple-locker/startService.png" alt="start service"></p>
+<p><img src="/img/simplelocker/startService.png" alt="start service"></p>
 <p>Here it checks if <code>MainService.isRunning</code> is true, and then it does some calls to constructors and stuff like that. we&rsquo;ll come back to this later</p>
 <p>Now let&rsquo;s examine whats in the <code>MainService()</code>.</p>
-<p><img src="/img/simple-locker/MainService.png" alt="MainService"></p>
+<p><img src="/img/simplelocker/MainService.png" alt="MainService"></p>
 <p>whoa whoa whoaaa. this is scary ryt? we got some tor shit going on
 here.</p>
 <p>Let&rsquo;s examine, onCreate function.</p>
@@ -268,18 +268,18 @@ There, <code>MainService</code> initialize <code>MainService$3</code> &amp;&amp;
 thread and run <code>MainService$5</code>.</p>
 <h2 id="encryption">Encryption<a href="#encryption" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Now let&rsquo;s look at MainService$5.</p>
-<p><img src="/img/simple-locker/encryption.png" alt="encryption"></p>
+<p><img src="/img/simplelocker/encryption.png" alt="encryption"></p>
 <p>See? we got what we wanted. This is the class that encrypts our files.</p>
 <p>First it creates a <code>FilesEncryptor</code> object. Then it calls <code>filesEncryptor.encrypt()</code>.
 There&rsquo;s some exception handling too. if the encryption fails, it sets up some debugging
 messages and call <code>Log.d</code></p>
 <p>lets take a look at <code>FilesEncryptor</code> class.</p>
-<p><img src="/img/simple-locker/FileEncrypter.png" alt="FilesEncryptor"></p>
+<p><img src="/img/simplelocker/FileEncrypter.png" alt="FilesEncryptor"></p>
 <p>ah yes! the files my friend, the files. here we can see the class has
 two array members, first one for files-to-be-decrypted and second one
 for the files-to-be-ecrypted.</p>
 <p>then there is another member for shared preferences.</p>
-<p><img src="/img/simple-locker/FileEncrypterConstructor.png" alt="FilesEncryptorContructor"></p>
+<p><img src="/img/simplelocker/FileEncrypterConstructor.png" alt="FilesEncryptorContructor"></p>
 <p>here the function creates an <code>ArrayList</code> and asign it to <code>filesToEncrypt</code> &amp;&amp;
 <code>filesToDecrypt</code> we previously saw. next few lines</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String<span style="color:#f92672">[]</span> arrayOfString <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[</span>1<span style="color:#f92672">];</span>
@@ -297,7 +297,7 @@ File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</
 that appends <code>filesToEncrypt</code> ArrayList.</p>
 <p>Now lets go back to <code>mainService$5</code>. As we saw earlier, this is the function which calls
 <code>FilesEncryptor.encrypt()</code>.</p>
-<p><img src="/img/simple-locker/encrypt.png" alt="encrypt function"></p>
+<p><img src="/img/simplelocker/encrypt.png" alt="encrypt function"></p>
 <p>I mean dude, i you got two holes in your face filled with two testical like balls, you
 can clear see the key and the algorithm. And that&rsquo;s all you want to decrypt your files.</p>
 <p>Anyway, lets analyze this one&hellip; first there is an if statement which check if
@@ -327,7 +327,7 @@ So this one is basically a loop that encrypts every file that is specified in th
 <code>filesToEncrypt</code> ArrayList and deletes the original one.</p>
 <p>Cool. Now we have dissected the encryption part. Now lets take a look at decryption part.</p>
 <h2 id="decryption">Decryption<a href="#decryption" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<p><img src="/img/simple-locker/decryption.png" alt="decryption"></p>
+<p><img src="/img/simplelocker/decryption.png" alt="decryption"></p>
 <p>Since we have already analyzed main parts of the code, this is going
 to be easy.</p>
 <p>Just like the <code>encrypt</code>, this one too, check whether external storagesis writable. if true, an <code>AesCrypt</code> object is constructed and passed
@@ -345,9 +345,9 @@ AesCrypt if you want.</p>
 First of all, goal here is not to dissect everything but to find anything useful for
 host-based / network signatures.</p>
 <p>So what looks juicy for me is <code>Constants.class</code></p>
-<p><img src="/img/simple-locker/constants.png" alt="constants"></p>
+<p><img src="/img/simplelocker/constants.png" alt="constants"></p>
 <p>Holy shit. i should have analyzed this one before the other functions. this one gives us the key in plain.</p>
-<p><img src="/img/simple-locker/constants1.png" alt="constants"></p>
+<p><img src="/img/simplelocker/constants1.png" alt="constants"></p>
 <p>see? we got the file extensions that this ransomware encrypts (if you
 have analyzed <code>getFileNames</code>, this must be familiar to you&hellip;</p>
 <p>Now pay your attention to the first constant defined in the class <code>ADMIN_URL</code>. This sounds
@@ -477,9 +477,9 @@ and you can copy it to android studio.</p>
     <span style="color:#f92672">}</span>
 <span style="color:#f92672">}</span> 
 </code></pre></div><p>oh and just copy the contents of the <code>AesCrypt.class</code> from jd-gui. then build it and install the app on the android VM.</p>
-<p><img src="/img/simple-locker/decrypter.png" alt="decrypter app"></p>
+<p><img src="/img/simplelocker/decrypter.png" alt="decrypter app"></p>
 <p>yae yae ik. Im not a UI designer or an android developer.</p>
-<p><img src="/img/simple-locker/decryted.png" alt="files decrypted!!"></p>
+<p><img src="/img/simplelocker/decryted.png" alt="files decrypted!!"></p>
 <h1 id="the-end">The end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>So yeah i think that&rsquo;s it.</p>
 <p>#Speard Anarchy!</p>
