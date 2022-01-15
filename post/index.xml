@@ -44,8 +44,7 @@ Environment - linux host with analysis tools - android vm (API version 16)  Tool
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</guid>
-      <description>Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff. (well of course, there are powershell based droppers.)
-There is something that is common to both of these tools. Windows scripting engine.</description>
+      <description>Table of Content  Introduction Antimalware Scan Interface  AMSI in action   AMSI internals  AmsiScanString AmsiScanBuffer CAmsiAntimalware::Scan AmsiInitialize   The End  Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff.</description>
     </item>
     
     <item>
