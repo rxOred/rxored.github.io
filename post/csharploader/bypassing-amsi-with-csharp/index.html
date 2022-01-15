@@ -407,13 +407,7 @@ Third member is a pointer to an object of class <code>CAmsiAntimalware</code>, w
             );
         }
     }
-</code></pre></div><p>Now, I have four questions.</p>
-<pre><code>1.  what is amsi!CAmsiBufferStream class ?
-2.  what does amsi!CAmsiAntimalware::Scan do ? 
-3.  how amsi pass the data (buffer) to the anti-malware vendor's registered function ?
-4.  What is the second member of HAMSICONTEXT ?
-</code></pre>
-<p>Well I think the answers lies in the 2nd question.
+</code></pre></div><p>We are not done yet. Goal here is to understand how AMSI works.
 Therefore, our next target is amsi!CAmsiAntimalware::Scan.</p>
 <p>But before drill down into it, we need to construct the <code>HAMSICONTEXT</code> structure out of the knowlegde we have.</p>
 <p><img src="/img/CSharpLoader/ghidra_amsicontext_struct.png" alt="">
@@ -553,7 +547,7 @@ system date and time with the highest possible level of precision in UTC format.
 takes 0x18 th offset of it and stores it back in <code>rax</code> register. Then that address is called using a
 <code>gaurd_dispatch_icall_fptr</code>.</p>
 <p>With that information it is clear that <code>this-&gt;0x40</code> is a pointer to an object of an unknown class. <code>rcx</code> now points to that object and <code>rax</code> holds one of function pointers in the object&rsquo;s
-vftable. // <strong>com stufff</strong></p>
+vftable. Well my guess is that this is the windows defender&rsquo;s AMSI COM interface.</p>
 <p>The first argument passed to the function is  <code>this-&gt;0x40</code>.
 Second, third and fourth are passed through <code>rdx</code> and <code>r8</code> registers. we can see that in the<br>
 disassembly <code>rdx</code> being set to <code>rsp+0x70</code> (amsiBuffer) and <code>r8</code> being initialized to the address of <code>rsp +0x40</code> (who&rsquo;s value is 0).</p>
@@ -614,9 +608,19 @@ used). if comparison fails, it jumps to another location disassembly where <code
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae7b392c</span> <span style="color:#ae81ff">4</span><span style="color:#66d9ef">c8d442450</span>       <span style="color:#66d9ef">lea</span>     <span style="color:#66d9ef">r8</span>, [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">50</span><span style="color:#66d9ef">h</span>]
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae7b3931</span> <span style="color:#ae81ff">498</span><span style="color:#66d9ef">bd7</span>           <span style="color:#66d9ef">mov</span>     <span style="color:#66d9ef">rdx</span>, <span style="color:#66d9ef">r15</span>
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae7b3934</span> <span style="color:#ae81ff">488</span><span style="color:#66d9ef">b4948</span>         <span style="color:#66d9ef">mov</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">48</span><span style="color:#66d9ef">h</span>]
-<span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae7b3938</span> <span style="color:#ae81ff">488</span><span style="color:#66d9ef">b8080000000</span>   <span style="color:#66d9ef">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rax</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">80</span><span style="color:#66d9ef">h</span>]
-<span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae7b393f</span> <span style="color:#66d9ef">ff151b130300</span>     <span style="color:#66d9ef">call</span>    <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">MpOav</span>!<span style="color:#66d9ef">DllRegisterServer</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0x324d0</span> (<span style="color:#ae81ff">00007</span><span style="color:#66d9ef">fffae7e4c60</span>)]
-</code></pre></div><p>Now it is time to conclude our assumptions on AmsiInitialize.</p>
+</code></pre></div><p>here we can see another call.</p>
+<p><code>rcx</code> is set to <code>[rcx+0x48]</code> and <code>rdx</code> is loaded with <code>amsiBuffer</code> meanwhile <code>r8</code>, third argument is loaded with
+<code>rsp+0x50</code>.</p>
+<p><img src="/img/CSharpLoader/windbg_mpamsiscan.png" alt=""></p>
+<p>as we can see in the above diagram, this call is to <code>MPCLIENT!MpAmsiScan</code> function. This is basically a function
+exported by windows defender&rsquo;s MPCLIENT.dll. So this means we have reached our destination.</p>
+<p><img src="/img/CSharpLoader/windbg_mpclient.png" alt=""></p>
+<p>Let&rsquo;s step over this function and inspect the return value since it is out of scope of this article to reverse engineer windows defender internals.</p>
+<p><img src="/img/CSharpLoader/windbg_mpscan_result.png" alt="MPCLIENT!MpAmsiScan result"></p>
+<p>According the above diagram, the return value we get is 0x0. And there&rsquo;s no way to determine whether this is a indication of detection or not because windows documentation does not provide imformation about <code>MpAmsiScan</code></p>
+<p>Therefore we have to try some tricky methods to identify it.</p>
+<p>First, im going to place a breakpoint at the address where <code>MpAmsiScan</code> return.</p>
+<p>Now it is time to conclude our assumptions on AmsiInitialize.</p>
 <h2 id="amsiinitialize">AmsiInitialize<a href="#amsiinitialize" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>So the conclusion is, when <code>AmsiInitialize</code> function gets called, it initializes the anti-malware vendor,
 registers it, and returns a
