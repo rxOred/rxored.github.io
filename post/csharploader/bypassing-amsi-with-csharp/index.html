@@ -765,14 +765,10 @@ Instead control flow will be redirected to</p>
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae8358ae</span> <span style="color:#ae81ff">4983</span><span style="color:#66d9ef">c410</span>       <span style="color:#66d9ef">add</span>     <span style="color:#66d9ef">r12</span>, <span style="color:#ae81ff">10</span><span style="color:#66d9ef">h</span>
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae8358b2</span> <span style="color:#ae81ff">4</span><span style="color:#66d9ef">c3bbec0010000</span> <span style="color:#66d9ef">cmp</span>     <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">1</span><span style="color:#66d9ef">C0h</span>]
 <span style="color:#960050;background-color:#1e0010">00007</span><span style="color:#a6e22e">fffae8358b9</span> <span style="color:#ae81ff">0</span><span style="color:#66d9ef">f820efeffff</span>   <span style="color:#66d9ef">jb</span>      <span style="color:#66d9ef">amsi</span>!<span style="color:#66d9ef">CAmsiAntimalware</span>::<span style="color:#66d9ef">Scan</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0xcd</span> (<span style="color:#ae81ff">00007</span><span style="color:#66d9ef">fff</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#66d9ef">ae8356cd</span>)
-</code></pre></div><p>Now it is time to conclude our assumptions on AmsiInitialize.</p>
+</code></pre></div><p><code>r15</code> is incremented by 1 and it is then compared to <code>this-&gt;0x1c0</code>, whose value is 1. if <code>r15</code> is below
+that value, it will jump to the address where the loop begins.</p>
+<p>Now it is time to conclude our assumptions on AmsiInitialize.</p>
 <h2 id="amsiinitialize">AmsiInitialize<a href="#amsiinitialize" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<p>So the conclusion is, when <code>AmsiInitialize</code> function gets called, it initializes the anti-malware vendor,
-registers it, and returns a
-handler that contains a pointer to a registered function.<code>AmsiScanBuffer</code> function is responsible for doing
-some basic checks on the
-handler, extracting registered function from the
-handler and calling it with necessary parameters.</p>
 <h1 id="the-end">The End<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>So yeah that&rsquo;s it for now&hellip; we explored AMSI in-depth in this article. In the next one, We will go through some
 common AMSI bypass
