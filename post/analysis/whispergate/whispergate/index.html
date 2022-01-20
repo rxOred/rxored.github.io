@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Whispergate :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Table of content Introduction on 05.01.2022, ukranian organizations had to face a large cyber attack. This attack was able to took down IT infrastructure of several organizations completely.
+Microsoft incident response team recently released samples of malware used in the attack.
+Samples virustotal filescan.io
+Environment  Windows 10 guest (Virtualbox) Windows 10 host  Tools IDA x32dbg bochs  Analysis Behavioral analysis Static analysis According to detect it easy, file is a 32 bit PE file." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/post/analysis/whispergate/whispergate/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/light_red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon1.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Whispergate">
+<meta property="og:description" content="Quick analysis of Whispergate stage 01" />
+<meta property="og:url" content="https://rxOred.github.io/post/analysis/whispergate/whispergate/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  <meta property="og:image" content="https://rxOred.github.io/img/whispergate/cover.png">
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2022-01-19 09:40:08 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="light_red">
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://rxOred.github.io/post/analysis/whispergate/whispergate/">Whispergate</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2022-01-19 
+      </span>
+    
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://rxOred.github.io/tags/reverse-engineering/">reverse-engineering</a>&nbsp;
+    
+    #<a href="https://rxOred.github.io/tags/windoz/">windoz</a>&nbsp;
+    
+    #<a href="https://rxOred.github.io/tags/malware/">malware</a>&nbsp;
+    
+  </span>
+  
+
+  
+    <img src="https://rxOred.github.io/img/whispergate/cover.png" class="post-cover" alt="Whispergate" />
+  
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="table-of-content">Table of content<a href="#table-of-content" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>on 05.01.2022, ukranian organizations had to face a large cyber attack. This attack was able to took down IT
+infrastructure of several organizations completely.</p>
+<p>Microsoft incident response team recently released samples of malware used in the attack.</p>
+<h2 id="samples">Samples<a href="#samples" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p><a href="https://www.virustotal.com/gui/file/a196c6b8ffcb97ffb276d04f354696e2391311db3841ae16c8c9f56f36a38e92">virustotal</a>
+<a href="https://www.filescan.io/uploads/61e5524c0f8c757253c42839">filescan.io</a></p>
+<h1 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<pre><code> Windows 10 guest (Virtualbox)
+ Windows 10 host
+</code></pre>
+<h2 id="tools">Tools<a href="#tools" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<pre><code>IDA
+x32dbg
+bochs
+</code></pre>
+<h1 id="analysis">Analysis<a href="#analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="behavioral-analysis">Behavioral analysis<a href="#behavioral-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<h2 id="static-analysis">Static analysis<a href="#static-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>According to detect it easy, file is a 32 bit PE file.</p>
+<p><img src="/img/whispergate/die.png" alt="die result"></p>
+<p>it is compiled and linked using MinGw (gcc 6.3.0) and GNU linker.</p>
+<p>die shows entropy as 6.07208, which high but it also says executable is not packed.</p>
+<p><img src="/img/whispergate/entropy.png" alt="entropy"></p>
+<p>As usual, entropy in .text section is higher than the other sections.</p>
+<p><img src="/img/whispergate/strings.png" alt="strings"></p>
+<p>strings in the binary are not encrypted. several strings shown in the above diagram gives hints about
+malware&rsquo;s capabilites such as disk curruption.</p>
+<p>Also note that it shows a bitcoin wallet and a tox ID that can be used as signatures.</p>
+<pre><code>- 1AVNM68gj6PGPFcJuftKATa4WLnzg8fpfv
+- 8BEDC411012A33BA34F49130D0F186993C6A32DAD8976F6A5D82C1ED23054C057ECED5496F65
+</code></pre>
+<p>Executable does not have much imports.</p>
+<p><img src="/img/whispergate/imports.png" alt=""></p>
+<h3 id="code-analysis">Code analysis<a href="#code-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>IDA shows that PE contains two tls callbacks. Initially suspected these were for anti debugging purposes but turns out to be no.</p>
+<p><img src="/img/whispergate/tlscallback1.png" alt="">
+first tls callback starts calling some function pointers if <code>Reason</code> is <code>DLL_THREAD_ATTACH</code>.</p>
+<p><img src="/img/whispergate/tlscallback2.png" alt="">
+second tlscallback simply returns if <code>Reason</code> is something other than <code>DLL_THREAD_DETACH</code> or <code>DLL_PROCESS_DETACH</code>,
+sugesting this may be de initializing whatever initialized by the <code>tlscallback1</code>.</p>
+<p><img src="/img/whispergate/startfunc.png" alt="">
+start function calls <code>sub_4011b0</code> after setting the app type.</p>
+<p><img src="/img/whispergate/calls_403b60.png" alt="">
+<code>sub_4011b0</code> calls function <code>sub_403b60</code> that is responsible for main functionality of the malware.</p>
+<p><img src="/img/whispergate/overwritembr.png" alt="">
+function copies 2048 bytes at global offset `` into the stack.</p>
+<p><img src="/img/whispergate/bootsectorcode.png" alt=""></p>
+<p><img src="/img/whispergate/bootsignature.png" alt="">
+offset contains bytes of compiled x86 real mode boot sector code, along with the boot signature <code>0x55AA</code>.</p>
+<p>Then it calls <code>CreateFileW</code> passing &ldquo;\\.\PhysicalDrive0&rdquo; as filename argument. returned handle is then passed to <code>WriteFile</code> along with the stack buffer that contains boot sector code. If the call is sucessful, it will overwrite MBR (master boot record) with a custom boot sector.</p>
+<p>After BIOS has done selecting the boot device it will load overwritten MBR into memory and CPU will start executing a parasite bootloader.</p>
+<h4 id="extracting-boot-sector-code">Extracting boot sector code<a href="#extracting-boot-sector-code" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h4>
+<p><img src="/img/whispergate/extracting_boot_sector_code.png" alt="">
+buffer containing boot sector code can be extracted by placing a breakpoint at address where it is accessed and using show in dump feature in x32dbg.</p>
+<p>extracted buffer can be then saved as a raw binary file for furthur analysis.</p>
+<p><img src="/img/whispergate/printing_fake_ransom_note.png" alt="">
+It initializes segment registers and loads the ransom note into <code>si</code> register.</p>
+<p><img src="/img/whispergate/fake_ransom_note.png" alt=""></p>
+<p>Next instruction calls <code>print_loop</code>, which then calls <code>print_char</code> after loading <code>al</code> with the byte at <code>si</code>. And it will repeat this operation until <code>[si]</code> is null.</p>
+<p><img src="/img/whispergate/print_char.png" alt="">
+<code>print_char</code> uses BIOS interrupts to put a single character into the screen. A BIOS interrupt call is something similar to a software interrupt. To use BIOS interrpts, <code>ah</code> register should be initialized to the function number. parameters passed down throgh registers and similar to x86 syscalls, <code>int</code> instruction is used to do the interrupt along with the BIOS service number</p>
+<p>For instance, in the above image, malware loads Display character function number <code>0x0e</code> into <code>ah</code> and calls
+BIOS video service.</p>
+<p>To learn more about BIOS interrupts read <a href="http://www.cs.cmu.edu/~ralf/files.html">Ralf Brown&rsquo;s BIOS interrupt list</a>.</p>
+<p>After priting the ransom note, code jumps into another label</p>
+<p><img src="/img/whispergate/jump.png" alt="">
+which then jumps to label <code>corrupt_c</code></p>
+<p><img src="/img/whispergate/corrupt_c.png" alt=""></p>
+<p><code>byte_7c74</code> is a byte array that may look like</p>
+<pre><code>`[0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x41, 0x41, 0x41, 0x41, 0x41]`
+</code></pre>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://rxOred.github.io/post/malware/process-hollowing/process-hollowing/">
+                <span class="button__text">Process Hollowing? not really</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

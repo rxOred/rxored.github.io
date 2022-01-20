@@ -6,7 +6,34 @@
     <description>Recent content in Tags on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 01 Jan 2022 10:21:31 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 19 Jan 2022 09:40:08 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>malware</title>
+      <link>https://rxOred.github.io/tags/malware/</link>
+      <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/tags/malware/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>reverse-engineering</title>
+      <link>https://rxOred.github.io/tags/reverse-engineering/</link>
+      <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/tags/reverse-engineering/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>windoz</title>
+      <link>https://rxOred.github.io/tags/windoz/</link>
+      <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
+      
+      <guid>https://rxOred.github.io/tags/windoz/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>cpp</title>
       <link>https://rxOred.github.io/tags/cpp/</link>
@@ -17,38 +44,11 @@
     </item>
     
     <item>
-      <title>malware</title>
-      <link>https://rxOred.github.io/tags/malware/</link>
-      <pubDate>Sat, 01 Jan 2022 10:21:31 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/tags/malware/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>windoz</title>
-      <link>https://rxOred.github.io/tags/windoz/</link>
-      <pubDate>Sat, 01 Jan 2022 10:21:31 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/tags/windoz/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>android</title>
       <link>https://rxOred.github.io/tags/android/</link>
       <pubDate>Mon, 13 Dec 2021 11:50:35 +0000</pubDate>
       
       <guid>https://rxOred.github.io/tags/android/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>reverse-engineering</title>
-      <link>https://rxOred.github.io/tags/reverse-engineering/</link>
-      <pubDate>Mon, 13 Dec 2021 11:50:35 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/tags/reverse-engineering/</guid>
       <description></description>
     </item>
     
