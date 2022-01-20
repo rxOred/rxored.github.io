@@ -200,7 +200,7 @@ Microsoft incident response team recently released samples of malware used in th
 <p>Upon restarting, device will boot into a screen displaying the following ransom note.</p>
 <p><img src="/img/whispergate/ransomnote.png" alt=""></p>
 <h2 id="static-analysis">Static analysis<a href="#static-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
-<h3 id="the-pe">The PE<a href="#the-pe" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="the-pe">The pe<a href="#the-pe" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>According to detect it easy, the file is a 32 bit PE file.</p>
 <p><img src="/img/whispergate/die.png" alt="die result">
 it is compiled and linked using MinGW (GCC 6.3.0) and GNU linker.</p>
@@ -216,7 +216,7 @@ malware&rsquo;s capabilities such as disk corruption.</p>
 </code></pre>
 <p>Executable does not have many imports. There are no APIs related to cryptography eventhough malware claims to encrypt the files.</p>
 <p><img src="/img/whispergate/imports.png" alt=""></p>
-<h3 id="code-analysis">Code analysis<a href="#code-analysis" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<h3 id="reversing-the-pe">Reversing the pe<a href="#reversing-the-pe" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
 <p>IDA shows that PE contains two TLS callbacks. Initially suspected these were for anti-debugging purposes but turns out to be no.</p>
 <p><img src="/img/whispergate/tlscallback1.png" alt="">
 first TLS callback starts calling some function pointers if <code>Reason</code> is <code>DLL_THREAD_ATTACH</code>.</p>
