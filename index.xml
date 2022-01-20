@@ -8,15 +8,13 @@
     <language>en-us</language>
     <lastBuildDate>Wed, 19 Jan 2022 09:40:08 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Whispergate</title>
+      <title>WhisperGate</title>
       <link>https://rxOred.github.io/post/analysis/whispergate/whispergate/</link>
       <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/analysis/whispergate/whispergate/</guid>
-      <description>Table of content Introduction on 05.01.2022, ukranian organizations had to face a large cyber attack. This attack was able to took down IT infrastructure of several organizations completely.
-Microsoft incident response team recently released samples of malware used in the attack.
-Samples virustotal filescan.io
-Environment  Windows 10 guest (Virtualbox) Windows 10 host  Tools IDA x32dbg bochs  Analysis Behavioral analysis Static analysis According to detect it easy, file is a 32 bit PE file.</description>
+      <description>Table of content  Introduction  Samples   Environment  Tools   Analysis  Behavioral analysis Static analysis  The PE Code analysis   Extracting boot sector code Reversing boot sector code   The end  Introduction On 05.01.2022, Ukrain had to face a massive cyber attack. This attack was able to take down IT infrastructure of several organizations completely.
+Microsoft incident response team recently released samples of malware used in the campaign.</description>
     </item>
     
     <item>
