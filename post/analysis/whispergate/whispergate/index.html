@@ -272,11 +272,11 @@ Two insutrctions after segment register initialization sets word at <code>0x7c78
 </code></pre></div><p>The <code>si</code> register is loaded with address <code>0x7c72</code>, which must be the address of disk address packet.</p>
 <p><img src="/img/whispergate/DAP.png" alt=""></p>
 <p>A successful BIOS interrupt call will overwrite the first Logical Block Address of the disk with <code>AAAA</code>, corrupting the C drive.</p>
-<p>The next few instructions check whether an extended write operation is successful or not. if <code>cf</code> is set (error) control flow gets redirected to <code>loc_7c45</code>, else, to <code>loc_7c5d</code>.</p>
+<p>The next few instructions check whether an extended write operation is successful or not. if <code>cf</code> is set (error) control flow gets redirected to <code>loc_7c45</code> (failed), else, to <code>loc_7c5d</code>(success).</p>
 <p><img src="/img/whispergate/failed.png" alt="">
 if fails, the malware tries to overwrite the next disk drive by incrementing the value that adds up with 0x80.</p>
 <p><img src="/img/whispergate/success.png" alt="">
-<code>loc_7c5d</code> adds 0xc7 (199) to <code>[0x7c7a]</code>, incrementing next LBA to be overwritten by 199.</p>
+Adds 0xc7 (199) to <code>[0x7c7a]</code>, incrementing next LBA to be overwritten by 199.</p>
 <p>The loop is going to continue until the hard disk is completely overwritten by <code>AAAA</code>s for each 200 Logical Block Address, entirely corrupting the disk.</p>
 <h1 id="the-end">The end<a href="#the-end" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>It is clear that financial gain is not the motivation behind this malware. Malware is created to do the maximum possible damage to the infeected computer.</p>
