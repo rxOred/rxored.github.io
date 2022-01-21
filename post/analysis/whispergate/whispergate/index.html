@@ -228,7 +228,7 @@ start function calls <code>sub_4011b0</code> after setting the app type.</p>
 <p><img src="/img/whispergate/calls_403b60.png" alt="">
 <code>sub_4011b0</code> calls function <code>sub_403b60</code> that is responsible for main functionality of the malware.</p>
 <p><img src="/img/whispergate/overwritembr.png" alt="">
-the function copies 2048 bytes at global offset `` into the stack.</p>
+the function copies 2048 bytes at offset <code>boot_sector_code</code> into the stack.</p>
 <p><img src="/img/whispergate/bootsectorcode.png" alt=""></p>
 <p><img src="/img/whispergate/bootsignature.png" alt="">
 offset contains bytes of compiled x86 real mode boot sector code, along with the boot signature <code>0x55AA</code>.</p>
