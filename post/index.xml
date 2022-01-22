@@ -13,8 +13,8 @@
       <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/analysis/whispergate/whispergate/</guid>
-      <description>Table of content  Introduction  Samples   Environment  Tools   Analysis  Behavioral analysis Static analysis  The pe Reversing the pe   Extracting boot sector code Reversing boot sector code   The end  Introduction On 05.01.2022, Ukrain had to face a massive cyber attack. This attack was able to take down the IT infrastructure of several organizations completely.
-Microsoft incident response team recently released samples of malware used in the campaign.</description>
+      <description>Table of content  Introduction  Samples   Environment  Tools   Analysis  Behavioral analysis Static analysis  The pe Reversing the pe   Extracting boot sector code Reversing boot sector code   The end  Introduction Dozens of Ukranian government sites, including Ministry of foreign affairs, Cabinet of ministers and security council have been hit by a massive cyber attack.
+Microsoft incident response team recently released samples of destructive malware used in the campaign.</description>
     </item>
     
     <item>
