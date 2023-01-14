@@ -6,10 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="So last time we finished some exercises from the book pratical reverse engineering. Now, we have page 35 exercises. I wont cover exercise here because some are really straight forward.
-without useless intros lets get started.
-Chaper 1, page 35 We are starting with the second one, because first one is pretty easy. 2nd question asks us to decompile DllMain.
-as we can see, IDA has generated us some information of the stack as well as a nice graph view." />
+<meta name="description" content="Practical Reverse Engineering Answers 2 - sample_J DllMain" />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/practical-re/practical-re-answers2/" />
@@ -127,9 +124,13 @@ as we can see, IDA has generated us some information of the stack as well as a n
   <div class="post-meta">
     
       <span class="post-date">
-        2021-10-02 
+        2021-10-02
+        
       </span>
     
+    
+    
+      <span class="post-reading-time">:: 4 min read (764 words)</span>
     
   </div>
 
@@ -140,10 +141,12 @@ as we can see, IDA has generated us some information of the stack as well as a n
     
   </span>
   
+  
+  <img src="https://rxOred.github.io/img/practicalre/re2.png"
+    class="post-cover"
+    alt="sample_j DllMain"
+    title="Cover Image" />
 
-  
-    <img src="https://rxOred.github.io/img/practicalre/re2.png" class="post-cover" alt="sample_j DllMain" />
-  
 
   
 
@@ -154,147 +157,145 @@ as we can see, IDA has generated us some information of the stack as well as a n
 <p>We are starting with the second one, because first one is pretty easy. 2nd question asks us to decompile DllMain.</p>
 <p><img src="/img/dllmain.png" alt="dllmain, DllMain"></p>
 <p>as we can see, IDA has generated us some information of the stack as well as a nice graph view. From that, we can decompile it down to,</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   BOOL <span style="color:#66d9ef">__stdcall</span> APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE <span style="color:#f92672">*</span>hModule, 
-                           DWORD ul_reason_for_call, 
-                           LPVOID lpReserved)
-   {
-      IDTR idtr;
-      PROCESSENTRY32 pe;
-      HANDLE handle;
-   }
-</code></pre></div><p><img src="/img/sidt.png" alt="prologue"></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   BOOL <span style="color:#66d9ef">__stdcall</span> APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE <span style="color:#f92672">*</span>hModule, 
+</span></span><span style="display:flex;"><span>                           DWORD ul_reason_for_call, 
+</span></span><span style="display:flex;"><span>                           LPVOID lpReserved)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>      IDTR idtr;
+</span></span><span style="display:flex;"><span>      PROCESSENTRY32 pe;
+</span></span><span style="display:flex;"><span>      HANDLE handle;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p><img src="/img/sidt.png" alt="prologue"></p>
 <p>next we can the function prologue, where stack frame is initialized. using <code>sub esp, 130h</code> instruction, we can confirm that stack will be 0x130 bytes large. next we can see a <code>sidt fword[ebp+idtr]</code>.</p>
 <p>if you have some low level debugging/development experience, you might know what <code>sidt</code> does. in case you dont, it reads idtr register to the operand location. in this case, <code>fword[ebp+idr]</code>will be filled with idtr register. So whats this idtr register? well, idtr register is a 6byte sized register. it stores length of the interrupt desciptor table in the last 2 bytes and base of interrupt desciptor table in the top 4 bytes. Now, how can we call <code>sidt</code> from C/C++?</p>
 <p>before that, here we build the idtr structure</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> idtr {
-      DWORD idt_base;
-      <span style="color:#66d9ef">short</span> idt_size;
-   } IDTR, <span style="color:#f92672">*</span>PIDTR;
-</code></pre></div><p>inside DllMain we do this.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   IDTR idtr;
-   __sidt(<span style="color:#f92672">&amp;</span>idtr);
-</code></pre></div><p>then DllMain compares <code>idtr+2</code> with some 2 random hex values that looks like memory addresses. Using the above explaination, it is pretty clear that whoever wrote this malware compares base address of interrupt desciptor table with 2 hardcoded memory addresses, first as we can see in the above image, 0x8003f400 and 0x80047400 in the below image. Tbh, this is bad. Reason is that, in multi core processors each core gets a different base address for interrupt desciptor table. And when using hardcoded addresses&hellip; Anyway. lets decompile that part too.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> idtr {
+</span></span><span style="display:flex;"><span>      DWORD idt_base;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">short</span> idt_size;
+</span></span><span style="display:flex;"><span>   } IDTR, <span style="color:#f92672">*</span>PIDTR;
+</span></span></code></pre></div><p>inside DllMain we do this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   IDTR idtr;
+</span></span><span style="display:flex;"><span>   <span style="color:#a6e22e">__sidt</span>(<span style="color:#f92672">&amp;</span>idtr);
+</span></span></code></pre></div><p>then DllMain compares <code>idtr+2</code> with some 2 random hex values that looks like memory addresses. Using the above explaination, it is pretty clear that whoever wrote this malware compares base address of interrupt desciptor table with 2 hardcoded memory addresses, first as we can see in the above image, 0x8003f400 and 0x80047400 in the below image. Tbh, this is bad. Reason is that, in multi core processors each core gets a different base address for interrupt desciptor table. And when using hardcoded addresses&hellip; Anyway. lets decompile that part too.</p>
 <p><img src="/img/checkidt.png" alt="idt address range"></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   <span style="color:#66d9ef">if</span> (idtr.idt_base <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0x8003f400</span> <span style="color:#f92672">&amp;&amp;</span> idtr.idt_base <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x80047400</span>){
-      <span style="color:#66d9ef">return</span> FALSE;
-   }
-</code></pre></div><p>From above snippet it is clear that it does check for some range. looks like it validates IDT base&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   <span style="color:#66d9ef">if</span> (idtr.idt_base <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0x8003f400</span> <span style="color:#f92672">&amp;&amp;</span> idtr.idt_base <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x80047400</span>){
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>From above snippet it is clear that it does check for some range. looks like it validates IDT base&hellip;</p>
 <p>After the comparision if the range requirements are satisfied, we can see that DllMain creates a snapshot of all the running processes.</p>
 <p><img src="/img/snapshot.png" alt="CreateToolhelp32Snapshot"></p>
 <p>we can decompile that stub into</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   handle <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
-   <span style="color:#66d9ef">if</span> (handle <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE) {
-      <span style="color:#66d9ef">return</span> FALSE;
-   }
-</code></pre></div><p>it also zero out <code>pe</code> using <code>stosd</code> instruction.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   memset(<span style="color:#f92672">&amp;</span>pe.cntUsage, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x49</span>);
-</code></pre></div><p>Next, DllMain calls <code>Process32First</code> with arguements <code>&amp;pe</code>(eax) and <code>handle</code>(edi), a string comparison with <code>explorer.exe</code> and then if comparison fails, we can see a call to <code>Process32Next</code>.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   handle <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateToolhelp32Snapshot</span>(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">if</span> (handle <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>it also zero out <code>pe</code> using <code>stosd</code> instruction.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   <span style="color:#a6e22e">memset</span>(<span style="color:#f92672">&amp;</span>pe.cntUsage, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x49</span>);
+</span></span></code></pre></div><p>Next, DllMain calls <code>Process32First</code> with arguements <code>&amp;pe</code>(eax) and <code>handle</code>(edi), a string comparison with <code>explorer.exe</code> and then if comparison fails, we can see a call to <code>Process32Next</code>.
 Basically this stub go through each process of the snapshot until it finds <code>explorer.exe</code>.</p>
 <p><img src="/img/getexplorer.png" alt="Process32First"></p>
 <p>decompiled version of that stub may look like</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-   <span style="color:#66d9ef">if</span> (Process32First(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-      <span style="color:#75715e">// code here
-</span><span style="color:#75715e"></span>   }
-   <span style="color:#66d9ef">else</span> {
-      <span style="color:#66d9ef">while</span> (Process32Next(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-         <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-            <span style="color:#75715e">// code here
-</span><span style="color:#75715e"></span>         }
-         <span style="color:#66d9ef">continue</span>;
-      }
-      <span style="color:#66d9ef">return</span> FALSE;
-   }
-</code></pre></div><p>Once it found the explorer.exe, it compares the process&rsquo;s pid to it&rsquo;s parents pid.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Process32First</span>(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e">// code here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   }
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">Process32Next</span>(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">wcscmp</span>(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// code here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>         }
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>Once it found the explorer.exe, it compares the process&rsquo;s pid to it&rsquo;s parents pid.</p>
 <p><img src="/img/checkpid.png" alt="check process ids"></p>
 <p>here if they are equal, we simply exit out.</p>
 <p><img src="/img/exit.png" alt="exit"></p>
 <p>else, we create a thread in the current virtual memory space with start address set to <code>0x100032d0</code>.</p>
 <p><img src="/img/evil.png" alt="evil stuff"></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   do_evil_stuff:
-      <span style="color:#66d9ef">if</span> (pe.th32ParentProcessID <span style="color:#f92672">==</span> pe.th32ProcessID) {
-         <span style="color:#66d9ef">return</span> FALSE;
-      }
-      <span style="color:#66d9ef">else</span> {
-         <span style="color:#66d9ef">if</span> (ul_reason_for_call <span style="color:#f92672">==</span> DLL_PROCESS_ACCESS) {
-            CreateThread(
-               NULL, NULL, (LPTHREAD_START_ROUTINE)<span style="color:#ae81ff">0x100032d0</span>, NULL, NULL, NULL
-            );
-            <span style="color:#66d9ef">return</span> TRUE;
-         }
-         <span style="color:#66d9ef">return</span> TRUE:
-      }
-</code></pre></div><p>with that info, we can fill out the stub that searches for explorer.exe like this</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-   <span style="color:#66d9ef">if</span> (Process32First(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-      <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-         <span style="color:#66d9ef">goto</span> do_evil_stuff;
-      <span style="color:#66d9ef">else</span> {
-         <span style="color:#66d9ef">while</span> (Process32Next(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-            <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-               <span style="color:#66d9ef">goto</span> do_evil_stuff;
-            }
-            <span style="color:#66d9ef">continue</span>;
-         }
-         <span style="color:#66d9ef">return</span> FALSE;
-      }
-   }
-
-</code></pre></div><p>combining all into a single stub, we will get something like this as the DllMain</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">idtr</span> {
-      DWORD idt_base;
-      <span style="color:#66d9ef">short</span> idt_size;
-   } IDTR, <span style="color:#f92672">*</span>PIDTR;
-
-   BOOL <span style="color:#66d9ef">__stdcall</span> APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE <span style="color:#f92672">*</span>hModule, 
-                           DWORD ul_reason_for_call, 
-                           LPVOID lpReserved)
-   {
-      IDTR idtr;
-      PROCESSENTRY32 pe;
-      HANDLE handle;
-
-      __sidt(<span style="color:#f92672">&amp;</span>idtr);
-      <span style="color:#66d9ef">if</span> (idtr.idt_base <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x80047400</span> <span style="color:#f92672">&amp;&amp;</span> idtr.idt_base <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0x8003f400</span>){
-         <span style="color:#66d9ef">return</span> FALSE;
-      }
-
-      handle <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
-      <span style="color:#66d9ef">if</span> (handle <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE) {
-         <span style="color:#66d9ef">return</span> FALSE;
-      }
-      memset(<span style="color:#f92672">&amp;</span>pe.cntUsage, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x49</span>);
-      pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
-      <span style="color:#66d9ef">if</span> (Process32First(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-         <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
-            <span style="color:#66d9ef">goto</span> do_evil_stuff;
-         <span style="color:#66d9ef">else</span> {
-            <span style="color:#66d9ef">while</span> (Process32Next(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-               <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-                  <span style="color:#66d9ef">goto</span> do_evil_stuff;
-               }
-               <span style="color:#66d9ef">continue</span>;
-            }
-            <span style="color:#66d9ef">return</span> FALSE;
-         }
-      }
-
-   do_evil_stuff:
-      <span style="color:#66d9ef">if</span> (pe.th32ParentProcessID <span style="color:#f92672">==</span> pe.th32ProcessID) {
-         <span style="color:#66d9ef">return</span> FALSE;
-      }
-      <span style="color:#66d9ef">else</span> {
-         <span style="color:#66d9ef">if</span> (ul_reason_for_call <span style="color:#f92672">==</span> DLL_PROCESS_ACCESS) {
-            CreateThread(
-               NULL, NULL, (LPTHREAD_START_ROUTINE)<span style="color:#ae81ff">0x100032d0</span>, NULL, NULL, NULL
-            );
-            <span style="color:#66d9ef">return</span> TRUE;
-         }
-         <span style="color:#66d9ef">return</span> TRUE:
-      }
-   }
-
-</code></pre></div><p>#Spread Anarchy!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   do_evil_stuff:
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (pe.th32ParentProcessID <span style="color:#f92672">==</span> pe.th32ProcessID) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">if</span> (ul_reason_for_call <span style="color:#f92672">==</span> DLL_PROCESS_ACCESS) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">CreateThread</span>(
+</span></span><span style="display:flex;"><span>               NULL, NULL, (LPTHREAD_START_ROUTINE)<span style="color:#ae81ff">0x100032d0</span>, NULL, NULL, NULL
+</span></span><span style="display:flex;"><span>            );
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> TRUE;
+</span></span><span style="display:flex;"><span>         }
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> TRUE:
+</span></span><span style="display:flex;"><span>      }
+</span></span></code></pre></div><p>with that info, we can fill out the stub that searches for explorer.exe like this</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">Process32First</span>(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">wcscmp</span>(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">goto</span> do_evil_stuff;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">Process32Next</span>(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">wcscmp</span>(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">goto</span> do_evil_stuff;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>         }
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>combining all into a single stub, we will get something like this as the DllMain</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>   <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">idtr</span> {
+</span></span><span style="display:flex;"><span>      DWORD idt_base;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">short</span> idt_size;
+</span></span><span style="display:flex;"><span>   } IDTR, <span style="color:#f92672">*</span>PIDTR;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   BOOL <span style="color:#66d9ef">__stdcall</span> APIENTRY <span style="color:#a6e22e">DllMain</span>(HMODULE <span style="color:#f92672">*</span>hModule, 
+</span></span><span style="display:flex;"><span>                           DWORD ul_reason_for_call, 
+</span></span><span style="display:flex;"><span>                           LPVOID lpReserved)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>      IDTR idtr;
+</span></span><span style="display:flex;"><span>      PROCESSENTRY32 pe;
+</span></span><span style="display:flex;"><span>      HANDLE handle;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      __sidt(<span style="color:#f92672">&amp;</span>idtr);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (idtr.idt_base <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x80047400</span> <span style="color:#f92672">&amp;&amp;</span> idtr.idt_base <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0x8003f400</span>){
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      handle <span style="color:#f92672">=</span> CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (handle <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      memset(<span style="color:#f92672">&amp;</span>pe.cntUsage, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x49</span>);
+</span></span><span style="display:flex;"><span>      pe.dwSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(PROCESSENTRY32);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (Process32First(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">goto</span> do_evil_stuff;
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">while</span> (Process32Next(handle, <span style="color:#f92672">&amp;</span>pe) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">if</span> (wcscmp(pe.szExeFile, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;explorer.exe&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>                  <span style="color:#66d9ef">goto</span> do_evil_stuff;
+</span></span><span style="display:flex;"><span>               }
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>         }
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   do_evil_stuff:
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (pe.th32ParentProcessID <span style="color:#f92672">==</span> pe.th32ProcessID) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> FALSE;
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">if</span> (ul_reason_for_call <span style="color:#f92672">==</span> DLL_PROCESS_ACCESS) {
+</span></span><span style="display:flex;"><span>            CreateThread(
+</span></span><span style="display:flex;"><span>               NULL, NULL, (LPTHREAD_START_ROUTINE)<span style="color:#ae81ff">0x100032d0</span>, NULL, NULL, NULL
+</span></span><span style="display:flex;"><span>            );
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> TRUE;
+</span></span><span style="display:flex;"><span>         }
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">return</span> TRUE:
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>#Spread Anarchy!</p>
 
       </div></div>
 
@@ -338,7 +339,7 @@ Basically this stub go through each process of the snapshot until it finds <code
   <div class="footer__inner">
     
       <div class="copyright">
-        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
     
         <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
       </div>

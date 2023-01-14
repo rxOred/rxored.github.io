@@ -6,8 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Table of Content  Introduction  Samples   Environment  Tools   Dynamic analysis Static analysis  Main What we know so far Encryption Decryption Other stuff   Writing a decrypter The end  Introduction Samples samples can be obtained from various android malware repositories. I had the dex one but had to get an apk version from the koodous website.
-Environment - linux host with analysis tools - android vm (API version 16)  Tools - bytecodeviewer - apktool - androgaurd - adb - jd-gui - enjarify  Dynamic analysis Before any analysis, I have created some external storages in my VM so we can confirm thisransomware encrypts those files." />
+<meta name="description" content="dissecting simple-locker android ransomware" />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/analysis/simplelocker/simplelocker/" />
@@ -125,9 +124,13 @@ Environment - linux host with analysis tools - android vm (API version 16)  Tool
   <div class="post-meta">
     
       <span class="post-date">
-        2021-11-18 
+        2021-11-18
+        
       </span>
     
+    
+    
+      <span class="post-reading-time">:: 9 min read (1876 words)</span>
     
   </div>
 
@@ -142,10 +145,12 @@ Environment - linux host with analysis tools - android vm (API version 16)  Tool
     
   </span>
   
+  
+  <img src="https://rxOred.github.io/img/simplelocker/pentacle.png"
+    class="post-cover"
+    alt="Simplelocker, an android ransomware"
+    title="Cover Image" />
 
-  
-    <img src="https://rxOred.github.io/img/simplelocker/pentacle.png" class="post-cover" alt="Simplelocker, an android ransomware" />
-  
 
   
 
@@ -216,13 +221,13 @@ file on the device. To make sure, lets check the external storages we created ea
 so, we need to convert .apk file to a .jar file.</p>
 <p>enjarify is a nice tool to do this. here&rsquo;s a link to the github repo :
 <a href="https://github.com/google/enjarify.git">https://github.com/google/enjarify.git</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">λ rxOred-aspiree simplelocker → enjarify simplelocker.apk 
-Using python3 as Python interpreter
-<span style="color:#ae81ff">1000</span> classes processed
-<span style="color:#ae81ff">2000</span> classes processed
-Output written to simplelocker-enjarify.jar
-<span style="color:#ae81ff">2693</span> classes translated successfully, <span style="color:#ae81ff">0</span> classes had errors
-</code></pre></div><p>here is the result :)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>λ rxOred-aspiree simplelocker → enjarify simplelocker.apk 
+</span></span><span style="display:flex;"><span>Using python3 as Python interpreter
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1000</span> classes processed
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2000</span> classes processed
+</span></span><span style="display:flex;"><span>Output written to simplelocker-enjarify.jar
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2693</span> classes translated successfully, <span style="color:#ae81ff">0</span> classes had errors
+</span></span></code></pre></div><p>here is the result :)</p>
 <p>Now, lets see what jd-gui got for us.</p>
 <p><img src="/img/simplelocker/decompiled.png" alt="decompiled source code"></p>
 <h2 id="main">Main<a href="#main" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
@@ -240,25 +245,25 @@ Output written to simplelocker-enjarify.jar
 here.</p>
 <p>Let&rsquo;s examine, onCreate function.</p>
 <p>as we can see, this one creates a <code>ScheduleExecutorService</code> class and calls <code>newSingleThreadScheduledExecutor</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">ScheduledExecutorService scheduledExecutorService <span style="color:#f92672">=</span> Executors<span style="color:#f92672">.</span><span style="color:#a6e22e">newSingleThreadScheduledExecutor</span><span style="color:#f92672">();</span>
-</code></pre></div><p><code>ScheduleExecutorService</code> is an ExecutorService which can schedule different tasks to run
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>ScheduledExecutorService scheduledExecutorService <span style="color:#f92672">=</span> Executors<span style="color:#f92672">.</span><span style="color:#a6e22e">newSingleThreadScheduledExecutor</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><p><code>ScheduleExecutorService</code> is an ExecutorService which can schedule different tasks to run
 periodically. This makes sense cause when we first run the malware, we get that ugly windo
 w and it was continuasly displayed on the screen periodically until we uninstall the malwa
 re.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">MainService$3 mainService$3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MainService$3<span style="color:#f92672">();</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">);</span>
-TimeUnit timeUnit <span style="color:#f92672">=</span> TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">SECONDS</span><span style="color:#f92672">;</span>
-scheduledExecutorService<span style="color:#f92672">.</span><span style="color:#a6e22e">scheduleAtFixedRate</span><span style="color:#f92672">(</span>mainService$3<span style="color:#f92672">,</span> 0L<span style="color:#f92672">,</span> 180L<span style="color:#f92672">,</span> timeUnit<span style="color:#f92672">);</span>
-</code></pre></div><p>here, onCreate function creates <code>mainService$3</code> and schedule it to execute repeatedly for
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>MainService$3 mainService$3 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MainService$3<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>TimeUnit timeUnit <span style="color:#f92672">=</span> TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">SECONDS</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>scheduledExecutorService<span style="color:#f92672">.</span><span style="color:#a6e22e">scheduleAtFixedRate</span><span style="color:#f92672">(</span>mainService$3<span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span>L<span style="color:#f92672">,</span> <span style="color:#ae81ff">180L</span><span style="color:#f92672">,</span> timeUnit<span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>here, onCreate function creates <code>mainService$3</code> and schedule it to execute repeatedly for
 a fixed rate.</p>
 <p>Just like the one above, onCreate creates <code>mainService4</code> and do the same with it.</p>
 <p>then..</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Thread thread <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">();</span>
-MainService$5 mainService$5 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MainService$5<span style="color:#f92672">();</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">);</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>mainService$5<span style="color:#f92672">);</span>
-thread<span style="color:#f92672">.</span><span style="color:#a6e22e">start</span><span style="color:#f92672">();</span>
-</code></pre></div><p>here, onCreate function creates a thread, another service called <code>mainService$5</code> and start
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>Thread thread <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Thread<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>MainService$5 mainService$5 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> MainService$5<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>mainService$5<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>thread<span style="color:#f92672">.</span><span style="color:#a6e22e">start</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><p>here, onCreate function creates a thread, another service called <code>mainService$5</code> and start
 new service within the newly created thread.</p>
 <h2 id="what-we-know-so-far">What we know so far<a href="#what-we-know-so-far" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Summurizing what we know so far, first we finds out that this apk cant be decompiled into smali code using
@@ -282,16 +287,16 @@ for the files-to-be-ecrypted.</p>
 <p><img src="/img/simplelocker/FileEncrypterConstructor.png" alt="FilesEncryptorContructor"></p>
 <p>here the function creates an <code>ArrayList</code> and asign it to <code>filesToEncrypt</code> &amp;&amp;
 <code>filesToDecrypt</code> we previously saw. next few lines</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String<span style="color:#f92672">[]</span> arrayOfString <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[</span>1<span style="color:#f92672">];</span>
-arrayOfString<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;enc&#34;</span><span style="color:#f92672">;</span>
-List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">asList</span><span style="color:#f92672">(</span>arrayOfString<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span> <span style="color:#f92672">=</span> list<span style="color:#f92672">;</span>
-SharedPreferences sharedPreferences <span style="color:#f92672">=</span> paramContext<span style="color:#f92672">.</span><span style="color:#a6e22e">getSharedPreferences</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;AppPrefs&#34;</span><span style="color:#f92672">,</span> 0<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">settings</span> <span style="color:#f92672">=</span> sharedPreferences<span style="color:#f92672">;</span>
-String str <span style="color:#f92672">=</span> Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageDirectory</span><span style="color:#f92672">().</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
-File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">();</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
-</code></pre></div><p>what the above snippet does is, fist it creates a string array and then set 1st element (0) to &ldquo;enc&rdquo;. Then the string array is assigned to <code>List&lt;String&gt; list</code>, which then assigned to <code>extensionsToDecrypt</code>. So all above snippet does is, creating assigning a List of extensions so that malware can decrypt only those that it previously encrypted.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>String<span style="color:#f92672">[]</span> arrayOfString <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[</span><span style="color:#ae81ff">1</span><span style="color:#f92672">];</span>
+</span></span><span style="display:flex;"><span>arrayOfString<span style="color:#f92672">[</span><span style="color:#ae81ff">0</span><span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;enc&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">asList</span><span style="color:#f92672">(</span>arrayOfString<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span> <span style="color:#f92672">=</span> list<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>SharedPreferences sharedPreferences <span style="color:#f92672">=</span> paramContext<span style="color:#f92672">.</span><span style="color:#a6e22e">getSharedPreferences</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;AppPrefs&#34;</span><span style="color:#f92672">,</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">settings</span> <span style="color:#f92672">=</span> sharedPreferences<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>String str <span style="color:#f92672">=</span> Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageDirectory</span><span style="color:#f92672">().</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>str<span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>what the above snippet does is, fist it creates a string array and then set 1st element (0) to &ldquo;enc&rdquo;. Then the string array is assigned to <code>List&lt;String&gt; list</code>, which then assigned to <code>extensionsToDecrypt</code>. So all above snippet does is, creating assigning a List of extensions so that malware can decrypt only those that it previously encrypted.</p>
 <p>then we can see <code>FilesEncryptor</code> calls <code>getFileNames()</code>.</p>
 <p>Well..Im not gonna take a look at that one cause, all it does is get filenames. And we dont have to give a shit how it does that. However keep in mind that this is the one
 that appends <code>filesToEncrypt</code> ArrayList.</p>
@@ -304,24 +309,24 @@ can clear see the key and the algorithm. And that&rsquo;s all you want to decryp
 <code>sharedPreferences</code> contains <code>str1</code>, which is &ldquo;FILES_WAS_ENCRYPTED&rdquo;. then the next if
 statement checks whether is it possible to write to external storages using
 <code>isExternalStorageWritable()</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">AesCrypt aesCrypt <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AesCrypt<span style="color:#f92672">();</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;jndlasf074hr&#34;</span><span style="color:#f92672">);</span>
-</code></pre></div><p>then we can see above snippet, which initialize an <code>AesCrypt</code> object and pass the key
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>AesCrypt aesCrypt <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AesCrypt<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;jndlasf074hr&#34;</span><span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>then we can see above snippet, which initialize an <code>AesCrypt</code> object and pass the key
 <code>jndlasf074hr</code>.</p>
 <p>then it creates an iterator to <code>filesToEncrypt</code> and iterates through each file.</p>
 <p>in the loop, if current one does not have a next, function sets <code>sharedPreferences</code> to
 &ldquo;FILES_WAS_ENCRYPTED&rdquo;.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;.enc&#34;</span><span style="color:#f92672">;</span>
-String str3 <span style="color:#f92672">=</span> stringBuilder<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>str2<span style="color:#f92672">).</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
-aesCrypt<span style="color:#f92672">.</span><span style="color:#a6e22e">encrypt</span><span style="color:#f92672">(</span>str4<span style="color:#f92672">,</span> str3<span style="color:#f92672">);</span>
-File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">();</span>
-<span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>str4<span style="color:#f92672">);</span>
-file<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">();</span>
-</code></pre></div><p>Again, a string is assigned with &ldquo;.enc&rdquo;. Now this looks like an extension too. So my guess
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>str2 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;.enc&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>String str3 <span style="color:#f92672">=</span> stringBuilder<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>str2<span style="color:#f92672">).</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>aesCrypt<span style="color:#f92672">.</span><span style="color:#a6e22e">encrypt</span><span style="color:#f92672">(</span>str4<span style="color:#f92672">,</span> str3<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">this</span><span style="color:#f92672">(</span>str4<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>file<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><p>Again, a string is assigned with &ldquo;.enc&rdquo;. Now this looks like an extension too. So my guess
 previous one is for folders/directories and this one is for files.</p>
 <p>then <code>str3</code> is assigned with a string with <code>str2</code> appended and is passed to <code>aesCrypt.encrypt()</code> function alongside with <code>str4</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String str4 <span style="color:#f92672">=</span> sharedPreferences1<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">();</span>
-</code></pre></div><p>which is shown in the above snippet.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>String str4 <span style="color:#f92672">=</span> sharedPreferences1<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">();</span>
+</span></span></code></pre></div><p>which is shown in the above snippet.</p>
 <p>then a new file is created passing <code>str4</code> as the argument and then deleted.
 So this one is basically a loop that encrypts every file that is specified in the
 <code>filesToEncrypt</code> ArrayList and deletes the original one.</p>
@@ -356,127 +361,127 @@ like a CnC server address. this is a good network based indicator.
 <h1 id="writing-a-decrypter">Writing a decrypter<a href="#writing-a-decrypter" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>Since we know how the ecnryption and decryption works, we can write an app that can decrypt all the files. I&rsquo;ll leave a snippet down below
 and you can copy it to android studio.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.example.decrypter<span style="color:#f92672">;</span>
-
-<span style="color:#f92672">import</span> androidx.appcompat.app.AppCompatActivity<span style="color:#f92672">;</span>
-
-<span style="color:#f92672">import</span> android.content.SharedPreferences<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> android.os.Bundle<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> android.os.Environment<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> android.view.View<span style="color:#f92672">;</span>
-
-<span style="color:#f92672">import</span> java.io.File<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.io.IOException<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.io.UnsupportedEncodingException<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.security.InvalidAlgorithmParameterException<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.security.InvalidKeyException<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.security.NoSuchAlgorithmException<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.util.ArrayList<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.util.Arrays<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.util.Iterator<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.util.List<span style="color:#f92672">;</span>
-
-<span style="color:#f92672">import</span> javax.crypto.NoSuchPaddingException<span style="color:#f92672">;</span>
-
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MainActivity</span> <span style="color:#66d9ef">extends</span> AppCompatActivity <span style="color:#f92672">{</span>
-
-    <span style="color:#66d9ef">private</span> ArrayList filesToDecrypt<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">private</span> List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> extensionsToDecrypt<span style="color:#f92672">;</span>
-    <span style="color:#a6e22e">@Override</span>
-    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>Bundle savedInstanceState<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>savedInstanceState<span style="color:#f92672">);</span>
-        setContentView<span style="color:#f92672">(</span>R<span style="color:#f92672">.</span><span style="color:#a6e22e">layout</span><span style="color:#f92672">.</span><span style="color:#a6e22e">activity_main</span><span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span>
-
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onClick</span><span style="color:#f92672">(</span>View view<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">();</span>
-        String<span style="color:#f92672">[]</span> arrayOfString <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[</span>1<span style="color:#f92672">];</span>
-        arrayOfString<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;enc&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span> <span style="color:#f92672">=</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">asList</span><span style="color:#f92672">(</span>arrayOfString<span style="color:#f92672">);</span>
-        File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageDirectory</span><span style="color:#f92672">().</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
-        getFileNames<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
-        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-            decrypt<span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>NoSuchPaddingException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>NoSuchAlgorithmException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>IOException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InvalidAlgorithmParameterException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InvalidKeyException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">getFileNames</span><span style="color:#f92672">(</span>File paramFile<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        File<span style="color:#f92672">[]</span> arrayOfFile <span style="color:#f92672">=</span> paramFile<span style="color:#f92672">.</span><span style="color:#a6e22e">listFiles</span><span style="color:#f92672">();</span>
-        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> arrayOfFile<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">;</span>
-            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&gt;=</span> k<span style="color:#f92672">)</span>
-                <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
-            String absolutePath <span style="color:#f92672">=</span> paramFile<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
-            String fileName <span style="color:#f92672">=</span> arrayOfFile<span style="color:#f92672">[</span>i<span style="color:#f92672">].</span><span style="color:#a6e22e">getName</span><span style="color:#f92672">();</span>
-            File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>absolutePath<span style="color:#f92672">,</span> fileName<span style="color:#f92672">);</span>
-            <span style="color:#66d9ef">boolean</span> isDirectory <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">isDirectory</span><span style="color:#f92672">();</span>
-            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isDirectory<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                File<span style="color:#f92672">[]</span> arrayOfFile1 <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">listFiles</span><span style="color:#f92672">();</span>
-                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>arrayOfFile1 <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                    <span style="color:#75715e">// if a directory, get names of files inside it recursively
-</span><span style="color:#75715e"></span>                    getFileNames<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
-                    <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
-                <span style="color:#f92672">}</span>
-            <span style="color:#f92672">}</span>
-            <span style="color:#75715e">// if not a directory
-</span><span style="color:#75715e"></span>            String str3 <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
-            String subStr <span style="color:#f92672">=</span> str3<span style="color:#f92672">.</span><span style="color:#a6e22e">substring</span><span style="color:#f92672">(</span>str3<span style="color:#f92672">.</span><span style="color:#a6e22e">lastIndexOf</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> 1<span style="color:#f92672">);</span>
-            List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span><span style="color:#f92672">;</span>
-            <span style="color:#75715e">// if pathname contains .enc
-</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">boolean</span> bool1 <span style="color:#f92672">=</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span>subStr<span style="color:#f92672">);</span>
-            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bool1<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                list <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span><span style="color:#f92672">;</span>
-                fileName <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
-                list<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>fileName<span style="color:#f92672">);</span>
-            <span style="color:#f92672">}</span>
-            <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isExternalStorageWritable</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        String ext <span style="color:#f92672">=</span> Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageState</span><span style="color:#f92672">();</span>
-        String mounted <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mounted&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">boolean</span> isMounted <span style="color:#f92672">=</span> mounted<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span>ext<span style="color:#f92672">);</span>
-        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isMounted<span style="color:#f92672">)</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
-        isMounted <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
-        mounted <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">return</span> isMounted<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">decrypt</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> NoSuchPaddingException<span style="color:#f92672">,</span> NoSuchAlgorithmException<span style="color:#f92672">,</span> IOException<span style="color:#f92672">,</span> InvalidAlgorithmParameterException<span style="color:#f92672">,</span> InvalidKeyException <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">boolean</span> isWritable <span style="color:#f92672">=</span> isExternalStorageWritable<span style="color:#f92672">();</span>
-        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isWritable<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            AesCrypt aesCrypt <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AesCrypt<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;jndlasf074hr&#34;</span><span style="color:#f92672">);</span>
-            Iterator<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> iterator <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span><span style="color:#f92672">.</span><span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
-            <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                <span style="color:#66d9ef">boolean</span> hasNext <span style="color:#f92672">=</span> iterator<span style="color:#f92672">.</span><span style="color:#a6e22e">hasNext</span><span style="color:#f92672">();</span>
-                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>hasNext<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                    String inputFileName <span style="color:#f92672">=</span> iterator<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">();</span>
-                    hasNext <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
-                    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> inputFileName<span style="color:#f92672">.</span><span style="color:#a6e22e">lastIndexOf</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">);</span>
-                    String outputFileName <span style="color:#f92672">=</span> inputFileName<span style="color:#f92672">.</span><span style="color:#a6e22e">substring</span><span style="color:#f92672">(</span>0<span style="color:#f92672">,</span> i<span style="color:#f92672">);</span>
-                    aesCrypt<span style="color:#f92672">.</span><span style="color:#a6e22e">decrypt</span><span style="color:#f92672">(</span>inputFileName<span style="color:#f92672">,</span> outputFileName<span style="color:#f92672">);</span>
-                   File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>inputFileName<span style="color:#f92672">);</span>
-                    file<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">();</span>
-                    <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
-                <span style="color:#f92672">}</span>
-                <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
-            <span style="color:#f92672">}</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span> 
-</code></pre></div><p>oh and just copy the contents of the <code>AesCrypt.class</code> from jd-gui. then build it and install the app on the android VM.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#f92672">package</span> com.example.decrypter<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> androidx.appcompat.app.AppCompatActivity<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> android.content.SharedPreferences<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> android.os.Bundle<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> android.os.Environment<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> android.view.View<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.io.File<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.io.IOException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.io.UnsupportedEncodingException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.security.InvalidAlgorithmParameterException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.security.InvalidKeyException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.security.NoSuchAlgorithmException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.ArrayList<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.Arrays<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.Iterator<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.List<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> javax.crypto.NoSuchPaddingException<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MainActivity</span> <span style="color:#66d9ef">extends</span> AppCompatActivity <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> ArrayList filesToDecrypt<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> extensionsToDecrypt<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">protected</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>Bundle savedInstanceState<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onCreate</span><span style="color:#f92672">(</span>savedInstanceState<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        setContentView<span style="color:#f92672">(</span>R<span style="color:#f92672">.</span><span style="color:#a6e22e">layout</span><span style="color:#f92672">.</span><span style="color:#a6e22e">activity_main</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onClick</span><span style="color:#f92672">(</span>View view<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        String<span style="color:#f92672">[]</span> arrayOfString <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> String<span style="color:#f92672">[</span><span style="color:#ae81ff">1</span><span style="color:#f92672">];</span>
+</span></span><span style="display:flex;"><span>        arrayOfString<span style="color:#f92672">[</span><span style="color:#ae81ff">0</span><span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;enc&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span> <span style="color:#f92672">=</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">asList</span><span style="color:#f92672">(</span>arrayOfString<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageDirectory</span><span style="color:#f92672">().</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">());</span>
+</span></span><span style="display:flex;"><span>        getFileNames<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            decrypt<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>NoSuchPaddingException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>NoSuchAlgorithmException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>IOException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InvalidAlgorithmParameterException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InvalidKeyException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">getFileNames</span><span style="color:#f92672">(</span>File paramFile<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        File<span style="color:#f92672">[]</span> arrayOfFile <span style="color:#f92672">=</span> paramFile<span style="color:#f92672">.</span><span style="color:#a6e22e">listFiles</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">;;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> arrayOfFile<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>i <span style="color:#f92672">&gt;=</span> k<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            String absolutePath <span style="color:#f92672">=</span> paramFile<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>            String fileName <span style="color:#f92672">=</span> arrayOfFile<span style="color:#f92672">[</span>i<span style="color:#f92672">].</span><span style="color:#a6e22e">getName</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>            File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>absolutePath<span style="color:#f92672">,</span> fileName<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">boolean</span> isDirectory <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">isDirectory</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isDirectory<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                File<span style="color:#f92672">[]</span> arrayOfFile1 <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">listFiles</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>arrayOfFile1 <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// if a directory, get names of files inside it recursively
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                    getFileNames<span style="color:#f92672">(</span>file<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// if not a directory
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            String str3 <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>            String subStr <span style="color:#f92672">=</span> str3<span style="color:#f92672">.</span><span style="color:#a6e22e">substring</span><span style="color:#f92672">(</span>str3<span style="color:#f92672">.</span><span style="color:#a6e22e">lastIndexOf</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">extensionsToDecrypt</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// if pathname contains .enc
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#66d9ef">boolean</span> bool1 <span style="color:#f92672">=</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">contains</span><span style="color:#f92672">(</span>subStr<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bool1<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                list <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>                fileName <span style="color:#f92672">=</span> file<span style="color:#f92672">.</span><span style="color:#a6e22e">getAbsolutePath</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>                list<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>fileName<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">isExternalStorageWritable</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        String ext <span style="color:#f92672">=</span> Environment<span style="color:#f92672">.</span><span style="color:#a6e22e">getExternalStorageState</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        String mounted <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mounted&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">boolean</span> isMounted <span style="color:#f92672">=</span> mounted<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span>ext<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isMounted<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        isMounted <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        mounted <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> isMounted<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">decrypt</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> NoSuchPaddingException<span style="color:#f92672">,</span> NoSuchAlgorithmException<span style="color:#f92672">,</span> IOException<span style="color:#f92672">,</span> InvalidAlgorithmParameterException<span style="color:#f92672">,</span> InvalidKeyException <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">boolean</span> isWritable <span style="color:#f92672">=</span> isExternalStorageWritable<span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>isWritable<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            AesCrypt aesCrypt <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AesCrypt<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;jndlasf074hr&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            Iterator<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> iterator <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">filesToDecrypt</span><span style="color:#f92672">.</span><span style="color:#a6e22e">iterator</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">boolean</span> hasNext <span style="color:#f92672">=</span> iterator<span style="color:#f92672">.</span><span style="color:#a6e22e">hasNext</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>hasNext<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                    String inputFileName <span style="color:#f92672">=</span> iterator<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>                    hasNext <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> inputFileName<span style="color:#f92672">.</span><span style="color:#a6e22e">lastIndexOf</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>                    String outputFileName <span style="color:#f92672">=</span> inputFileName<span style="color:#f92672">.</span><span style="color:#a6e22e">substring</span><span style="color:#f92672">(</span><span style="color:#ae81ff">0</span><span style="color:#f92672">,</span> i<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>                    aesCrypt<span style="color:#f92672">.</span><span style="color:#a6e22e">decrypt</span><span style="color:#f92672">(</span>inputFileName<span style="color:#f92672">,</span> outputFileName<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>                   File file <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> File<span style="color:#f92672">(</span>inputFileName<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>                    file<span style="color:#f92672">.</span><span style="color:#a6e22e">delete</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span> 
+</span></span></code></pre></div><p>oh and just copy the contents of the <code>AesCrypt.class</code> from jd-gui. then build it and install the app on the android VM.</p>
 <p><img src="/img/simplelocker/decrypter.png" alt="decrypter app"></p>
 <p>yae yae ik. Im not a UI designer or an android developer.</p>
 <p><img src="/img/simplelocker/decryted.png" alt="files decrypted!!"></p>
@@ -526,7 +531,7 @@ and you can copy it to android studio.</p>
   <div class="footer__inner">
     
       <div class="copyright">
-        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
     
         <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
       </div>

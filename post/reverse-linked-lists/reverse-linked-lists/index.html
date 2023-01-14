@@ -6,7 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Oh hi. Personally, I&amp;rsquo;m not a big fan of competitive programming. Anyhow, I wanted to test my DSA skills so i started doing leetcode a week(or two ig)ago. And I spent an entire day solving some of those challenges. Eventually I came cross a medium level challege, named Reorder List. problem is pretty simple, you are given a head node of a linked list, what you have to do is kinda shuffle nodes around." />
+<meta name="description" content="Identifying and Reverse engineering Linked List constructs" />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/reverse-linked-lists/reverse-linked-lists/" />
@@ -124,9 +124,13 @@
   <div class="post-meta">
     
       <span class="post-date">
-        2021-10-03 
+        2021-10-03
+        
       </span>
     
+    
+    
+      <span class="post-reading-time">:: 16 min read (3309 words)</span>
     
   </div>
 
@@ -141,10 +145,12 @@
     
   </span>
   
+  
+  <img src="https://rxOred.github.io/img/reverse-linkedlist/linkedlist.png"
+    class="post-cover"
+    alt="Reverse engineering Linkeds lists"
+    title="Cover Image" />
 
-  
-    <img src="https://rxOred.github.io/img/reverse-linkedlist/linkedlist.png" class="post-cover" alt="Reverse engineering Linkeds lists" />
-  
 
   
 
@@ -163,75 +169,75 @@
   -----------------          -----------------
 </code></pre>
 <p>Lets see what this looks like in code.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
-      <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
-         <span style="color:#66d9ef">int</span> value;
-         ListNode <span style="color:#f92672">*</span>next;
-   };
-</code></pre></div><p>There&rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinkedList</span> {
-      ListNode <span style="color:#f92672">*</span>head;
-      <span style="color:#66d9ef">int</span> count;
-   }
-</code></pre></div><p>with that, lets implement a stack data structure using linked lists.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">int</span> value;
+</span></span><span style="display:flex;"><span>         ListNode <span style="color:#f92672">*</span>next;
+</span></span><span style="display:flex;"><span>   };
+</span></span></code></pre></div><p>There&rsquo;s another important part of linked lists. which is the head/tail pointers. Head and tail pointers are used to track down head and tail of the linked list. which of those two is used is totally depend on the abstract data type. For example, linked list implementation of a stack may look like this</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinkedList</span> {
+</span></span><span style="display:flex;"><span>      ListNode <span style="color:#f92672">*</span>head;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">int</span> count;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><p>with that, lets implement a stack data structure using linked lists.</p>
 <p>node</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
-           <span style="color:#66d9ef">int</span> ln_value;
-           ListNode <span style="color:#f92672">*</span>ln_next;
-       <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
-           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(<span style="color:#66d9ef">nullptr</span>) {}
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">GetValue</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
-           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span><span style="color:#a6e22e">GetNext</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetValue</span>(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
-           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetNext</span>(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
-   };
-</code></pre></div><p>linked list</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   class LinkedList {
-           ListNode <span style="color:#f92672">*</span>l_head;
-           <span style="color:#66d9ef">int</span> l_item_count;
-       public:
-           LinkedList()<span style="color:#f92672">:</span>l_head(nullptr), l_item_count(<span style="color:#ae81ff">0</span>) {}
-           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span>GetHead() <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> l_head; }
-
-           <span style="color:#66d9ef">void</span> Push(<span style="color:#66d9ef">int</span> value)
-           {
-               <span style="color:#75715e">// however i prefer the make_shared way of doing this
-</span><span style="color:#75715e"></span>               ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> new ListNode(value);
-               <span style="color:#66d9ef">if</span>(l_head <span style="color:#f92672">==</span> nullptr) { l_head <span style="color:#f92672">=</span> node; }
-               <span style="color:#66d9ef">else</span> {
-                   node<span style="color:#f92672">-&gt;</span>SetNext(l_head);
-                   l_head <span style="color:#f92672">=</span> node;
-               }
-               l_item_count<span style="color:#f92672">++</span>;
-           }
-           <span style="color:#66d9ef">int</span> Pop(<span style="color:#66d9ef">void</span>) 
-           {
-               <span style="color:#66d9ef">if</span>(l_head <span style="color:#f92672">==</span> nullptr) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-               ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> l_head;
-               l_head <span style="color:#f92672">=</span> l_head<span style="color:#f92672">-&gt;</span>GetNext();
-               <span style="color:#66d9ef">int</span> value <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetValue();
-               delete node;
-               l_item_count<span style="color:#f92672">--</span>;
-               <span style="color:#66d9ef">return</span> value;
-           }
-   };
-</code></pre></div><p>In the above implementation, we can see that the Push takes and int as an input. Then creates a node and add that node to our linked list. The head will be pointing to the lastly added node.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>   <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ListNode</span> {
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">int</span> ln_value;
+</span></span><span style="display:flex;"><span>           ListNode <span style="color:#f92672">*</span>ln_next;
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>           ListNode(<span style="color:#66d9ef">int</span> value)<span style="color:#f92672">:</span> ln_value(value), ln_next(<span style="color:#66d9ef">nullptr</span>) {}
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">GetValue</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_value; }
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span><span style="color:#a6e22e">GetNext</span>(<span style="color:#66d9ef">void</span>) <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> ln_next; }
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetValue</span>(<span style="color:#66d9ef">int</span> value) { ln_value <span style="color:#f92672">=</span> value; }
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">SetNext</span>(ListNode <span style="color:#f92672">*</span>next) { ln_next <span style="color:#f92672">=</span> next; }
+</span></span><span style="display:flex;"><span>   };
+</span></span></code></pre></div><p>linked list</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   class LinkedList {
+</span></span><span style="display:flex;"><span>           ListNode <span style="color:#f92672">*</span>l_head;
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">int</span> l_item_count;
+</span></span><span style="display:flex;"><span>       public:
+</span></span><span style="display:flex;"><span>           <span style="color:#a6e22e">LinkedList</span>()<span style="color:#f92672">:</span><span style="color:#a6e22e">l_head</span>(nullptr), <span style="color:#a6e22e">l_item_count</span>(<span style="color:#ae81ff">0</span>) {}
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">inline</span> ListNode <span style="color:#f92672">*</span><span style="color:#a6e22e">GetHead</span>() <span style="color:#66d9ef">const</span> { <span style="color:#66d9ef">return</span> l_head; }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">Push</span>(<span style="color:#66d9ef">int</span> value)
+</span></span><span style="display:flex;"><span>           {
+</span></span><span style="display:flex;"><span>               <span style="color:#75715e">// however i prefer the make_shared way of doing this
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>               ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> new <span style="color:#a6e22e">ListNode</span>(value);
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">if</span>(l_head <span style="color:#f92672">==</span> nullptr) { l_head <span style="color:#f92672">=</span> node; }
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                   node<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetNext</span>(l_head);
+</span></span><span style="display:flex;"><span>                   l_head <span style="color:#f92672">=</span> node;
+</span></span><span style="display:flex;"><span>               }
+</span></span><span style="display:flex;"><span>               l_item_count<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>           }
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">Pop</span>(<span style="color:#66d9ef">void</span>) 
+</span></span><span style="display:flex;"><span>           {
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">if</span>(l_head <span style="color:#f92672">==</span> nullptr) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>               ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> l_head;
+</span></span><span style="display:flex;"><span>               l_head <span style="color:#f92672">=</span> l_head<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetNext</span>();
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">int</span> value <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetValue</span>();
+</span></span><span style="display:flex;"><span>               delete node;
+</span></span><span style="display:flex;"><span>               l_item_count<span style="color:#f92672">--</span>;
+</span></span><span style="display:flex;"><span>               <span style="color:#66d9ef">return</span> value;
+</span></span><span style="display:flex;"><span>           }
+</span></span><span style="display:flex;"><span>   };
+</span></span></code></pre></div><p>In the above implementation, we can see that the Push takes and int as an input. Then creates a node and add that node to our linked list. The head will be pointing to the lastly added node.</p>
 <p>Then the Pop method returns an int by removing the node at the head.</p>
 <p>So, now we know what a linked list is. Let&rsquo;s look at the disassembly of this before approaching the above problem.</p>
 <p>here&rsquo;s a main function.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">   <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
-   {
-       LinkedList li;
-       <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">5</span>; i<span style="color:#f92672">++</span>){
-           li.Push(i);
-       }
-       <span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> li.Pop();
-       <span style="color:#66d9ef">while</span>(c <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
-           printf(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, c);
-           c <span style="color:#f92672">=</span> li.Pop();
-       }
-   }
-</code></pre></div><h1 id="implementation-in-disassembly">Implementation in disassembly<a href="#implementation-in-disassembly" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>   <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>       LinkedList li;
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">5</span>; i<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>           li.<span style="color:#a6e22e">Push</span>(i);
+</span></span><span style="display:flex;"><span>       }
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> li.<span style="color:#a6e22e">Pop</span>();
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">while</span>(c <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>           <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, c);
+</span></span><span style="display:flex;"><span>           c <span style="color:#f92672">=</span> li.<span style="color:#a6e22e">Pop</span>();
+</span></span><span style="display:flex;"><span>       }
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><h1 id="implementation-in-disassembly">Implementation in disassembly<a href="#implementation-in-disassembly" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
 <p>So, to disassemble this snippet, Im gonna use radare since im on my linux machine rn. I ran the initial analysis, seeked to main function, and switched to the graph view.</p>
 <p><img src="/img/reverse-linkedlist/newmain.png" alt="main"></p>
 <p>here, we can see that main function creates the stack frame and allocates space for local variables including space for our class LinkedList. Then we can see that it loads some stack address to rax register, moves it into rdi, and then call contructor for LinkedList. From that, we can assume that address loaded into rax and then into rdi as <code>this</code>.</p>
@@ -266,28 +272,28 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
 <p>Now, from the above explaination, i assume that low level constructs of linked lists are clear to the reader.</p>
 <h2 id="traversal">Traversal<a href="#traversal" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Linked list traversal is pretty simple and there is no particular method to do this. one can use recursion. But here, im gonna write a traversal method using a for loop.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    ListNode <span style="color:#f92672">*</span>LinkedList<span style="color:#f92672">::</span>GetNodeByValue(<span style="color:#66d9ef">int</span> value) <span style="color:#66d9ef">const</span>
-    {
-        ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> l_head;
-        <span style="color:#66d9ef">while</span>(node){
-            <span style="color:#66d9ef">if</span> (node<span style="color:#f92672">-&gt;</span>GetValue() <span style="color:#f92672">==</span> value){
-                <span style="color:#66d9ef">return</span> node;
-            }
-            node <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetNext();
-        }
-        <span style="color:#66d9ef">return</span> nullptr;
-    }
-</code></pre></div><p>here, I have created another method, to call this i have modified the main function like shown below.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
-    {
-        LinkedList li;
-        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">5</span>; i<span style="color:#f92672">++</span>){
-            li.Push(i);
-        }
-        <span style="color:#66d9ef">auto</span> node <span style="color:#f92672">=</span> li.GetNodeByValue(<span style="color:#ae81ff">2</span>);
-        printf(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, node<span style="color:#f92672">-&gt;</span>GetValue());
-    }
-</code></pre></div><p>Now let&rsquo;s take a look at the disassembly and try to understanding whats going on in the new method :3</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    ListNode <span style="color:#f92672">*</span>LinkedList<span style="color:#f92672">::</span><span style="color:#a6e22e">GetNodeByValue</span>(<span style="color:#66d9ef">int</span> value) <span style="color:#66d9ef">const</span>
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> l_head;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span>(node){
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (node<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetValue</span>() <span style="color:#f92672">==</span> value){
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> node;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            node <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetNext</span>();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> nullptr;
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>here, I have created another method, to call this i have modified the main function like shown below.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        LinkedList li;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">5</span>; i<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>            li.<span style="color:#a6e22e">Push</span>(i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> node <span style="color:#f92672">=</span> li.<span style="color:#a6e22e">GetNodeByValue</span>(<span style="color:#ae81ff">2</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, node<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetValue</span>());
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>Now let&rsquo;s take a look at the disassembly and try to understanding whats going on in the new method :3</p>
 <p><img src="/img/reverse-linkedlist/traversemain.png" alt="prologue"></p>
 <p>like any other function, this one sets up a stack frame and alloacate enough space for locals. And like any other method we have encountered so far, this one too saves rdi, which is this, in a local variable (0x1162). It also stores the arg we passed in the local <code>var_1c</code>. <code>var_8</code> is loaded with <code>l_head</code> (0x1169 - 0x1170).</p>
 <p>then that stub jumps into <code>0x11a2</code>. there, it compares <code>var_8</code> with 0. if it is 0, the jump is taken to <code>0x11a9</code>, else it continues execution on <code>0x1176</code>.</p>
@@ -377,60 +383,60 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
 <li>Start iteration from the first node of the fist list and first node of the second list(reversed list)</li>
 </ol>
 <p>Here is the implementation.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
-    {
-        <span style="color:#75715e">/* seperating the list */</span>
-        ListNode <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> head, <span style="color:#f92672">*</span>l <span style="color:#f92672">=</span> head;
-        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>){
-            f <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
-            l <span style="color:#f92672">=</span> l<span style="color:#f92672">-&gt;</span>GetNext()<span style="color:#f92672">-&gt;</span>GetNext();
-        }
-
-        <span style="color:#75715e">/* saving the first node of second list */</span>
-        ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
-        f<span style="color:#f92672">-&gt;</span>SetNext(<span style="color:#66d9ef">nullptr</span>);
-
-        <span style="color:#75715e">/* reversing the second list */</span>
-        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
-        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
-            <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetNext();
-            node<span style="color:#f92672">-&gt;</span>SetNext(prev);
-            prev <span style="color:#f92672">=</span> node;
-            node <span style="color:#f92672">=</span> nnode;
-        }
-
-        <span style="color:#75715e">/* re ordering lists */</span>
-        ListNode <span style="color:#f92672">*</span>start <span style="color:#f92672">=</span> head;
-        ListNode <span style="color:#f92672">*</span>end <span style="color:#f92672">=</span> prev;
-        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
-            <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> start<span style="color:#f92672">-&gt;</span>GetNext();
-            start<span style="color:#f92672">-&gt;</span>SetNext(end);
-            <span style="color:#66d9ef">auto</span> ennode <span style="color:#f92672">=</span> end<span style="color:#f92672">-&gt;</span>GetNext();
-            end<span style="color:#f92672">-&gt;</span>SetNext(nnode);
-            start <span style="color:#f92672">=</span> nnode;
-            end <span style="color:#f92672">=</span> ennode;
-        }
-    }
-</code></pre></div><p>main function</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">    <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
-    {
-        LinkedList li;
-        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>; i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>; i<span style="color:#f92672">--</span>){
-            li.Push(i);
-            printf(<span style="color:#e6db74">&#34;%d &#34;</span>, i);
-        }
-
-        ReorderList(li.GetHead());
-
-        putchar(<span style="color:#ae81ff">10</span>);
-        <span style="color:#66d9ef">auto</span> c <span style="color:#f92672">=</span> li.Pop();
-        <span style="color:#66d9ef">while</span> (c <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
-            printf(<span style="color:#e6db74">&#34;%d &#34;</span>, c);
-            c <span style="color:#f92672">=</span> li.Pop();
-        }
-        putchar(<span style="color:#ae81ff">10</span>);
-    }
-</code></pre></div><h2 id="reverse-engineering-the-solution">Reverse engineering the solution<a href="#reverse-engineering-the-solution" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ReorderList</span>(ListNode <span style="color:#f92672">*</span>head)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* seperating the list */</span>
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> head, <span style="color:#f92672">*</span>l <span style="color:#f92672">=</span> head;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span>(l <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> l<span style="color:#f92672">-&gt;</span>GetNext() <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>){
+</span></span><span style="display:flex;"><span>            f <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>            l <span style="color:#f92672">=</span> l<span style="color:#f92672">-&gt;</span>GetNext()<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* saving the first node of second list */</span>
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>node <span style="color:#f92672">=</span> f<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>        f<span style="color:#f92672">-&gt;</span>SetNext(<span style="color:#66d9ef">nullptr</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* reversing the second list */</span>
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>prev <span style="color:#f92672">=</span> <span style="color:#66d9ef">nullptr</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span>(node <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> node<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>            node<span style="color:#f92672">-&gt;</span>SetNext(prev);
+</span></span><span style="display:flex;"><span>            prev <span style="color:#f92672">=</span> node;
+</span></span><span style="display:flex;"><span>            node <span style="color:#f92672">=</span> nnode;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* re ordering lists */</span>
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>start <span style="color:#f92672">=</span> head;
+</span></span><span style="display:flex;"><span>        ListNode <span style="color:#f92672">*</span>end <span style="color:#f92672">=</span> prev;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span> (start <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span> <span style="color:#f92672">&amp;&amp;</span> end <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nullptr</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">auto</span> nnode <span style="color:#f92672">=</span> start<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>            start<span style="color:#f92672">-&gt;</span>SetNext(end);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">auto</span> ennode <span style="color:#f92672">=</span> end<span style="color:#f92672">-&gt;</span>GetNext();
+</span></span><span style="display:flex;"><span>            end<span style="color:#f92672">-&gt;</span>SetNext(nnode);
+</span></span><span style="display:flex;"><span>            start <span style="color:#f92672">=</span> nnode;
+</span></span><span style="display:flex;"><span>            end <span style="color:#f92672">=</span> ennode;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>main function</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        LinkedList li;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>; i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>; i<span style="color:#f92672">--</span>){
+</span></span><span style="display:flex;"><span>            li.<span style="color:#a6e22e">Push</span>(i);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ReorderList</span>(li.<span style="color:#a6e22e">GetHead</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">putchar</span>(<span style="color:#ae81ff">10</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> c <span style="color:#f92672">=</span> li.<span style="color:#a6e22e">Pop</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span> (c <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d &#34;</span>, c);
+</span></span><span style="display:flex;"><span>            c <span style="color:#f92672">=</span> li.<span style="color:#a6e22e">Pop</span>();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">putchar</span>(<span style="color:#ae81ff">10</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><h2 id="reverse-engineering-the-solution">Reverse engineering the solution<a href="#reverse-engineering-the-solution" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>Now its time to see how the solution code looks like in assembly :).</p>
 <p><img src="/img/reverse-linkedlist/reorder.png" alt="re order list"></p>
 <p>oh look at those cute little variable name that radare has analyzed for us. Same as the ones that we used in our code right?. Well i compiled it with -g flag this time hehe :3</p>
@@ -514,7 +520,7 @@ In the next few lines, return value (rax) of the GetNext method is set to <code>
   <div class="footer__inner">
     
       <div class="copyright">
-        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
     
         <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
       </div>

@@ -6,8 +6,12 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
 <meta name="description" content="Table of content  Introduction  Samples   Environment  Tools   Analysis  Behavioral analysis Static analysis  The pe Reversing the pe   Extracting boot sector code Reversing boot sector code   The end  Introduction Dozens of Ukranian government sites, including Ministry of foreign affairs, Cabinet of ministers and security council have been hit by a massive cyber attack.
 Microsoft incident response team recently released samples of destructive malware used in the campaign." />
+=======
+<meta name="description" content="Quick analysis of Whispergate stage 01" />
+>>>>>>> tmp
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/analysis/whispergate/whispergate/" />
@@ -125,9 +129,13 @@ Microsoft incident response team recently released samples of destructive malwar
   <div class="post-meta">
     
       <span class="post-date">
-        2022-01-19 
+        2022-01-19
+        
       </span>
     
+    
+    
+      <span class="post-reading-time">:: 5 min read (932 words)</span>
     
   </div>
 
@@ -142,10 +150,12 @@ Microsoft incident response team recently released samples of destructive malwar
     
   </span>
   
+  
+  <img src="https://rxOred.github.io/img/whispergate/cover.png"
+    class="post-cover"
+    alt="WhisperGate"
+    title="Cover Image" />
 
-  
-    <img src="https://rxOred.github.io/img/whispergate/cover.png" class="post-cover" alt="WhisperGate" />
-  
 
   
 
@@ -256,6 +266,7 @@ which then jumps to label <code>corrupt_c</code></p>
 <p><img src="/img/whispergate/corrupt_c.png" alt="">
 Two insutrctions after segment register initialization sets word at <code>0x7c78</code> to 0x0000 and dword at <code>0x7c76</code> to <code>0x7c82</code> (&lsquo;AAAA&rsquo;).</p>
 <p><img src="/img/whispergate/bochs_byte_array_mem.png" alt=""></p>
+<<<<<<< HEAD
 <p>This initializes the DAP (Disk Address Packet) structure. DAP is a structure that should be initialized in memory in order to use Logical block addressing with interrupt 0x13. This structure is then should be passed through <code>si</code> register.</p>
 <p>the layout of the structure</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">    <span style="color:#a6e22e">Offset</span>  <span style="color:#66d9ef">Size</span>    <span style="color:#66d9ef">Description</span>
@@ -272,6 +283,23 @@ Two insutrctions after segment register initialization sets word at <code>0x7c78
     <span style="color:#a6e22e">dl</span>      - <span style="color:#ae81ff">0x80</span> (<span style="color:#66d9ef">hard</span> <span style="color:#66d9ef">disk</span>)
     <span style="color:#a6e22e">si</span>      - <span style="color:#ae81ff">0x7c72</span> (<span style="color:#66d9ef">DAP</span>)
 </code></pre></div><p>The <code>si</code> register is loaded with address <code>0x7c72</code>, which must be the address of disk address packet.</p>
+=======
+<p>This basically initializes the DAP (Disk Address Packet) structure. DAP is a structure that should be initialized in memory in order to use Logical block addressing with interrupt 0x13. This structure is then should be passed through <code>si</code> register.</p>
+<p>layout of the structure</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>    <span style="color:#a6e22e">Offset</span>	<span style="color:#66d9ef">Size</span>	<span style="color:#66d9ef">Description</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">0</span>	<span style="color:#960050;background-color:#1e0010">1</span>	<span style="color:#a6e22e">size</span> <span style="color:#66d9ef">of</span> <span style="color:#66d9ef">packet</span> (<span style="color:#ae81ff">16</span> <span style="color:#66d9ef">bytes</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">1</span>	<span style="color:#960050;background-color:#1e0010">1</span>	<span style="color:#a6e22e">always</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">2</span>	<span style="color:#960050;background-color:#1e0010">2</span>	<span style="color:#a6e22e">number</span> <span style="color:#66d9ef">of</span> <span style="color:#66d9ef">sectors</span> <span style="color:#66d9ef">to</span> <span style="color:#66d9ef">transfer</span> (<span style="color:#66d9ef">max</span> <span style="color:#ae81ff">127</span> <span style="color:#66d9ef">on</span> <span style="color:#66d9ef">some</span> <span style="color:#66d9ef">BIOSes</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">4</span>	<span style="color:#960050;background-color:#1e0010">4</span>	<span style="color:#a6e22e">transfer</span> <span style="color:#66d9ef">buffer</span> (<span style="color:#ae81ff">16</span> <span style="color:#66d9ef">bit</span> <span style="color:#66d9ef">segment</span>:<span style="color:#ae81ff">16</span> <span style="color:#66d9ef">bit</span> <span style="color:#66d9ef">offset</span>) (<span style="color:#66d9ef">see</span> <span style="color:#66d9ef">note</span> <span style="color:#75715e">#1)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">8</span>	<span style="color:#960050;background-color:#1e0010">4</span>	<span style="color:#a6e22e">lower</span> <span style="color:#ae81ff">32</span>-<span style="color:#66d9ef">bits</span> <span style="color:#66d9ef">of</span> <span style="color:#ae81ff">48</span>-<span style="color:#66d9ef">bit</span> <span style="color:#66d9ef">starting</span> <span style="color:#66d9ef">LBA</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">12</span>	<span style="color:#960050;background-color:#1e0010">4</span>	<span style="color:#a6e22e">upper</span> <span style="color:#ae81ff">16</span>-<span style="color:#66d9ef">bits</span> <span style="color:#66d9ef">of</span> <span style="color:#ae81ff">48</span>-<span style="color:#66d9ef">bit</span> <span style="color:#66d9ef">starting</span> <span style="color:#66d9ef">LBA</span>
+</span></span></code></pre></div><p>before the interrupt call <code>int 0x13</code>, which is used for low-level disk access, <code>ah</code> register is initialized to 0x43, BIOS function number for writing sectors to the disk.</p>
+<p>following registers are also initialized</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>    <span style="color:#a6e22e">al</span>      - <span style="color:#ae81ff">0x0</span> (<span style="color:#66d9ef">close</span> <span style="color:#66d9ef">clock</span> <span style="color:#66d9ef">write</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">dl</span>      - <span style="color:#ae81ff">0x80</span> (<span style="color:#66d9ef">hard</span> <span style="color:#66d9ef">disk</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">si</span>      - <span style="color:#ae81ff">0x7c72</span> (<span style="color:#66d9ef">DAP</span>)
+</span></span></code></pre></div><p>The <code>si</code> register is loaded with address <code>0x7c72</code>, which must be the disk address packet.</p>
+>>>>>>> tmp
 <p><img src="/img/whispergate/DAP.png" alt=""></p>
 <p>A successful BIOS interrupt call will overwrite the first Logical Block Address of the disk with <code>AAAA</code>, corrupting the C drive.</p>
 <p>The next few instructions check whether an extended write operation is successful or not. if <code>cf</code> is set (error) control flow gets redirected to <code>loc_7c45</code> (failed), else, to <code>loc_7c5d</code>(success).</p>
@@ -319,7 +347,7 @@ Adds 0xc7 (199) to <code>[0x7c7a]</code>, incrementing next LBA to be overwritte
   <div class="footer__inner">
     
       <div class="copyright">
-        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
     
         <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
       </div>

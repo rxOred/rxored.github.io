@@ -6,9 +6,7 @@
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Introduction Hello, rxOred here, with another badly written write-up.
-A years ago, i started reading practical reverse engineering book. Eventhough I was familiar with most of those concepts, that book&amp;rsquo;s exercises were pretty challenging. Aand guess what, there were no solutions to those Exercises in the book. Authors have encouraged RE community to share solutions with others using their blogs, r/reverse-egnineering etc.
-At that time, i never really wanted to create a blog." />
+<meta name="description" content=" " />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="https://rxOred.github.io/post/practical-re/practical-re-answers/" />
@@ -126,9 +124,13 @@ At that time, i never really wanted to create a blog." />
   <div class="post-meta">
     
       <span class="post-date">
-        2021-09-29 
+        2021-09-29
+        
       </span>
     
+    
+    
+      <span class="post-reading-time">:: 4 min read (776 words)</span>
     
   </div>
 
@@ -139,10 +141,12 @@ At that time, i never really wanted to create a blog." />
     
   </span>
   
+  
+  <img src="https://rxOred.github.io/img/practicalre/re1.png"
+    class="post-cover"
+    alt="Practical Reverse Engineering writeup"
+    title="Cover Image" />
 
-  
-    <img src="https://rxOred.github.io/img/practicalre/re1.png" class="post-cover" alt="Practical Reverse Engineering writeup" />
-  
 
   
 
@@ -163,7 +167,7 @@ This 2 part series post will provide some solutions for Exercises in chapter 1, 
 repne scasb
 intel indentifies these instructions as string operation instructions. which is perfectly fine.About scasb,
 scasb/scasw/scasd instructions compare al/ax/eax with value at memory address specified in edi. rep is a prefix.
-it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&rsquo;b')
+it is used for repeating same thing. So the what the whole instruction does is, it compares al (because scas&rsquo;b&rsquo;)
 with whatever value at memory address specified in edi while increasing edi by 1 until the byte is found in the
 buffer or ecx == 0. so as for our answer, it is 4 bytes because since edi is an memory address, memory addresses in
 x86 takes upto 4bytes :)</p>
@@ -172,7 +176,7 @@ x86 takes upto 4bytes :)</p>
 <p>1 byte
 rep stosb
 this instruction is used to initialize a buffer with some value (like memset). edi should contain the address of
-buffer, and since its a stos&rsquo;b', which is the indication of byte, al contain the value that the buffer should be
+buffer, and since its a stos&rsquo;b&rsquo;, which is the indication of byte, al contain the value that the buffer should be
 assigned with. So from that, it is clear that ebp+c, second argument to the function is sizeof byte:)</p>
 </li>
 <li>
@@ -193,37 +197,37 @@ to [edi] byte by byte :3</p>
 <ol>
 <li>
 <p>So, in this exercise we want to write a program that reads instruction pointer :3. here we go</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   <span style="color:#75715e">; here we are reading address of the instruction after the call instruction.</span>
-   readeip: <span style="color:#a6e22e">call</span>     lbl         <span style="color:#75715e">; call lbl, this pushes address of next instruction to the stack</span>
-            <span style="color:#a6e22e">mov</span>      ebx, <span style="color:#ae81ff">0</span>
-            <span style="color:#a6e22e">mov</span>      eax, <span style="color:#ae81ff">0</span>
-            <span style="color:#a6e22e">int</span>      <span style="color:#ae81ff">0x80</span>        <span style="color:#75715e">; exit</span>
-
-   lbl:     <span style="color:#a6e22e">mov</span>      eax, [esp]  <span style="color:#75715e">; we read value at esp to eax. which is the return address.</span>
-            <span style="color:#a6e22e">ret</span>
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span>   <span style="color:#75715e">; here we are reading address of the instruction after the call instruction.</span>
+</span></span><span style="display:flex;"><span>   readeip: <span style="color:#a6e22e">call</span>     lbl         <span style="color:#75715e">; call lbl, this pushes address of next instruction to the stack</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">mov</span>      ebx, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">mov</span>      eax, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">int</span>      <span style="color:#ae81ff">0x80</span>        <span style="color:#75715e">; exit</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   lbl:     <span style="color:#a6e22e">mov</span>      eax, [esp]  <span style="color:#75715e">; we read value at esp to eax. which is the return address.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">ret</span>
+</span></span></code></pre></div></li>
 <li>
 <p>Next we have to set eip to 0xAABBCCDD</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   <span style="color:#75715e">; 1. here we when we call, return address is pushed to stack</span>
-   writeeip:   <span style="color:#a6e22e">call</span>  write
-               <span style="color:#a6e22e">mov</span>   ebx,  <span style="color:#ae81ff">0</span>
-               <span style="color:#a6e22e">mov</span>   eax,  <span style="color:#ae81ff">0</span>
-               <span style="color:#a6e22e">int</span>   <span style="color:#ae81ff">0x80</span>
-
-   <span style="color:#75715e">; 2. we then modify the value at stack to 0xAABBCCDD</span>
-   write:      <span style="color:#a6e22e">mov</span>   [esp], <span style="color:#ae81ff">0xAABBCCDD</span>
-               <span style="color:#a6e22e">ret</span>   <span style="color:#75715e">; cause a segfault</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip:   <span style="color:#a6e22e">call</span>  write
-
-   <span style="color:#75715e">; remember, ret just pops whatever at esp to eip</span>
-   write:      <span style="color:#a6e22e">push</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
-               <span style="color:#a6e22e">ret</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip: <span style="color:#a6e22e">jmp</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
-   <span style="color:#75715e">;yeaup simple as that</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">   writeeip: <span style="color:#a6e22e">mov</span>     eax, <span style="color:#ae81ff">0xAABBCCDD</span>
-             <span style="color:#a6e22e">call</span>    eax
-   <span style="color:#75715e">; this is bit important. lot of malware authors use this method to access win32 APIs</span>
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span>   <span style="color:#75715e">; 1. here we when we call, return address is pushed to stack</span>
+</span></span><span style="display:flex;"><span>   writeeip:   <span style="color:#a6e22e">call</span>  write
+</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">mov</span>   ebx,  <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">mov</span>   eax,  <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">int</span>   <span style="color:#ae81ff">0x80</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">; 2. we then modify the value at stack to 0xAABBCCDD</span>
+</span></span><span style="display:flex;"><span>   write:      <span style="color:#a6e22e">mov</span>   [esp], <span style="color:#ae81ff">0xAABBCCDD</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">ret</span>   <span style="color:#75715e">; cause a segfault</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span>   writeeip:   <span style="color:#a6e22e">call</span>  write
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">; remember, ret just pops whatever at esp to eip</span>
+</span></span><span style="display:flex;"><span>   write:      <span style="color:#a6e22e">push</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
+</span></span><span style="display:flex;"><span>               <span style="color:#a6e22e">ret</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span>   writeeip: <span style="color:#a6e22e">jmp</span>  <span style="color:#ae81ff">0xAABBCCDD</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">;yeaup simple as that</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span>   writeeip: <span style="color:#a6e22e">mov</span>     eax, <span style="color:#ae81ff">0xAABBCCDD</span>
+</span></span><span style="display:flex;"><span>             <span style="color:#a6e22e">call</span>    eax
+</span></span><span style="display:flex;"><span>   <span style="color:#75715e">; this is bit important. lot of malware authors use this method to access win32 APIs</span>
+</span></span></code></pre></div></li>
 <li>
 <p>same thing that happened to many of above snippets ?. it will crash with a seg fault. The reason is that, we are returning to
 a totally unknown address.
@@ -289,7 +293,7 @@ stack frame. Guess what? stack is non-executable :3</p>
   <div class="footer__inner">
     
       <div class="copyright">
-        <span>© 2022 Powered by <a href="http://gohugo.io">Hugo</a></span>
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
     
         <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
       </div>
