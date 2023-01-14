@@ -9,13 +9,9 @@
     <lastBuildDate>Sat, 23 Oct 2021 14:20:04 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/tags/offensive-sekuruty/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>From AMSI to Reflection 0x0</title>
-      <link>https://rxOred.github.io/post/csharploader/reverse-engineering-anti-malware-scan-interface/</link>
+      <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
       
-<<<<<<< HEAD
-      <guid>https://rxOred.github.io/post/csharploader/reverse-engineering-anti-malware-scan-interface/</guid>
-      <description>Table of Content  Introduction Antimalware Scan Interface  AMSI in action   AMSI internals  AmsiScanString AmsiScanBuffer CAmsiAntimalware::Scan AmsiInitialize   The End  Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff.</description>
-=======
       <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</guid>
       <description>Table of Content Introduction Antimalware Scan Interface AMSI in action AMSI internals AmsiScanString AmsiScanBuffer CAmsiAntimalware::Scan AmsiInitialize The End Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff. (well of course, there are powershell based droppers.</description>
       <content>&lt;h1 id=&#34;table-of-content&#34;&gt;Table of Content&lt;/h1&gt;
@@ -680,7 +676,6 @@ common AMSI bypass
 techniques.&lt;/p&gt;
 &lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
->>>>>>> tmp
     </item>
     
   </channel>

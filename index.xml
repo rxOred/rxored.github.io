@@ -13,10 +13,6 @@
       <pubDate>Wed, 19 Jan 2022 09:40:08 +0000</pubDate>
       
       <guid>https://rxOred.github.io/post/analysis/whispergate/whispergate/</guid>
-<<<<<<< HEAD
-      <description>Table of content  Introduction  Samples   Environment  Tools   Analysis  Behavioral analysis Static analysis  The pe Reversing the pe   Extracting boot sector code Reversing boot sector code   The end  Introduction Dozens of Ukranian government sites, including Ministry of foreign affairs, Cabinet of ministers and security council have been hit by a massive cyber attack.
-Microsoft incident response team recently released samples of destructive malware used in the campaign.</description>
-=======
       <description>Table of content Introduction Samples Environment Tools Analysis Behavioral analysis Static analysis The PE Code analysis Extracting boot sector code Reversing boot sector code The end Introduction On 05.01.2022, Ukrain had to face a massive cyber attack. This attack was able to take down IT infrastructure of several organizations completely.
 Microsoft incident response team recently released samples of malware used in the campaign.
 Samples virustotal filescan.io
@@ -153,7 +149,6 @@ at &lt;code&gt;loc_7c45&lt;/code&gt;, it increments the last element in the byte
 &lt;p&gt;quick analysis report of WhisperGate stage 01 ends here.&lt;/p&gt;
 &lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
->>>>>>> tmp
     </item>
     
     <item>
@@ -2882,13 +2877,9 @@ and you can copy it to android studio.&lt;/p&gt;
     
     <item>
       <title>From AMSI to Reflection 0x0</title>
-      <link>https://rxOred.github.io/post/csharploader/reverse-engineering-anti-malware-scan-interface/</link>
+      <link>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</link>
       <pubDate>Sat, 23 Oct 2021 14:20:04 +0000</pubDate>
       
-<<<<<<< HEAD
-      <guid>https://rxOred.github.io/post/csharploader/reverse-engineering-anti-malware-scan-interface/</guid>
-      <description>Table of Content  Introduction Antimalware Scan Interface  AMSI in action   AMSI internals  AmsiScanString AmsiScanBuffer CAmsiAntimalware::Scan AmsiInitialize   The End  Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff.</description>
-=======
       <guid>https://rxOred.github.io/post/csharploader/bypassing-amsi-with-csharp/</guid>
       <description>Table of Content Introduction Antimalware Scan Interface AMSI in action AMSI internals AmsiScanString AmsiScanBuffer CAmsiAntimalware::Scan AmsiInitialize The End Introduction In Windows environments, in both initial access and post-exploitation phases, script-based malware plays a major role. Often, hackers utilize microsoft office suite to gain initial access (using droppers, loaders) to the victim and Windows powershell to explore internal network, perform scans&amp;hellip; basically to do the post exploitation stuff. (well of course, there are powershell based droppers.</description>
       <content>&lt;h1 id=&#34;table-of-content&#34;&gt;Table of Content&lt;/h1&gt;
@@ -3553,7 +3544,6 @@ common AMSI bypass
 techniques.&lt;/p&gt;
 &lt;p&gt;#Spread Anarchy!&lt;/p&gt;
 </content>
->>>>>>> tmp
     </item>
     
     <item>
@@ -4275,7 +4265,7 @@ E   +   E
       <pubDate>Tue, 28 Sep 2021 22:10:39 +0000</pubDate>
       
       <guid>https://rxOred.github.io/projects/</guid>
-      <description>[chip8] (https://github.com/rxOred/chip8) chip-8 emulator written in rust.
+      <description>chip8 chip-8 emulator written in rust.
 zkz Linux x64 debugger written in C++.
 zkinject C++17 library to instrument elf binaries and Linux processes.
 pyzkinject python bindings for zkinject!
@@ -4283,7 +4273,7 @@ unnatural Unnatural is Go program that detects infected elf binaries.
 spidyBOT A small web information gathering tool written in python.
 BShell A useless Linux shell written in C.
 elfparse elfparse is a x64 elf binary parser/parser library written in C.</description>
-      <content>&lt;h2 id=&#34;chip8-httpsgithubcomrxoredchip8&#34;&gt;[chip8] (&lt;a href=&#34;https://github.com/rxOred/chip8&#34;&gt;https://github.com/rxOred/chip8&lt;/a&gt;)&lt;/h2&gt;
+      <content>&lt;h2 id=&#34;chip8httpsgithubcomrxoredchip8&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/chip8&#34;&gt;chip8&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;chip-8 emulator written in rust.&lt;/p&gt;
 &lt;h2 id=&#34;zkzhttpsgithubcomrxoredzkz&#34;&gt;&lt;a href=&#34;https://github.com/rxOred/zkz&#34;&gt;zkz&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Linux x64 debugger written in C++.&lt;/p&gt;
@@ -4308,12 +4298,8 @@ elfparse elfparse is a x64 elf binary parser/parser library written in C.</descr
       <pubDate>Tue, 28 Sep 2021 16:21:05 +0000</pubDate>
       
       <guid>https://rxOred.github.io/about/</guid>
-      <description>rxOred&amp;rsquo;s real name is Jayod.
+      <description>rxOred&amp;rsquo;s real name is Jayod, a 17 year-old, self taught programmer / reverse engineer from Hell.
 Spread Anarchy!
-<<<<<<< HEAD
-Contact me Please dont!
- rxored@gmail.com github twitter Spotify Discord rxOred#2655  </description>
-=======
 Contact me rxored@gmail.com github twitter Spotify Discord rxOred#2655 </description>
       <content>&lt;p&gt;rxOred&amp;rsquo;s real name is Jayod, a 17 year-old, self taught programmer / reverse engineer from Hell.&lt;/p&gt;
 &lt;p&gt;Spread Anarchy!&lt;/p&gt;
@@ -4326,7 +4312,6 @@ Contact me rxored@gmail.com github twitter Spotify Discord rxOred#2655 </descrip
 &lt;li&gt;Discord rxOred#2655&lt;/li&gt;
 &lt;/ul&gt;
 </content>
->>>>>>> tmp
     </item>
     
     <item>
