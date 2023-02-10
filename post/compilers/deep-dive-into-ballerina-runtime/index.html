@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Deep Dive Into Ballerina Runtime :: rxOred&#39;s blog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="diving deep into runtime of ballerina language" />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime/" />
+
+
+
+
+<link rel="stylesheet" href="https://rxOred.github.io/assets/style.css">
+
+  <link rel="stylesheet" href="https://rxOred.github.io/assets/red.css">
+
+
+
+
+
+
+<link rel="apple-touch-icon" href="https://rxOred.github.io/img/apple-touch-icon-192x192.png">
+
+  <link rel="shortcut icon" href="https://rxOred.github.io/img/favicon1.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Deep Dive Into Ballerina Runtime">
+<meta property="og:description" content="diving deep into runtime of ballerina language" />
+<meta property="og:url" content="https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime/" />
+<meta property="og:site_name" content="rxOred&#39;s blog" />
+
+  <meta property="og:image" content="https://rxOred.github.io/img/compiler101/ballerina.jpg">
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2023-02-03 16:28:21 &#43;0530 &#43;0530" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body class="red">
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    rxOred&#39;s blog
+  </div>
+</a>
+
+    </div>
+    
+      <div class="menu-trigger">menu</div>
+    
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner menu__inner--desktop">
+    
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/projects">Projects</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+
+  <ul class="menu__inner menu__inner--mobile">
+    
+      
+        <li><a href="/about">About</a></li>
+      
+    
+      
+        <li><a href="/projects">Projects</a></li>
+      
+    
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime/">Deep Dive Into Ballerina Runtime</a></h1>
+  <div class="post-meta">
+    
+      <span class="post-date">
+        2023-02-03
+        
+      </span>
+    
+    
+    
+      <span class="post-reading-time">:: 8 min read (1539 words)</span>
+    
+  </div>
+
+  
+  <span class="post-tags">
+    
+    #<a href="https://rxOred.github.io/tags/compilers/">compilers</a>&nbsp;
+    
+  </span>
+  
+  
+  <img src="https://rxOred.github.io/img/compiler101/ballerina.jpg"
+    class="post-cover"
+    alt="Deep Dive Into Ballerina Runtime"
+    title="Cover Image" />
+
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="table-of-content">Table of Content<a href="#table-of-content" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#samples-and-source-code">Samples and Source code</a></li>
+<li><a href="#environment">Environment</a>
+<ol>
+<li><a href="#installing-ballerina">Installing Ballerina</a></li>
+<li><a href="#installing-nballerina">Building nballerina</a></li>
+</ol>
+</li>
+<li><a href="#overall-architecture">Overall Architecture</a></li>
+<li><a href="#next-steps">Next Steps</a></li>
+</ol>
+<h1 id="introduction">Introduction<a href="#introduction" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Ballerina is a cloud native language developed by a Sri Lankan company, which is the main reason made me wanna look into it. When I first heard about the project, I was pretty surprised to say the least. Because projects like this are somewhat uncommon among companies here.</p>
+<p>Stable version of the language runs on JVM. However, what took my interest is their native compiler. I&rsquo;ve been following its development since last year, when the main repository was nballerina-cpp.</p>
+<p>Anyways, in this series of smol articles, Im gonna dive deep into nballerina runtime.</p>
+<h1 id="samples-and-source-code">Samples and Source code<a href="#samples-and-source-code" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p><a href="">nballerina source code</a></p>
+<p><a href="">repo containing all the scripts that I&rsquo;ll be using</a></p>
+<h1 id="environment">Environment<a href="#environment" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>To build nballerina project, first we need to setup few things including ballerina itself.</p>
+<h2 id="installing-ballerina">Installing Ballerina<a href="#installing-ballerina" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>nballerina&rsquo;s compiler is written in the language itself, therefore first we need the ballerina distribution package. It is better to clone this from github and build it yourself.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone --recursive git@github.com:ballerina-platform/ballerina-distribution.git
+</span></span></code></pre></div><p>ballerina uses gradle</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd ballerina-distribution <span style="color:#f92672">&amp;&amp;</span> ./gradlew build
+</span></span></code></pre></div><h2 id="building-nballerina">Building nballerina<a href="#building-nballerina" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Now we can clone nballerina from its official repo</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone git@github.com:ballerina-platform/nballerina.git
+</span></span></code></pre></div><p>to build nballerina compiler</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd nballerina/compiler <span style="color:#f92672">&amp;&amp;</span> bal build
+</span></span></code></pre></div><p>to build ballerina runtime and examples</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd .. <span style="color:#f92672">&amp;&amp;</span> make all
+</span></span></code></pre></div><h1 id="overall-architecture">Overall Architecture<a href="#overall-architecture" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>To give a summery, nballerina is a ccompiler front-end that works with llvm as a backend. This front-end is written in ballerina language itself and is located in the <code>./compiler</code> directory. Above <code>bal build</code> command is used to compile the source and translate it to a <code>.jar</code> file, which then can be used with a java virtual machine to compile ballerina source files into llvm IR files (<code>.ll</code>).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ballerina" data-lang="ballerina"><span style="display:flex;"><span><span style="color:#75715e">// hello.bal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> ballerina<span style="color:#f92672">/</span>io<span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">main</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>	io<span style="color:#f92672">:</span>println<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;hello ballerina&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>to compile the above source into llvm IR.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>java -jar nballerina.jar &lt;src&gt;.bal
+</span></span></code></pre></div><p>The above command generates 2 files. One is <code>&lt;src&gt;._init.ll</code> and the other is <code>&lt;src&gt;.ll</code>, and both of these are in llvm IR.</p>
+<h2 id="src_initll-file"><!-- raw HTML omitted -->._init.ll file<a href="#src_initll-file" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>If we open up the file with the extension <code>._init.ll</code>,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-llvm" data-lang="llvm"><span style="display:flex;"><span>@_Bi04root0 = <span style="color:#66d9ef">constant</span> {<span style="color:#66d9ef">i32</span>, <span style="color:#66d9ef">i32</span>, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)*, <span style="color:#66d9ef">double</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)*, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)*, <span style="color:#66d9ef">i64</span>, {<span style="color:#66d9ef">i32</span>}*, [<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">x</span> <span style="color:#66d9ef">i64</span>]} {<span style="color:#66d9ef">i32</span> <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">i32</span> <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">i64</span> <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)* @_bal_list_generic_get_tagged, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)* @_bal_list_generic_set_tagged, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)* @_bal_list_generic_inexact_set_tagged, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)* @_bal_list_generic_get_int, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)* @_bal_list_generic_set_int, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)* @_bal_list_generic_inexact_set_int, <span style="color:#66d9ef">double</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)* @_bal_list_generic_get_float, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)* @_bal_list_generic_set_float, <span style="color:#66d9ef">i64</span>(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)* @_bal_list_generic_inexact_set_float, <span style="color:#66d9ef">i64</span> <span style="color:#ae81ff">262143</span>, {<span style="color:#66d9ef">i32</span>}* <span style="color:#66d9ef">null</span>, [<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">x</span> <span style="color:#66d9ef">i64</span>] []}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)* @_bal_list_generic_get_tagged(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_set_tagged(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_inexact_set_tagged(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_get_int(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_set_int(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_inexact_set_int(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">double</span> @_bal_list_generic_get_float(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_set_float(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">i64</span> @_bal_list_generic_inexact_set_float(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*, <span style="color:#66d9ef">i64</span>, <span style="color:#66d9ef">double</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">void</span> @_B04rootmain()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">define</span> <span style="color:#66d9ef">void</span> @_bal_main() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">call</span> <span style="color:#66d9ef">void</span> @_B04rootmain()
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">ret</span> <span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Anyone famililar with little bit of llvm can easily understand above snippet. There, we can see a function called <code>_bal_main</code>. This function in turn calls another function declared <code>_B04rootmain</code>. However, there is llvm for implementation of that function as well as for our main fuction. Therefore it is safe to assume that this rootmain is in fact, our main function, or at least calls it.</p>
+<p>To get a clear view, we can refer the source code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// nballerina/runtime/main.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>    _bal_stack_guard <span style="color:#f92672">=</span> <span style="color:#a6e22e">__builtin_frame_address</span>(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">-</span> STACK_SIZE;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">_bal_main</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>} 
+</span></span></code></pre></div><p>so this doesnt really give us any big clues on how our code gets executed but now we know for sure that the first few lines of code that&rsquo;s gonna get executed is initialization of stack guard and call to function <code>_bal_main</code>, which we saw earlier.</p>
+<p>Note that we might wanna pay attention to this stack guard implementation later on.</p>
+<h2 id="srcll-file"><!-- raw HTML omitted -->.ll file<a href="#srcll-file" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Lets take a look at the other file nballerina compiler generated for us.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-llvm" data-lang="llvm"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">hello</span>.<span style="color:#960050;background-color:#1e0010">ll</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>@_bal_stack_guard = <span style="color:#66d9ef">external</span> <span style="color:#66d9ef">global</span> <span style="color:#66d9ef">i8</span>*
+</span></span><span style="display:flex;"><span>@_Bi04root0 = <span style="color:#66d9ef">external</span> <span style="color:#66d9ef">constant</span> {<span style="color:#66d9ef">i32</span>}
+</span></span><span style="display:flex;"><span>@.str0 = <span style="color:#66d9ef">internal</span> <span style="color:#66d9ef">unnamed_addr</span> <span style="color:#66d9ef">constant</span> {<span style="color:#66d9ef">i16</span>, <span style="color:#66d9ef">i16</span>, [<span style="color:#ae81ff">20</span> <span style="color:#66d9ef">x</span> <span style="color:#66d9ef">i8</span>]} {<span style="color:#66d9ef">i16</span> <span style="color:#ae81ff">15</span>, <span style="color:#66d9ef">i16</span> <span style="color:#ae81ff">15</span>, [<span style="color:#ae81ff">20</span> <span style="color:#66d9ef">x</span> <span style="color:#66d9ef">i8</span>] <span style="color:#66d9ef">c</span><span style="color:#e6db74">&#34;hello ballerina\00\00\00\00\00&#34;</span>}, <span style="color:#66d9ef">align</span> <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>[...]
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">declare</span> <span style="color:#66d9ef">void</span> @_Bb02ioprintln(<span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">define</span> <span style="color:#66d9ef">void</span> @_B04rootmain() !dbg !5 {
+</span></span><span style="display:flex;"><span>  %1 = <span style="color:#66d9ef">alloca</span> <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*
+</span></span><span style="display:flex;"><span>  %2 = <span style="color:#66d9ef">alloca</span> <span style="color:#66d9ef">i8</span> <span style="color:#66d9ef">addrspace</span>(<span style="color:#ae81ff">1</span>)*
+</span></span><span style="display:flex;"><span>  %3 = <span style="color:#66d9ef">alloca</span> <span style="color:#66d9ef">i8</span>
+</span></span><span style="display:flex;"><span>  %4 = <span style="color:#66d9ef">load</span> <span style="color:#66d9ef">i8</span>*, <span style="color:#66d9ef">i8</span>** @_bal_stack_guard
+</span></span><span style="display:flex;"><span>  %5 = <span style="color:#66d9ef">icmp</span> <span style="color:#66d9ef">ult</span> <span style="color:#66d9ef">i8</span>* %3, %4
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">br</span> <span style="color:#66d9ef">i1</span> %5, <span style="color:#66d9ef">label</span> %16, <span style="color:#66d9ef">label</span> %6
+</span></span><span style="display:flex;"><span>[...]
+</span></span></code></pre></div><p><code>.str0</code> is the hello world string we had in our source file. However, we dont exactly know how ballerina works with strings (might be the next topic I&rsquo;ll go through).</p>
+<p>In addition to that, definition for <code>_B04rootmain</code> function referenced in the <code>hello._init.ll</code> file. This as far as we can see, reflects the code we wrote in the source file&rsquo;s main function.</p>
+<p>At the bottom of <code>hello.ll</code> file, we can see the debug information nballerina compiler has generated for us.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-llvm" data-lang="llvm"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#960050;background-color:#1e0010">hello</span>.<span style="color:#960050;background-color:#1e0010">ll</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>[...]
+</span></span><span style="display:flex;"><span>!llvm.module.flags = !{!0}
+</span></span><span style="display:flex;"><span>!llvm.dbg.cu = !{!2}
+</span></span><span style="display:flex;"><span>!0 = !{<span style="color:#66d9ef">i32</span> <span style="color:#ae81ff">2</span>, !&#34;Debug Info Version&#34;, <span style="color:#66d9ef">i32</span> <span style="color:#ae81ff">3</span>}
+</span></span><span style="display:flex;"><span>!1 = !DIFile(filename:<span style="color:#e6db74">&#34;hello.bal&#34;</span>, directory:<span style="color:#e6db74">&#34;&#34;</span>)
+</span></span><span style="display:flex;"><span>!2 = <span style="color:#66d9ef">distinct</span> !DICompileUnit(language: <span style="color:#960050;background-color:#1e0010">DW_LANG_C</span><span style="color:#ae81ff">99</span>, file: !1, isOptimized: <span style="color:#66d9ef">false</span>, runtimeVersion: <span style="color:#ae81ff">0</span>, emissionKind: <span style="color:#960050;background-color:#1e0010">FullDebug</span>, splitDebugInlining: <span style="color:#66d9ef">false</span>)
+</span></span><span style="display:flex;"><span>!3 = !DISubroutineType(types: !4)
+</span></span><span style="display:flex;"><span>!4 = !{}
+</span></span><span style="display:flex;"><span>!5 = <span style="color:#66d9ef">distinct</span> !DISubprogram(name:<span style="color:#e6db74">&#34;main&#34;</span>, linkageName:<span style="color:#e6db74">&#34;_B04rootmain&#34;</span>, scope: !1, file: !1, line: <span style="color:#ae81ff">3</span>, type: !3, spFlags: <span style="color:#960050;background-color:#1e0010">DISPFlagLocalToUnit</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#960050;background-color:#1e0010">DISPFlagDefinition</span>, unit: !2, retainedNodes: !6)
+</span></span><span style="display:flex;"><span>!6 = !{}
+</span></span><span style="display:flex;"><span>!7 = !DILocation(line: <span style="color:#ae81ff">0</span>, column: <span style="color:#ae81ff">0</span>, scope: !5)
+</span></span><span style="display:flex;"><span>!8 = !DILocation(line: <span style="color:#ae81ff">3</span>, column: <span style="color:#ae81ff">16</span>, scope: !5)
+</span></span><span style="display:flex;"><span>!9 = !DILocation(line: <span style="color:#ae81ff">4</span>, column: <span style="color:#ae81ff">12</span>, scope: !5)
+</span></span><span style="display:flex;"><span>!10 = !DILocation(line: <span style="color:#ae81ff">4</span>, column: <span style="color:#ae81ff">1</span>, scope: !5)
+</span></span><span style="display:flex;"><span>[...]
+</span></span></code></pre></div><p>Line !5 of the above snippet confirms out assumption that <code>main</code> function is in fact, <code>rootmain</code>.</p>
+<h2 id="generation-of-llvm-ir">generation of llvm IR<a href="#generation-of-llvm-ir" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>By looking at the <code>/compiler</code> source, we can get a clear idea how above two files are being generated.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ballerina" data-lang="ballerina"><span style="display:flex;"><span><span style="color:#75715e">// main.bal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">main</span><span style="color:#f92672">(</span><span style="color:#66d9ef">string</span><span style="color:#f92672">[]</span> filenames<span style="color:#f92672">,</span> <span style="color:#f92672">*</span>Options opts<span style="color:#f92672">)</span> <span style="color:#66d9ef">returns</span> <span style="color:#66d9ef">error</span><span style="color:#f92672">?</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#f92672">[...]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">foreach</span> <span style="color:#66d9ef">string</span> filename in filenames <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">var</span> <span style="color:#f92672">[</span>basename<span style="color:#f92672">,</span> ext<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> basenameExtension<span style="color:#f92672">(</span>filename<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ext <span style="color:#f92672">==</span> SOURCE_EXTENSION <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            CompileError<span style="color:#f92672">?</span> err <span style="color:#f92672">=</span> compileBalFile<span style="color:#f92672">(</span>filename<span style="color:#f92672">,</span> basename<span style="color:#f92672">,</span> check <span style="color:#a6e22e">chooseOutputBasename</span><span style="color:#f92672">(</span>basename<span style="color:#f92672">,</span> opts<span style="color:#f92672">.</span><span style="color:#a6e22e">outDir</span><span style="color:#f92672">),</span> nbackOptions<span style="color:#f92672">,</span> opts<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> err is err<span style="color:#f92672">:</span>Internal <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>                panic <span style="color:#a6e22e">error</span><span style="color:#f92672">(</span>d<span style="color:#f92672">:</span>toString<span style="color:#f92672">(</span>err<span style="color:#f92672">.</span><span style="color:#a6e22e">detail</span><span style="color:#f92672">()),</span> err<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#f92672">[...]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> ext <span style="color:#f92672">==</span> TEST_EXTENSION <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            check <span style="color:#a6e22e">compileBaltFile</span><span style="color:#f92672">(</span>filename<span style="color:#f92672">,</span> basename<span style="color:#f92672">,</span> opts<span style="color:#f92672">.</span><span style="color:#a6e22e">outDir</span> <span style="color:#f92672">?:</span> check file<span style="color:#f92672">:</span>parentPath<span style="color:#f92672">(</span>filename<span style="color:#f92672">),</span> nbackOptions<span style="color:#f92672">,</span> opts<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">[...]</span>
+</span></span></code></pre></div><p>for each source file that are given as input to the nballerina compiler, it checks if extension is <code>.bal</code> (<code>SOURCE_EXTENTION</code>) or <code>.balt</code> (<code>TEST_EXTENSION</code>), in which the latter is the extension for ballerina test files. Then there&rsquo;s somewhat common few lines of code for both conditions, a call to <code>compileBalFile / compileBaltFile</code>, passing filename, filename without extension (basename) and optional output directory and other few options as arguments.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ballerina" data-lang="ballerina"><span style="display:flex;"><span><span style="color:#75715e">// compile.bal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">compileBalFile</span><span style="color:#f92672">(</span><span style="color:#66d9ef">string</span> filename<span style="color:#f92672">,</span> <span style="color:#66d9ef">string</span> basename<span style="color:#f92672">,</span> <span style="color:#66d9ef">string</span><span style="color:#f92672">?</span> outputBasename<span style="color:#f92672">,</span> nback<span style="color:#f92672">:</span>Options nbackOptions<span style="color:#f92672">,</span> OutputOptions outOptions<span style="color:#f92672">)</span> <span style="color:#66d9ef">returns</span> CompileError<span style="color:#f92672">?</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    CompileContext cx <span style="color:#f92672">=</span> new<span style="color:#f92672">(</span>basename<span style="color:#f92672">,</span> outputBasename<span style="color:#f92672">,</span> nbackOptions<span style="color:#f92672">,</span> outOptions<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    front<span style="color:#f92672">:</span>ResolvedModule mod <span style="color:#f92672">=</span> check <span style="color:#a6e22e">processModule</span><span style="color:#f92672">(</span>cx<span style="color:#f92672">,</span> DEFAULT_ROOT_MODULE_ID<span style="color:#f92672">,</span> <span style="color:#f92672">[</span> <span style="color:#f92672">{</span>filename<span style="color:#f92672">}</span> <span style="color:#f92672">],</span> cx<span style="color:#f92672">.</span><span style="color:#a6e22e">outputFilename</span><span style="color:#f92672">());</span>
+</span></span><span style="display:flex;"><span>    check mod<span style="color:#f92672">.</span><span style="color:#a6e22e">validMain</span><span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span>    check <span style="color:#a6e22e">generateInitModule</span><span style="color:#f92672">(</span>cx<span style="color:#f92672">,</span> mod<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p><code>compileBalFile</code> is a fairly simple function. Honestly I expected a 500 lines of long function.</p>
+<p>First above function does some checks, most of which are not important at the moment, and calls <code>generateInitModule</code> with <code>CompileContext</code> and <code>ResolveModule</code>as parameters.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ballerina" data-lang="ballerina"><span style="display:flex;"><span><span style="color:#75715e">// compile.bal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">generateInitModule</span><span style="color:#f92672">(</span>CompileContext cx<span style="color:#f92672">,</span> front<span style="color:#f92672">:</span>ResolvedModule entryMod<span style="color:#f92672">)</span> <span style="color:#66d9ef">returns</span> CompileError<span style="color:#f92672">?</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    LlvmModule initMod <span style="color:#f92672">=</span> check cx<span style="color:#f92672">.</span><span style="color:#a6e22e">buildInitModule</span><span style="color:#f92672">(</span>filterFuncs<span style="color:#f92672">(</span>entryMod<span style="color:#f92672">.</span><span style="color:#a6e22e">getExports</span><span style="color:#f92672">()));</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">string</span><span style="color:#f92672">?</span> initOutFilename <span style="color:#f92672">=</span> cx<span style="color:#f92672">.</span><span style="color:#a6e22e">outputFilename</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;._init&#34;</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> initOutFilename <span style="color:#f92672">!=</span> <span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        check <span style="color:#a6e22e">outputModule</span><span style="color:#f92672">(</span>initMod<span style="color:#f92672">,</span> initOutFilename<span style="color:#f92672">,</span> cx<span style="color:#f92672">.</span><span style="color:#a6e22e">outputOptions</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>It is clear from the above snippet that this function is the one that is reponsible for creating the file with <code>._init.ll</code> extension, to the same file which they refer to as init module.
+Note that there is more to this funciton which we can simply ignore for now, such as what is this <code>LlvmModule</code> class and <code>CompileContext</code>. <code>ouputModule</code> function can be our next point of interest.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ballerina" data-lang="ballerina"><span style="display:flex;"><span><span style="color:#75715e">// output.bal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span> The preferred output extension for the output filename<span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span>const OUTPUT_EXTENSION <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;.ll&#34;</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> OutputOptions <span style="color:#66d9ef">record</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">string</span><span style="color:#f92672">?</span> target <span style="color:#f92672">=</span> <span style="color:#f92672">();</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">};</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">outputModule</span><span style="color:#f92672">(</span>LlvmModule llMod<span style="color:#f92672">,</span> <span style="color:#66d9ef">string</span> outFilename<span style="color:#f92672">,</span> OutputOptions options<span style="color:#f92672">)</span> <span style="color:#66d9ef">returns</span> io<span style="color:#f92672">:</span>Error<span style="color:#f92672">?</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">string</span><span style="color:#f92672">?</span> target <span style="color:#f92672">=</span> options<span style="color:#f92672">.</span><span style="color:#a6e22e">target</span><span style="color:#f92672">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> target <span style="color:#f92672">!=</span> <span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        llMod<span style="color:#f92672">.</span><span style="color:#a6e22e">setTarget</span><span style="color:#f92672">(</span>target<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> llMod<span style="color:#f92672">.</span><span style="color:#a6e22e">printModuleToFile</span><span style="color:#f92672">(</span>outFilename<span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>See the <code>OUTPUT_EXTENSION</code> is set to <code>.ll</code>. function <code>outputModule</code> takes <code>LlvmModule</code> as the first argument and outputs the file <code>outFilename</code> using <code>llMod.printModuleToFile</code> method, which simply a file i/o function.</p>
+<h2 id="llvm-bytecode-files">llvm bytecode files<a href="#llvm-bytecode-files" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Those two files generated by nballerina.jar should then be linked with <code>/runtime/balrt_inline.h</code> to generate llvm bytecode file per each IR file.</p>
+<p><code>/runtime/balrt_inline.h</code> is the main header file of the runtime. This file, along with other <code>.h</code> files make up the file <code>/runtime/balrt_inline.bc</code>, which is a llvm bytecode file (<code>.bc</code>).</p>
+<p>This bytecode file contains all the code that is necessary to run a ballerina source file compiled with nballerina compiler. In order for this to work, the compiler generated <code>.ll</code> files should also be converted into <code>.bc</code> with <code>/runtime/balrt_inline.bc</code> linked to it.</p>
+<p>This can be done using llvm-link.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>llvm-link hello._init.ll  ~/repos/nballerina/runtime/balrt_inline.bc -o hello._init.bc
+</span></span><span style="display:flex;"><span>llvm-link hello.ll ~/repos/nballerina/runtime/balrt_inline.bc -o hello.bc
+</span></span></code></pre></div><p>llvm-link generates llvm bytecode files by linking the input IR file with ballerina runtime header file.</p>
+<p>llvm bytecode files are basically bullshit unreadable version of IR so we wont be looking at those since there&rsquo;s simply no use.</p>
+<h1 id="next-steps">Next Steps<a href="#next-steps" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>We went through some small components of ballerina runtime and compiler in this article. In the next one, we will explore <code>LlvmModule</code> and <code>CompileContext</code>.</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h">Read other posts</span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://rxOred.github.io/post/analysis/whispergate/whispergate/">
+                <span class="button__text">WhisperGate</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2023 Powered by <a href="http://gohugo.io">Hugo</a></span>
+    
+        <span>:: Theme made by <a href="https://twitter.com/panr">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+<script src="https://rxOred.github.io/assets/main.js"></script>
+<script src="https://rxOred.github.io/assets/prism.js"></script>
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

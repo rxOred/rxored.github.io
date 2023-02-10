@@ -6,7 +6,17 @@
     <description>Recent content in Tags on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Jan 2022 09:40:08 +0000</lastBuildDate><atom:link href="https://rxOred.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Feb 2023 16:28:21 +0530</lastBuildDate><atom:link href="https://rxOred.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>compilers</title>
+      <link>https://rxOred.github.io/tags/compilers/</link>
+      <pubDate>Fri, 03 Feb 2023 16:28:21 +0530</pubDate>
+      
+      <guid>https://rxOred.github.io/tags/compilers/</guid>
+      <description></description>
+      <content></content>
+    </item>
+    
     <item>
       <title>malware</title>
       <link>https://rxOred.github.io/tags/malware/</link>
@@ -83,16 +93,6 @@
       <pubDate>Sun, 03 Oct 2021 00:49:28 +0000</pubDate>
       
       <guid>https://rxOred.github.io/tags/data-structures/</guid>
-      <description></description>
-      <content></content>
-    </item>
-    
-    <item>
-      <title>compilers</title>
-      <link>https://rxOred.github.io/tags/compilers/</link>
-      <pubDate>Tue, 28 Sep 2021 22:58:02 +0000</pubDate>
-      
-      <guid>https://rxOred.github.io/tags/compilers/</guid>
       <description></description>
       <content></content>
     </item>
