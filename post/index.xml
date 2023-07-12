@@ -6,7 +6,213 @@
     <description>Recent content in Posts on rxOred&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 03 Feb 2023 16:28:21 +0530</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 19 May 2023 01:33:03 +0530</lastBuildDate><atom:link href="https://rxOred.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Deep Dive Into Ballerina Runtime - Types II</title>
+      <link>https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime-types_ii/</link>
+      <pubDate>Fri, 19 May 2023 01:33:03 +0530</pubDate>
+      
+      <guid>https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime-types_ii/</guid>
+      <description>Table of Content Background Integer Implementation Background A lot of this is not required. We explored various parts of ballerina native compiler through number of posts and following is essential to understand what is going on with this one. So please read it.
+Integer implementation most C family progammers are familiar with size of a type. For instance, an int is exactly 4 bytes in intel architecture. However, there are other int types that are either higher or lower in size, int8, int16 and int64 are 1, 2, and 8 bytes respectively.</description>
+      <content>&lt;h1 id=&#34;table-of-content&#34;&gt;Table of Content&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#background&#34;&gt;Background&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#integer-implementation&#34;&gt;Integer Implementation&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;background&#34;&gt;Background&lt;/h1&gt;
+&lt;p&gt;A lot of this is not required. We explored various parts of ballerina native compiler through number of posts and following is essential to understand what is going on with this one. So please read it.&lt;/p&gt;
+&lt;h1 id=&#34;integer-implementation&#34;&gt;Integer implementation&lt;/h1&gt;
+&lt;p&gt;most C family progammers are familiar with size of a type. For instance, an &lt;code&gt;int&lt;/code&gt; is exactly 4 bytes in intel architecture. However, there are other int types that are either higher or lower in size, int8, int16 and int64 are 1, 2, and 8 bytes respectively.&lt;/p&gt;
+&lt;p&gt;Ints can also be divided based on two&amp;rsquo;s compliment. There are unsigned ints as well as signeed ints, in which the former cannot represent negative numbers of the number line.&lt;/p&gt;
+&lt;p&gt;Ballerina implements this through &lt;code&gt;IntSubtype&lt;/code&gt; custom type.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type IntSubtype readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; Range&lt;span style=&#34;color:#f92672&#34;&gt;[];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So it is essentially an array of another custom type called &lt;code&gt;Range&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// Ranges are inclusive
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// Require min &amp;lt;= max
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type Range readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; min&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; max&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;strings-and-strings&#34;&gt;Strings and Strings&lt;/h1&gt;
+&lt;h1 id=&#34;strings-and-strings-1&#34;&gt;Strings and Strings&lt;/h1&gt;
+&lt;h1 id=&#34;type-conversion&#34;&gt;Type Conversion&lt;/h1&gt;
+&lt;h1 id=&#34;fixing-142-for-fun-and-profit&#34;&gt;Fixing #142 for fun and profit&lt;/h1&gt;
+</content>
+    </item>
+    
+    <item>
+      <title>Deep Dive Into Ballerina Runtime - Types I</title>
+      <link>https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime-types/</link>
+      <pubDate>Thu, 23 Mar 2023 15:39:25 +0530</pubDate>
+      
+      <guid>https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime-types/</guid>
+      <description>Table of Content Background Semantic Subtyping Semantic Subtyping implementation in Ballerina ListAtomicType MappingAtomicType CellAtomicType Class Env Cell Types Background Every programming language has some kind of an in built type system. This is even applicable for those languages with dynamic type systems. For a compiler to function, these default types are essential.
+Since ballerina is a statically typed language, Ballerina Native compiler defines a fairly descriptive in build type system.</description>
+      <content>&lt;h1 id=&#34;table-of-content&#34;&gt;Table of Content&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#background&#34;&gt;Background&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#semantic-subtyping&#34;&gt;Semantic Subtyping&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#semantic-subtyping-implementation-in-ballerina&#34;&gt;Semantic Subtyping implementation in Ballerina&lt;/a&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#listatomictype&#34;&gt;ListAtomicType&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#mappingatomictype&#34;&gt;MappingAtomicType&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#cellatomictype&#34;&gt;CellAtomicType&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#class-env&#34;&gt;Class Env&lt;/a&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#cell-types&#34;&gt;Cell Types&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;background&#34;&gt;Background&lt;/h1&gt;
+&lt;p&gt;Every programming language has some kind of an in built type system. This is even applicable for those languages with dynamic type systems. For a compiler to function, these default types are essential.&lt;/p&gt;
+&lt;p&gt;Since ballerina is a statically typed language, Ballerina Native compiler defines a fairly descriptive in build type system.&lt;/p&gt;
+&lt;p&gt;In this small series of articles, we&amp;rsquo;ll explore the Ins and outs of it as well try to fix some open issues. Possibly #142 since it focuses on another important part of ballerina, semantic subtyping.&lt;/p&gt;
+&lt;h1 id=&#34;semantic-subtyping&#34;&gt;Semantic Subtyping&lt;/h1&gt;
+&lt;p&gt;A type system of a programming language is often defined using set of rules. At the core of this, subtyping plays a major role.&lt;/p&gt;
+&lt;p&gt;Subtyping plays a major role in OOP languages. In fact, it can be defined through OOP concept, polymorphism. According to Wikipedia, a subtype is essentially a datatype, which is related to another, by either semantically or syntactically.&lt;/p&gt;
+&lt;p&gt;Say there is a class called Cat. and that Cat inherits from class Animal. In this specific scenario, class Cat is a subtype of class Animal.&lt;/p&gt;
+&lt;p&gt;Now how can this be useful in the context of a compiler? Image the following function&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;float&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;addFloats&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;float&lt;/span&gt; a, &lt;span style=&#34;color:#66d9ef&#34;&gt;float&lt;/span&gt; b) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; a &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; b;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;above &lt;code&gt;addFloats&lt;/code&gt; function expects two floats as arguments an returns a float. But what happens if call &lt;code&gt;addFloats&lt;/code&gt; function like this,&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;addFloats&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here both parameters passed are integers. A compiler can approach this problem in multiple ways. one of which is to allow use of integers wherever floats are expected. Here, float is the super type and the int is the subtype. Therefore the subtype relation can be written as &lt;code&gt;int &amp;lt;: flaot&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;the other approach is to use a generic interface, or a type that both flaot and integer are derived from.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Number &lt;span style=&#34;color:#a6e22e&#34;&gt;addFloats&lt;/span&gt;(Number a, Number b) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; a &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; b;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;here the super type is &lt;code&gt;Number&lt;/code&gt; and elements of both subtypes &lt;code&gt;int&lt;/code&gt; and &lt;code&gt;float&lt;/code&gt; can be passed as parameters to the function.&lt;/p&gt;
+&lt;h1 id=&#34;semantic-subtyping-implementation-in-ballerina&#34;&gt;Semantic Subtyping implementation in Ballerina&lt;/h1&gt;
+&lt;p&gt;core.bal file contains some of the most important parts of the semantic subtyping implementation of the ballerina language.
+&lt;code&gt;Env&lt;/code&gt; classed defined in that file is to be the base for each semantic type that is a subtype.&lt;/p&gt;
+&lt;p&gt;However what really caught me is the defintions of below records.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type BasicTypeCode
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    BT_NIL&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_BOOLEAN&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_INT&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_FLOAT&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_DECIMAL
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_STRING&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_ERROR&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_TYPEDESC&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_HANDLE&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_FUNCTION
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_FUTURE&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_STREAM
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_LIST&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_MAPPING&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_TABLE&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_XML&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_OBJECT
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_CELL&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;BT_UNDEF&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here it defines a new type union called &lt;code&gt;BasicTypeCode&lt;/code&gt; with it can be one of the basic types.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type Atom RecAtom&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;TypeAtom&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type RecAtom &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type TypeAtom readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; index&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    AtomicType atomicType&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type AtomicType ListAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;MappingAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;CellAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Union type &lt;code&gt;Atom&lt;/code&gt;, which is defined above can be either of &lt;code&gt;RecAtom&lt;/code&gt; or &lt;code&gt;TypeAtom&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;a &lt;code&gt;RecAtom&lt;/code&gt; is essentially another name for &lt;code&gt;int&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;TypeAtom&lt;/code&gt;, on the other hand is a record which describes, as the name implies, an atomic type.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type TypeAtom readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; index&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    AtomicType atomicType&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type AtomicType ListAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;MappingAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;CellAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;An atomic type in general, is a type that garantees I/O (to address space of the program) operations through a single instruction. Say for instance,&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;mov&lt;/span&gt;    [&lt;span style=&#34;color:#66d9ef&#34;&gt;rbp&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;], &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;These types cannot be divided or filter out furthur. This means, these are the building blocks of all
+the types implemented in a language.&lt;/p&gt;
+&lt;p&gt;Here in ballerina, &lt;code&gt;AtomicType&lt;/code&gt; is implemented as a union of the following, &lt;code&gt;ListAtomicType, MappingAtomicType, CellAtomicType&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;From what I can see, &lt;code&gt;TypeAtom&lt;/code&gt; is essentially something like &lt;code&gt;std::variant&lt;/code&gt; in C++, a type safe union for &lt;code&gt;AtomicType&lt;/code&gt;. Let us get to exact details later.&lt;/p&gt;
+&lt;p&gt;Those above types are implemented in files that are specific to them. So we are about to go over them.&lt;/p&gt;
+&lt;h2 id=&#34;listatomictype&#34;&gt;ListAtomicType&lt;/h2&gt;
+&lt;p&gt;ListAtomicType is implemented as record of &lt;code&gt;FixedLengthArray&lt;/code&gt; and &lt;code&gt;CellSemType&lt;/code&gt;. definitions can be found in list.bal&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type ListAtomicType readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; FixedLengthArray members&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    CellSemType rest&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;FixedLengthArray&lt;/code&gt; is also a record. An array of a fixed length is represented using this type. According to the comments, the list members can be of any sem type.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type FixedLengthArray record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    CellSemType&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; initial&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; fixedLength&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;if member &lt;code&gt;initial&lt;/code&gt; contains 3 integers 1, 2 and 3, then &lt;code&gt;fixedLength&lt;/code&gt; should be set to 3. Another important fact about &lt;code&gt;FixedLengthArray&lt;/code&gt; is that, if &lt;code&gt;initial&lt;/code&gt; is an array of 100 element semtypes string and int, as if &lt;code&gt;initial = [string, int]; fixedLength = 100&lt;/code&gt;, then, an &lt;code&gt;int&lt;/code&gt; is repeated 99 times.&lt;/p&gt;
+&lt;h2 id=&#34;mappingatomictype&#34;&gt;MappingAtomicType&lt;/h2&gt;
+&lt;p&gt;this is another basic type that implements a list.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type MappingAtomicType readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// sorted
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    string&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; names&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    CellSemType&lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt; types&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    CellSemType rest&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;mapping.bal file does not provide much documentation on this specific type.&lt;/p&gt;
+&lt;h2 id=&#34;cellatomictype&#34;&gt;CellAtomicType&lt;/h2&gt;
+&lt;p&gt;CellAtomicType is a record of two members of types &lt;code&gt;SemType&lt;/code&gt; and &lt;code&gt;CellMutability&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type CellMutability CELL_MUT_NONE&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;CELL_MUT_LIMITED&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;CELL_MUT_UNLIMITED&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; type CellAtomicType readonly &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    SemType ty&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    CellMutability mut&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;CellAtomicType&#39;s&lt;/code&gt; mutability is defined by member &lt;code&gt;mut&lt;/code&gt;, which can be either &lt;code&gt;CELL_MUT_NONE&lt;/code&gt;, &lt;code&gt;CELL_MUT_LIMITED&lt;/code&gt; or &lt;code&gt;CELL_MUT_UNLIMITED&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In the section we&amp;rsquo;ll go over what exactly is a Cell type.&lt;/p&gt;
+&lt;h2 id=&#34;class-env&#34;&gt;class Env&lt;/h2&gt;
+&lt;p&gt;As we went through this earlier in the post, class Env is the base for all semantic types in ballerina language.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; isolated &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Env&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;final&lt;/span&gt; table&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;TypeAtom&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;key&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;atomicType&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; atomTable &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; table &lt;span style=&#34;color:#f92672&#34;&gt;[];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// Set up index 0 to be used by VAL_READONLY
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;final&lt;/span&gt; ListAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;?[]&lt;/span&gt; recListAtoms &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt; LIST_ATOMIC_RO &lt;span style=&#34;color:#f92672&#34;&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;final&lt;/span&gt; MappingAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;?[]&lt;/span&gt; recMappingAtoms &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt; MAPPING_ATOMIC_RO &lt;span style=&#34;color:#f92672&#34;&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;final&lt;/span&gt; FunctionAtomicType&lt;span style=&#34;color:#f92672&#34;&gt;?[]&lt;/span&gt; recFunctionAtoms &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;[];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// Count of the total number of non-nil members
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// of recListAtoms, recMappingAtoms and recFunctionAtoms
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; recAtomCount &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;First member of the class is an &lt;code&gt;atomTable&lt;/code&gt;, which is basically a ballerina table of &lt;code&gt;TypeAtom&lt;/code&gt;, which we already discussed with it&amp;rsquo;s member &lt;code&gt;atomicType&lt;/code&gt; as the key.&lt;/p&gt;
+&lt;p&gt;Lets keep other members of the class for a later discussion and focus on the init function.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; isolated function &lt;span style=&#34;color:#a6e22e&#34;&gt;init&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// Reserving the first two indexes of atomTable to represent cell VAL and cell NEVER typeAtoms. 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// This is to avoid passing down env argument when doing cell type operations.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// Please refer to the cellSubtypeDataEnsureProper() in cell.bal
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_VAL&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_NEVER&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// Reserving the next index of atomTable to represent the typeAtom required to construct
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// equivalent subtypes of map&amp;lt;any|error&amp;gt; and (any|error)[].
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_INNER&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// Reserving the next two indexes of atomTable to represent typeAtoms related to (map&amp;lt;any|error&amp;gt;)[].
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// This is to avoid passing down env argument when doing tableSubtypeComplement operation.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_INNER_MAPPING&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;listAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;LIST_ATOMIC_MAPPING&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// Reserving the next three indexes of atomTable to represent typeAtoms related to readonly type.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// This is to avoid requiring context when referring to readonly type.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// CELL_ATOMIC_INNER_MAPPING_RO &amp;amp; LIST_ATOMIC_MAPPING_RO are typeAtoms reuquired to construct readonly &amp;amp; (map&amp;lt;readonly&amp;gt;)[]
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// which is then used for readonly table type when constructing VAL_READONLY.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_INNER_MAPPING_RO&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;listAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;LIST_ATOMIC_MAPPING_RO&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        _ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; self&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;cellAtom&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;CELL_ATOMIC_INNER_RO&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the comments it says first two indexes of the atomTable is reserved for cell typeAtoms VAL and NEVER.&lt;/p&gt;
+&lt;h3 id=&#34;cell-types&#34;&gt;Cell Types&lt;/h3&gt;
+&lt;p&gt;Well I had the same question, what is a cell type? I put out my question on ballerina discord server and got a well descriptive answer.&lt;/p&gt;
+&lt;p&gt;From What I understand, a cell type is essentially an abstraction layer build around semantic subtyping to avoid confusion.&lt;/p&gt;
+&lt;p&gt;For the sake of argument, let us think of semantic subtyping as simply as ability to interchangably use types based on their semantic (meaning) characteristics.&lt;/p&gt;
+&lt;p&gt;Consider the following code&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;function &lt;span style=&#34;color:#a6e22e&#34;&gt;example&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;string arg1&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; returns &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;error &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; arg1 is string &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;fromString&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;arg1&lt;span style=&#34;color:#f92672&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; arg1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;the function &lt;code&gt;example&lt;/code&gt; expects an argument of either type int or type string. In the if statement it checks for the condition in which the &lt;code&gt;arg1&lt;/code&gt; is string. if it evaluate true, function returns an int parsed from the string arg1.&lt;/p&gt;
+&lt;p&gt;in the else statement, it simply returns the type int &lt;code&gt;arg1&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This exact feature lowkey reminds me of template metaprogramming techniques used by C++ developers for type deduction and to implement type restrictions.&lt;/p&gt;
+&lt;p&gt;Now consider the following code.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;type NewRecord record &lt;span style=&#34;color:#f92672&#34;&gt;{|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;string x&lt;span style=&#34;color:#f92672&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;|}&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here the value space of both &lt;code&gt;NewRecord&lt;/code&gt; and &lt;code&gt;int|string&lt;/code&gt; is same. Therefore it is possible to pass a value of type &lt;code&gt;NewRecord&lt;/code&gt; to function &lt;code&gt;example&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&amp;hellip;&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>Deep Dive Into Ballerina Runtime</title>
       <link>https://rxOred.github.io/post/compilers/deep-dive-into-ballerina-runtime/</link>
